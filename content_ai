@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContentAI – PlanifAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="reveal">
+        <h1>ContentAI</h1>
+        <p>Des publications prêtes à poster chaque semaine, adaptées à votre activité et à vos clients.</p>
+    </header>
+
+    <section class="section reveal">
+        <h2>Pourquoi utiliser ContentAI ?</h2>
+        <p>ContentAI vous permet de rester actif sur les réseaux sociaux sans y passer des heures. Vous recevez chaque semaine des posts rédigés pour vous, avec un ton adapté à votre activité. Plus besoin de chercher quoi dire ou comment le dire : tout est prêt à publier.</p>
+    </section>
+
+    <section class="section reveal">
+        <h2>Fonctionnement en 3 étapes</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>1. Vous décrivez votre activité</h3>
+                <p>Votre métier, vos offres, votre ton (professionnel, amical, fun...).</p>
+            </div>
+            <div class="card">
+                <h3>2. L’agent crée votre contenu</h3>
+                <p>Des textes clairs, engageants, avec hashtags et call-to-action. Visuel inclus si vous le souhaitez.</p>
+            </div>
+            <div class="card">
+                <h3>3. Vous publiez ou programmez</h3>
+                <p>Le contenu vous est envoyé chaque semaine. Un simple copier-coller suffit.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section reveal">
+        <h2>Cas d’usage</h2>
+        <ul>
+            <li><strong>Coach bien-être :</strong> partage du contenu inspirant chaque lundi pour motiver sa communauté.</li>
+            <li><strong>Commerçante indépendante :</strong> annonce ses promos de la semaine avec visuel et description prêts.</li>
+            <li><strong>Consultant :</strong> montre son expertise avec des tips hebdomadaires pour LinkedIn.</li>
+        </ul>
+    </section>
+
+    <section class="section reveal" style="text-align: center;">
+        <h2>Prêt à ne plus galérer avec vos posts ?</h2>
+        <p>Commandez ContentAI et recevez vos publications chaque semaine, sans effort.</p>
+        <a href="#" class="cta">Commander ContentAI</a>
+    </section>
+
+    <footer>
+        &copy; 2025 PlanifAI. Tous droits réservés.
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

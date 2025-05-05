@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM AutoPilot – PlanifAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="reveal">
+        <h1>CRM AutoPilot</h1>
+        <p>Gérez votre relation client sans rien oublier. Relances, devis, suivis… tout est automatisé.</p>
+    </header>
+
+    <section class="section reveal">
+        <h2>Pourquoi utiliser CRM AutoPilot ?</h2>
+        <p>CRM AutoPilot est votre assistant pour gérer facilement vos prospects et clients. Il envoie des relances automatiques, suit les paiements, vous aide à ne plus passer à côté d’aucune opportunité, et allège toute votre gestion commerciale quotidienne.</p>
+    </section>
+
+    <section class="section reveal">
+        <h2>Fonctionnement en 3 étapes</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>1. Vous renseignez vos clients</h3>
+                <p>Ou vous importez une liste simple depuis Excel, Notion ou Airtable.</p>
+            </div>
+            <div class="card">
+                <h3>2. L’agent crée les relances intelligentes</h3>
+                <p>Relance pour devis, facture, prise de rendez-vous : le ton est adapté à votre métier.</p>
+            </div>
+            <div class="card">
+                <h3>3. Vous suivez les réponses dans un tableau clair</h3>
+                <p>Vous voyez qui a répondu, payé, ou qui doit être rappelé.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section reveal">
+        <h2>Cas d’usage</h2>
+        <ul>
+            <li><strong>Artisan du bâtiment :</strong> relance automatiquement ses devis et réduit les pertes de leads.</li>
+            <li><strong>Coach freelance :</strong> garde le lien avec ses anciens clients sans y penser.</li>
+            <li><strong>Consultante indépendante :</strong> suit ses paiements et envoie des rappels polis automatiquement.</li>
+        </ul>
+    </section>
+
+    <section class="section reveal" style="text-align: center;">
+        <h2>Prêt à booster votre relation client ?</h2>
+        <p>Commandez votre CRM AutoPilot et libérez du temps chaque semaine.</p>
+        <a href="#" class="cta">Commander CRM AutoPilot</a>
+    </section>
+
+    <footer>
+        &copy; 2025 PlanifAI. Tous droits réservés.
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

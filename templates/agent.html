@@ -1,21 +1,13 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ agent.nom }}</title>
-</head>
-<body>
-  <a href="../index.html">&larr; Retour à l'accueil</a>
-
-  <h1>{{ agent.nom }}</h1>
-  <p>{{ agent.description }}</p>
-
-  <h2>Fonctions</h2>
-  <ul>
-    {% for f in agent.fonctions %}
-    <li>{{ f }}</li>
-    {% endfor %}
-  </ul>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<article>
+    <h2>{{ agent.nom }}</h2>
+    <p>{{ agent.description }}</p>
+    <ul>
+      {% for fonction in agent.fonctions %}
+      <li>{{ fonction }}</li>
+      {% endfor %}
+    </ul>
+    <a href="../index.html">Retour</a>
+</article>
+{% endblock %}

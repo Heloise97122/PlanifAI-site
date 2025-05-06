@@ -1,45 +1,17 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>PlanifAI</title>
-    <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-    <header>
-        <h1>Bienvenue sur PlanifAI</h1>
-        <p>Des agents IA qui bossent à votre place</p>
-        <a href="#agents" class="cta">Choisir un agent IA</a>
-    </header>
-
-    <main id="agents" class="grid">
-        <div class="card">
-            <h2>Compta-AI</h2>
-            <p>Simplifie la gestion comptable quotidienne : devis, factures, et exports comptables.</p>
-            <ul>
-                <li>Classe automatiquement les factures</li>
-                <li>Génère des devis personnalisés</li>
-                <li>Prépare les exports comptables</li>
-                <li>Détecte les erreurs et doublons</li>
-            </ul>
-            <a href="#" class="cta-small">Découvrir</a>
-        </div>
-        <div class="card">
-            <h2>Client-AI</h2>
-            <p>Automatise les relances et centralise les échanges client dans un mini-CRM.</p>
-            <ul>
-                <li>Analyse des emails entrants</li>
-                <li>Réponses automatiques prêtes à envoyer</li>
-                <li>Relances automatisées</li>
-                <li>Création de rappels</li>
-            </ul>
-            <a href="#" class="cta-small">Découvrir</a>
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 PlanifAI. Tous droits réservés.</p>
-    </footer>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<section id="agents" class="grid">
+  {% for agent in agents %}
+    <div class="card">
+      <h2>{{ agent.nom }}</h2>
+      <p>{{ agent.description }}</p>
+      <ul>
+        {% for f in agent.fonctions %}
+        <li>{{ f }}</li>
+        {% endfor %}
+      </ul>
+      <a class="cta-button" href="/PlanifAI-site/agents/{{ agent.id }}.html">Découvrir</a>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

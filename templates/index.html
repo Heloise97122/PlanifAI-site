@@ -1,21 +1,17 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PlanifAI</title>
-</head>
-<body>
-  <h1>Bienvenue sur PlanifAI</h1>
-  <p>Des agents IA qui bossent à votre place</p>
-
-  <ul>
-    {% for agent in agents %}
-    <li>
-      <strong>{{ agent.nom }}</strong> – {{ agent.description }}<br />
-      <a href="agents/{{ agent.id }}.html">Découvrir</a>
-    </li>
-    {% endfor %}
-  </ul>
-</body>
-</html>
+m{% extends "base.html" %}
+{% block content %}
+<section id="agents" class="grid">
+  {% for agent in agents %}
+    <div class="card">
+      <h2>{{ agent.nom }}</h2>
+      <p>{{ agent.description }}</p>
+      <ul>
+        {% for fonction in agent.fonctions %}
+        <li>{{ fonction }}</li>
+        {% endfor %}
+      </ul>
+      <a class="cta-button" href="/PlanifAI-site/agents/{{ agent.id }}.html">Découvrir</a>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

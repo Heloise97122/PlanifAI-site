@@ -2,13 +2,78 @@
   {
     "id": "compta-ai",
     "nom": "Compta-AI",
-    "description": "Automatise la gestion des devis, factures et exports comptables.",
+    "description": "Simplifie la gestion comptable quotidienne : devis, factures, et exports comptables.",
     "fonctions": [
-      "Classe les factures",
-      "Génère des devis",
-      "Prépare les exports",
-      "Détecte les doublons"
+      "Classe automatiquement les factures",
+      "Génère des devis personnalisés",
+      "Prépare les exports comptables",
+      "Détecte les erreurs et doublons"
+    ]
+  },
+  {
+    "id": "contenu-ai",
+    "nom": "Contenu-AI",
+    "description": "Crée des contenus adaptés pour LinkedIn, Instagram, Facebook et TikTok.",
+    "fonctions": [
+      "Génère des posts sociaux engageants",
+      "Crée des newsletters à partir de points clés",
+      "Rédige des scripts vidéo ou reels",
+      "Planifie un calendrier éditorial"
+    ]
+  },
+  {
+    "id": "client-ai",
+    "nom": "Client-AI",
+    "description": "Centralise les échanges, automatise les relances et facilite le suivi client.",
+    "fonctions": [
+      "Analyse automatique des emails entrants",
+      "Génère des réponses prêtes à envoyer",
+      "Automatise les relances client",
+      "Crée des rappels dans un mini-CRM"
+    ]
+  },
+  {
+    "id": "prospecteur-ai",
+    "nom": "Prospecteur-AI",
+    "description": "Trouve automatiquement des prospects qualifiés et génère des messages personnalisés.",
+    "fonctions": [
+      "Recherche de prospects selon critères",
+      "Qualification automatique des leads",
+      "Messages personnalisés pour email ou LinkedIn",
+      "Pipeline visuel de suivi"
+    ]
+  },
+  {
+    "id": "website-ai",
+    "nom": "Website-AI",
+    "description": "Crée un mini-site vitrine responsive et optimisé SEO en quelques clics.",
+    "fonctions": [
+      "Génération automatique d’un site HTML",
+      "Textes rédigés en fonction du secteur",
+      "Intégration contact, WhatsApp, Google Maps",
+      "Design responsive, rapide, SEO-friendly"
+    ]
+  },
+  {
+    "id": "rh-ai",
+    "nom": "RH-AI",
+    "description": "Génère vos contrats, lettres et documents RH personnalisés.",
+    "fonctions": [
+      "Création de contrats (CDI, CDD, freelance…)",
+      "Promesses d’embauche, lettres de mission",
+      "Modèles personnalisables conformes",
+      "Base RH avec historique et rappels"
+    ]
+  },
+  {
+    "id": "avis-ai",
+    "nom": "Avis-AI",
+    "description": "Automatise les demandes d’avis clients pour booster votre visibilité locale.",
+    "fonctions": [
+      "Messages automatiques pour avis Google / Facebook",
+      "Personnalisation selon la prestation",
+      "Relances si aucun avis laissé",
+      "Suivi des plateformes d’avis"
     ]
   }
 ]
-Déclenchement du build

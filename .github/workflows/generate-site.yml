@@ -9,24 +9,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: pip install jinja2
+      - name: Install dependencies
+        run: pip install jinja2
 
-    - name: Generate site
-      run: python generate.py
+      - name: Generate site
+        run: python generate.py
 
-    - name: Commit generated site
-      run: |
-    git config --global user.name 'github-actions'
-    git config --global user.email 'actions@github.com'
-    git add docs/
-    git commit -m "Rebuild site from generate.py" || echo "Nothing to commit"
-    git push origin main
+      - name: Commit generated site
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+          git add docs/
+          git commit -m "Rebuild site from generate.py" || echo "Nothing to commit"
+          git push origin main

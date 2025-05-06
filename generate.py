@@ -1,5 +1,4 @@
 import os
-import shutil
 import json
 from jinja2 import Environment, FileSystemLoader, TemplateError
 
@@ -9,9 +8,7 @@ template_dir = 'templates'
 data_file = 'data/agents.json'
 
 try:
-    # Nettoyage du dossier docs/
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)
+    # Création des sous-dossiers sans supprimer l'existant
     os.makedirs(os.path.join(output_dir, 'agents'), exist_ok=True)
 
     # Environnement Jinja2
@@ -43,6 +40,3 @@ except TemplateError as e:
     print(f"❌ Erreur dans les templates : {e}")
 except Exception as e:
     print(f"❌ Erreur inattendue : {str(e)}")
-# regen
-# trigger rebuild
-# regen

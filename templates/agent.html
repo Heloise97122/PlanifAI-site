@@ -1,16 +1,13 @@
-{% extends "base.html" %}
+m{% extends "base.html" %}
 {% block content %}
 <article>
     <h2>{{ agent.nom }}</h2>
     <p>{{ agent.description }}</p>
-
-    <h3>Fonctionnalités</h3>
     <ul>
-      {% for f in agent.fonctions %}
-      <li>{{ f }}</li>
-      {% endfor %}
+        {% for f in agent.fonctions %}
+        <li>{{ f }}</li>
+        {% endfor %}
     </ul>
-
     <a href="/PlanifAI-site/index.html" class="cta-button">Retour à l’accueil</a>
 </article>
 {% endblock %}

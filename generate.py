@@ -45,3 +45,4 @@ except Exception as e:
     print(f"❌ Erreur inattendue : {str(e)}")
 # regen
 # trigger rebuild
+# regen

@@ -24,11 +24,9 @@ jobs:
       run: python generate.py
 
     - name: Commit generated site
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git config --global user.name 'github-actions'
-        git config --global user.email 'github-actions@github.com'
-        git add docs/
-        git commit -m "Rebuild site from generate.py" || echo "No changes"
-        git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:main
+    git config --global user.name 'github-actions'
+    git config --global user.email 'actions@github.com'
+    git add docs/
+    git commit -m "Rebuild site from generate.py" || echo "Nothing to commit"
+    git push origin main

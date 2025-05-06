@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -25,8 +26,7 @@ jobs:
       - name: Commit generated site
         run: |
           git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add docs/*
-          git commit -m "Update generated site" || echo "No changes"
+          git config --global user.email 'actions@github.com'
+          git add docs/
+          git commit -m "Rebuild site from generate.py" || echo "Pas de changements"
           git push
-

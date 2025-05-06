@@ -1,18 +1,76 @@
-{% extends "base.html" %}
+m<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlanifAI – Agents IA</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #0d0d0d;
+      color: #ffffff;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    p.description {
+      text-align: center;
+      color: #cccccc;
+      margin-bottom: 2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .card {
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .card h2 {
+      color: #4f46e5;
+      font-size: 1.4rem;
+    }
+    ul {
+      padding-left: 1.2rem;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(to right, #4f46e5, #2563eb);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Des agents IA qui bossent à votre place</h1>
+  <p class="description">Facilitez vos tâches du quotidien. Gagnez du temps pour vous concentrer sur ce qui compte vraiment.</p>
 
-{% block content %}
   <div class="grid">
     {% for agent in agents %}
     <div class="card">
       <h2>{{ agent.nom }}</h2>
       <p>{{ agent.description }}</p>
       <ul>
-        {% for fonction in agent.fonctions %}
-        <li>{{ fonction }}</li>
+        {% for f in agent.fonctions %}
+        <li>{{ f }}</li>
         {% endfor %}
       </ul>
-      <a class="cta-button" href="agents/{{ agent.id }}.html">Découvrir</a>
+      <a class="button" href="agents/{{ agent.id }}.html">Découvrir</a>
     </div>
     {% endfor %}
   </div>
-{% endblock %}
+</body>
+</html>

@@ -3,11 +3,14 @@
 <article>
     <h2>{{ agent.nom }}</h2>
     <p>{{ agent.description }}</p>
+
+    <h3>Fonctionnalités</h3>
     <ul>
-      {% for fonction in agent.fonctions %}
-      <li>{{ fonction }}</li>
+      {% for f in agent.fonctions %}
+      <li>{{ f }}</li>
       {% endfor %}
     </ul>
-    <a href="../index.html">Retour</a>
+
+    <a href="/PlanifAI-site/index.html" class="cta-button">Retour à l’accueil</a>
 </article>
 {% endblock %}

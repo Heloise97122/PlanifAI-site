@@ -1,1 +1,18 @@
+{% extends "base.html" %}
 
+{% block content %}
+  <div class="grid">
+    {% for agent in agents %}
+    <div class="card">
+      <h2>{{ agent.nom }}</h2>
+      <p>{{ agent.description }}</p>
+      <ul>
+        {% for fonction in agent.fonctions %}
+        <li>{{ fonction }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+Ajout du contenu index.html avec boucle des agents

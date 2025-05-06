@@ -1,1 +1,14 @@
+[
+  {
+    "id": "compta-ai",
+    "nom": "Compta-AI",
+    "description": "Automatise la gestion des devis, factures et exports comptables.",
+    "fonctions": [
+      "Classe les factures",
+      "Génère des devis",
+      "Prépare les exports",
+      "Détecte les doublons"
+    ]
+  }
+]
 

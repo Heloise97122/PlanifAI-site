@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="grid">
+        {% for agent in agents %}
+        <div class="card">
+            <h2>{{ agent.nom }}</h2>
+            <p>{{ agent.description }}</p>
+            <ul>
+                {% for f in agent.fonctions %}
+                <li>{{ f }}</li>
+                {% endfor %}
+            </ul>
+            <a href="#" class="cta-button">Découvrir</a>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -43,4 +43,4 @@ except TemplateError as e:
     print(f"❌ Erreur dans les templates : {e}")
 except Exception as e:
     print(f"❌ Erreur inattendue : {str(e)}")
-# rebuild
+# regen

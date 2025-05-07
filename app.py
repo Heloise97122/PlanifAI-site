@@ -59,4 +59,11 @@ async def generate_contract(
         salaire=salaire,
         adresse=adresse
     )
-    return html
+
+    # Génération du PDF temporaire
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+        HTML(string=html).write_pdf(tmp_pdf.name)
+        pdf_path = tmp_pdf.name
+
+    # Renvoi du fichier au navigateur
+    return FileResponse(pdf_path, media_type="application/pdf", filename="contrat_rh.pdf")

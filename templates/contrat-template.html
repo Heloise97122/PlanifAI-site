@@ -1,18 +1,28 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Contrat RH</title>
+    <meta charset="utf-8">
+    <title>Contrat de travail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2em;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
 </head>
 <body>
     <h1>Contrat de travail</h1>
-    <p>
-        Ce contrat est établi entre <strong>{{ nom }}</strong>, pour le poste de <strong>{{ poste }}</strong>.<br>
-        Type de contrat : {{ type_contrat }}<br>
-        Date de début : {{ date_debut }}<br>
-        Durée : {{ duree }}<br>
-        Salaire mensuel : {{ salaire }} €<br>
-        Adresse entreprise : {{ adresse }}
-    </p>
+    <p>Entre l'entreprise située à <strong>{{ adresse }}</strong> et <strong>{{ nom }}</strong>.</p>
+    <p>Poste : <strong>{{ poste }}</strong></p>
+    <p>Type de contrat : <strong>{{ type_contrat }}</strong></p>
+    <p>Date de début : <strong>{{ date_debut }}</strong></p>
+    <p>Durée : <strong>{{ duree }}</strong></p>
+    <p>Salaire mensuel : <strong>{{ salaire }}</strong> €</p>
+    <br>
+    <p>Fait le {{ date_debut }}, en deux exemplaires.</p>
 </body>
 </html>

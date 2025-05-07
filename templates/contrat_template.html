@@ -8,7 +8,9 @@
 <body>
     <div class="container">
         <header>
-            <img src="/static/logo.png" alt="Logo de l'entreprise" class="logo">
+            {% if logo_url %}
+                <img src="{{ logo_url }}" alt="Logo de l'entreprise" class="logo">
+            {% endif %}
             <h1>Contrat de travail</h1>
         </header>
 
@@ -27,28 +29,31 @@
             <p>Ce contrat a pour objet de définir les modalités de la relation de travail entre l'employeur et le salarié.</p>
 
             <h2>Article 2 - Durée et période d’essai</h2>
-            <p>Le contrat débute le {{ date_debut }} pour une durée de {{ duree }}. Une période d'essai pourra être convenue selon la législation en vigueur.</p>
+            <p>Le contrat débute le {{ date_debut }} pour une durée de {{ duree }}. Une période d'essai peut être prévue conformément à la législation en vigueur.</p>
 
             <h2>Article 3 - Rémunération</h2>
-            <p>L'employé(e) percevra une rémunération mensuelle brute de {{ salaire }} € versée à la fin de chaque mois.</p>
+            <p>Le salarié percevra une rémunération mensuelle brute de {{ salaire }} euros, versée à la fin de chaque mois.</p>
 
-            <h2>Article 4 - Confidentialité</h2>
-            <p>Le salarié s’engage à respecter la confidentialité des informations internes liées à l’entreprise.</p>
+            <h2>Article 4 - Lieu de travail</h2>
+            <p>Le salarié exercera ses fonctions à l’adresse suivante : {{ adresse }}.</p>
 
-            <h2>Article 5 - Résiliation</h2>
-            <p>Le présent contrat peut être résilié par l’une ou l’autre des parties sous réserve du respect du préavis légal.</p>
+            <h2>Article 5 - Confidentialité</h2>
+            <p>Le salarié s’engage à ne divulguer aucune information confidentielle relative à l’entreprise, pendant et après l’exécution du contrat.</p>
+
+            <h2>Article 6 - Résiliation</h2>
+            <p>Le contrat peut être résilié par chacune des parties dans les conditions prévues par le Code du travail.</p>
         </section>
 
         <section class="signature">
-            <p>Fait à {{ adresse }}, le {{ date_debut }}</p>
+            <p>Fait à {{ adresse }}, le {{ date_debut }}.</p>
 
             <div class="signatures">
                 <div>
-                    <p>Signature de l’employeur</p>
+                    <p><strong>Signature de l’Employeur</strong></p>
                     <br><br><hr>
                 </div>
                 <div>
-                    <p>Signature du salarié</p>
+                    <p><strong>Signature du Salarié</strong></p>
                     <br><br><hr>
                 </div>
             </div>

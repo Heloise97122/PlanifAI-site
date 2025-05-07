@@ -3,61 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>Contrat de travail</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 18px;
+            color: #111;
+            margin-top: 25px;
+        }
+        p {
+            margin: 6px 0;
+        }
+        ul {
+            margin-top: 0;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            {% if logo_url %}
-                <img src="{{ logo_url }}" alt="Logo de l'entreprise" class="logo">
-            {% endif %}
-            <h1>Contrat de travail</h1>
-        </header>
 
-        <section class="informations">
-            <p><strong>Employé(e) :</strong> {{ nom }}</p>
-            <p><strong>Poste :</strong> {{ poste }}</p>
-            <p><strong>Type de contrat :</strong> {{ type_contrat }}</p>
-            <p><strong>Date de début :</strong> {{ date_debut }}</p>
-            <p><strong>Durée :</strong> {{ duree }}</p>
-            <p><strong>Salaire mensuel brut :</strong> {{ salaire }} €</p>
-            <p><strong>Adresse de l'entreprise :</strong> {{ adresse }}</p>
-        </section>
+    <h1>Contrat de travail</h1>
 
-        <section class="clauses">
-            <h2>Article 1 - Objet du contrat</h2>
-            <p>Ce contrat a pour objet de définir les modalités de la relation de travail entre l'employeur et le salarié.</p>
+    <p><strong>Employé(e)&nbsp;:</strong> {{ nom }}</p>
+    <p><strong>Poste&nbsp;:</strong> {{ poste }}</p>
+    <p><strong>Type de contrat&nbsp;:</strong> {{ type_contrat }}</p>
+    <p><strong>Date de début&nbsp;:</strong> {{ date_debut }}</p>
+    <p><strong>Durée&nbsp;:</strong> {{ duree }}</p>
+    <p><strong>Salaire mensuel brut&nbsp;:</strong> {{ salaire }} €</p>
+    <p><strong>Adresse de l'entreprise&nbsp;:</strong> {{ adresse }}</p>
 
-            <h2>Article 2 - Durée et période d’essai</h2>
-            <p>Le contrat débute le {{ date_debut }} pour une durée de {{ duree }}. Une période d'essai peut être prévue conformément à la législation en vigueur.</p>
+    <h2>Article 1 – Objet du contrat</h2>
+    <p>Ce contrat définit les modalités de la relation de travail entre l'employeur et le salarié.</p>
 
-            <h2>Article 3 - Rémunération</h2>
-            <p>Le salarié percevra une rémunération mensuelle brute de {{ salaire }} euros, versée à la fin de chaque mois.</p>
+    <h2>Article 2 – Durée et période d’essai</h2>
+    <p>Ce contrat est conclu pour une durée de {{ duree }} mois.</p>
+    <p>Une période d'essai de 2 mois renouvelable une fois est prévue.</p>
 
-            <h2>Article 4 - Lieu de travail</h2>
-            <p>Le salarié exercera ses fonctions à l’adresse suivante : {{ adresse }}.</p>
+    <h2>Article 3 – Lieu de travail</h2>
+    <p>L’employé exercera ses fonctions à l’adresse suivante : {{ adresse }}.</p>
 
-            <h2>Article 5 - Confidentialité</h2>
-            <p>Le salarié s’engage à ne divulguer aucune information confidentielle relative à l’entreprise, pendant et après l’exécution du contrat.</p>
+    <h2>Article 4 – Rémunération</h2>
+    <p>Le salaire mensuel brut est de {{ salaire }} €, versé en fin de mois par virement.</p>
 
-            <h2>Article 6 - Résiliation</h2>
-            <p>Le contrat peut être résilié par chacune des parties dans les conditions prévues par le Code du travail.</p>
-        </section>
+    <h2>Article 5 – Avantages</h2>
+    <ul>
+        <li>Prise en charge de 50 % du titre de transport</li>
+        <li>Accès à la mutuelle santé d’entreprise</li>
+    </ul>
 
-        <section class="signature">
-            <p>Fait à {{ adresse }}, le {{ date_debut }}.</p>
+    <h2>Article 6 – Temps de travail</h2>
+    <p>La durée hebdomadaire du travail est de 35 heures.</p>
+    <p>Les horaires sont à définir d’un commun accord avec le manager.</p>
 
-            <div class="signatures">
-                <div>
-                    <p><strong>Signature de l’Employeur</strong></p>
-                    <br><br><hr>
-                </div>
-                <div>
-                    <p><strong>Signature du Salarié</strong></p>
-                    <br><br><hr>
-                </div>
-            </div>
-        </section>
-    </div>
+    <h2>Article 7 – Résiliation du contrat</h2>
+    <p>Chacune des parties peut mettre fin au contrat en respectant un préavis légal ou conventionnel.</p>
+
+    <h2>Fait à {{ adresse }}</h2>
+    <p>Le {{ date_debut }}</p>
+
+    <br><br><br>
+    <table style="width:100%;">
+        <tr>
+            <td>
+                <strong>Signature de l’employeur</strong>
+            </td>
+            <td style="text-align:right;">
+                <strong>Signature de l’employé(e)</strong>
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>

@@ -7,19 +7,32 @@ app = FastAPI()
 # Configuration Jinja2
 env = Environment(loader=FileSystemLoader("templates"))
 
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/", response_class=HTMLResponse)
 async def formulaire():
     return """
-    <form method="post" action="/generate">
-        Nom: <input name="nom" /><br>
-        Poste: <input name="poste" /><br>
-        Type de contrat: <input name="type_contrat" /><br>
-        Date de début: <input name="date_debut" type="date"/><br>
-        Durée: <input name="duree" /><br>
-        Salaire: <input name="salaire" /><br>
-        Adresse: <input name="adresse" /><br><br>
-        <button type="submit">Générer</button>
-    </form>
+    <html>
+    <head>
+        <link rel="stylesheet" href="/static/style.css">
+        <title>RH-AI | Générateur de contrat</title>
+    </head>
+    <body>
+        <form method="post" action="/generate">
+            <h2>Générateur de contrat RH</h2>
+            <input name="nom" placeholder="Nom" />
+            <input name="poste" placeholder="Poste" />
+            <input name="type_contrat" placeholder="Type de contrat" />
+            <input name="date_debut" type="date" placeholder="Date de début" />
+            <input name="duree" placeholder="Durée" />
+            <input name="salaire" placeholder="Salaire mensuel" />
+            <input name="adresse" placeholder="Adresse de l'entreprise" />
+            <button type="submit">Générer le contrat</button>
+        </form>
+    </body>
+    </html>
     """
 
 @app.post("/generate", response_class=HTMLResponse)

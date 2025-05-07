@@ -1,3 +1,7 @@
+from weasyprint import HTML
+from fastapi.responses import FileResponse
+import tempfile
+import os
 from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader

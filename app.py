@@ -1,20 +1,20 @@
+from fastapi import FastAPI, Form
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
-from fastapi.responses import FileResponse
 import tempfile
 import os
-from fastapi import FastAPI, Form
-from fastapi.responses import HTMLResponse
-from jinja2 import Environment, FileSystemLoader
 
 app = FastAPI()
 
-# Configuration Jinja2
+# Configuration des templates Jinja2
 env = Environment(loader=FileSystemLoader("templates"))
 
-from fastapi.staticfiles import StaticFiles
-
+# Fichiers statiques (CSS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Page d’accueil avec formulaire RH
 @app.get("/", response_class=HTMLResponse)
 async def formulaire():
     return """
@@ -39,6 +39,7 @@ async def formulaire():
     </html>
     """
 
+# Route de génération PDF
 @app.post("/generate", response_class=HTMLResponse)
 async def generate_contract(
     nom: str = Form(...),
@@ -60,16 +61,8 @@ async def generate_contract(
         adresse=adresse
     )
 
-    # Génération du PDF temporaire
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
         HTML(string=html).write_pdf(tmp_pdf.name)
         pdf_path = tmp_pdf.name
 
-    # Renvoi du fichier au navigateur
     return FileResponse(pdf_path, media_type="application/pdf", filename="contrat_rh.pdf")
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
-        HTML(string=html).write_pdf(tmp_pdf.name)
-        pdf_path = tmp_pdf.name
-
-    return FileResponse(pdf_path, media_type="application/pdf", filename="contrat_rh.pdf")
-

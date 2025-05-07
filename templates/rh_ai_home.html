@@ -1,62 +1,18 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>RH-AI | Assistant RH intelligent</title>
+    <title>RH-AI</title>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .container {
-            max-width: 800px;
-            margin: 60px auto;
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        p {
-            text-align: center;
-            color: #555;
-            margin-bottom: 30px;
-        }
-
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .button-group a {
-            text-align: center;
-            text-decoration: none;
-            padding: 14px;
-            font-size: 16px;
-            border-radius: 8px;
-            background-color: #1e90ff;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-
-        .button-group a:hover {
-            background-color: #0f6cd8;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>RH-AI</h1>
-        <p>Générez en quelques clics vos documents RH sans effort. Contrats, attestations, et bientôt lettres de mission.</p>
+    <h1>Bienvenue sur RH-AI</h1>
+    <p>Automatisez la génération de vos documents RH !</p>
 
-        <div class="button-group">
-            <a href="/generate">Générer un contrat de travail</a>
-            <a href="/attestation">Générer une attestation employeur</a>
-            <a href="#">Lettre de mission (bientôt disponible)</a>
-        </div>
+    <div class="button-container">
+        <a class="button" href="/">Générer un contrat</a>
+        <a class="button" href="/attestation">Générer une attestation</a>
+        <a class="button disabled" href="#">Lettre de mission (bientôt)</a>
     </div>
 </body>
 </html>

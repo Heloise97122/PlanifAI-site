@@ -1,40 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Contrat de travail</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body { font-family: 'Georgia', serif; margin: 40px; }
+        h1 { font-size: 22pt; text-align: center; }
+        h2 { font-size: 16pt; margin-top: 30px; }
+        p, li { font-size: 12pt; }
+        .section { margin-bottom: 20px; }
+        ul { margin: 10px 0; }
+    </style>
 </head>
 <body>
     <h1>Contrat de travail</h1>
 
     <p>Entre l'entreprise située à <strong>{{ adresse }}</strong>, et le salarié <strong>{{ nom }}</strong>, il est convenu ce qui suit :</p>
 
-    <h2>Poste</h2>
-    <p>Le salarié exercera la fonction de <strong>{{ poste }}</strong>.</p>
+    <div class="section">
+        <h2>Poste</h2>
+        <p>Le salarié exercera la fonction de <strong>{{ poste }}</strong>.</p>
+    </div>
 
-    <h2>Type de contrat</h2>
-    <p>Contrat : <strong>{{ type_contrat }}</strong></p>
+    <div class="section">
+        <h2>Type de contrat</h2>
+        <p>Contrat : <strong>{{ type_contrat }}</strong></p>
+    </div>
 
-    <h2>Date de début</h2>
-    <p>Le contrat débutera le <strong>{{ date_debut }}</strong>.</p>
+    <div class="section">
+        <h2>Date de début</h2>
+        <p>Le contrat débutera le <strong>{{ date_debut }}</strong>.</p>
+    </div>
 
-    <h2>Durée</h2>
-    <p>Durée prévue : <strong>{{ duree }}</strong>.</p>
+    <div class="section">
+        <h2>Durée</h2>
+        <p>Durée prévue : <strong>{{ duree }} mois</strong>.</p>
+    </div>
 
-    <h2>Salaire</h2>
-    <p>Salaire mensuel brut : <strong>{{ salaire }}</strong> €</p>
+    <div class="section">
+        <h2>Salaire</h2>
+        <p>Salaire mensuel brut : <strong>{{ salaire }} €</strong></p>
+    </div>
 
-    <h2>Conditions complémentaires</h2>
-    <ul>
-        <li>Période d’essai : 1 mois renouvelable une fois</li>
-        <li>Temps de travail : 35h/semaine</li>
-        <li>Remboursement transport : 50%</li>
-        <li>Droits aux congés : 2,5 jours ouvrables par mois</li>
-    </ul>
+    <div class="section">
+        <h2>Conditions complémentaires</h2>
+        <ul>
+            <li>Période d'essai : {{ periode_essai }} {{ 'renouvelable' if renouvelable == 'Oui' else 'non renouvelable' }}</li>
+            <li>Temps de travail : {{ temps_travail }}</li>
+            <li>Remboursement transport : {{ remboursement_transport }}</li>
+            <li>Droits aux congés : {{ conges }}</li>
+        </ul>
+    </div>
 
-    <br><br>
-    <p>Fait à <strong>{{ adresse }}</strong>, le {{ date_du_jour }}.</p>
+    <div class="section">
+        <h2>Dispositions légales</h2>
+        <p>Ce contrat est établi conformément aux dispositions du Code du travail. Le salarié bénéficie des droits liés à son statut, notamment le respect du temps de travail, de la sécurité au travail, et de la confidentialité des données.</p>
+    </div>
+
+    <p>Fait à <strong>{{ adresse }}</strong>, le ...</p>
     <p>Signature de l’employeur</p>
 </body>
 </html>

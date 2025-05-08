@@ -4,49 +4,23 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import tempfile
-import os
-from datetime import datetime
 
 app = FastAPI()
-
-# Configuration Jinja2
 env = Environment(loader=FileSystemLoader("templates"))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/rh-ai", response_class=HTMLResponse)
+async def rh_ai_home():
+    template = env.get_template("rh_ai_home.html")
+    return HTMLResponse(content=template.render())
+
+@app.get("/formulaire", response_class=HTMLResponse)
 async def formulaire():
-    return """
-    <html>
-    <head>
-        <link rel='stylesheet' href='/static/style.css'>
-        <title>RH-AI | Documents RH</title>
-    </head>
-    <body>
-        <h2>Générateur de documents RH</h2>
-        <form method='post' action='/generate'>
-            <input name='nom' placeholder="Nom" required />
-            <input name='poste' placeholder="Poste" required />
-            <input name='type_contrat' placeholder="Type de contrat" required />
-            <input name='date_debut' type='date' placeholder="Date de début" required />
-            <input name='duree' placeholder="Durée du contrat" required />
-            <input name='salaire' placeholder="Salaire mensuel brut" required />
-            <input name='adresse' placeholder="Adresse de l'entreprise" required />
-            <input name='periode_essai' placeholder="Période d'essai (ex: 2 mois)" required />
-            <label>Renouvelable ?</label>
-            <input type='radio' name='renouvelable' value='Oui' checked> Oui
-            <input type='radio' name='renouvelable' value='Non'> Non
-            <input name='logo_url' placeholder="URL du logo (optionnel)" />
+    template = env.get_template("formulaire_rh.html")
+    return HTMLResponse(content=template.render())
 
-            <br><br>
-            <button type='submit' name='type_doc' value='contrat'>Générer le contrat</button>
-            <button type='submit' name='type_doc' value='attestation'>Générer une attestation</button>
-        </form>
-    </body>
-    </html>
-    """
-
-@app.post("/generate", response_class=HTMLResponse)
-async def generate_document(
+@app.post("/generate", response_class=FileResponse)
+async def generate_contract(
     nom: str = Form(...),
     poste: str = Form(...),
     type_contrat: str = Form(...),
@@ -56,38 +30,48 @@ async def generate_document(
     adresse: str = Form(...),
     periode_essai: str = Form(...),
     renouvelable: str = Form(...),
-    logo_url: str = Form(None),
-    type_doc: str = Form(...)
+    logo_url: str = Form(None)
 ):
-    # Sélection du bon template
-    if type_doc == "attestation":
-        template = env.get_template("attestation_template.html")
-        rendered = template.render(
-            nom=nom,
-            poste=poste,
-            type_contrat=type_contrat,
-            date_debut=date_debut,
-            salaire=salaire,
-            adresse=adresse,
-            date_du_jour=datetime.now().strftime("%d/%m/%Y")
-        )
-        filename = f"attestation_{nom}.pdf"
-    else:
-        template = env.get_template("contrat_template.html")
-        rendered = template.render(
-            nom=nom,
-            poste=poste,
-            type_contrat=type_contrat,
-            date_debut=date_debut,
-            duree=duree,
-            salaire=salaire,
-            adresse=adresse,
-            periode_essai=periode_essai,
-            renouvelable=renouvelable,
-            logo_url=logo_url
-        )
-        filename = f"contrat_{nom}.pdf"
+    nom_template = f"contrat_{type_contrat.lower()}.html"
+    try:
+        template = env.get_template(nom_template)
+    except:
+        template = env.get_template("contrat_modele.html")
+
+    html_content = template.render(
+        nom=nom,
+        poste=poste,
+        type_contrat=type_contrat,
+        date_debut=date_debut,
+        duree=duree,
+        salaire=salaire,
+        adresse=adresse,
+        periode_essai=periode_essai,
+        renouvelable=renouvelable,
+        logo_url=logo_url
+    )
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
-        HTML(string=rendered).write_pdf(tmp_pdf.name)
-        return FileResponse(tmp_pdf.name, filename=filename)
+        HTML(string=html_content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=f"contrat_{nom}.pdf")
+
+@app.post("/attestation", response_class=FileResponse)
+async def generate_attestation(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    date_debut: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
+):
+    template = env.get_template("attestation.html")
+    html_content = template.render(
+        nom=nom,
+        poste=poste,
+        date_debut=date_debut,
+        adresse=adresse,
+        logo_url=logo_url
+    )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+        HTML(string=html_content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=f"attestation_{nom}.pdf")

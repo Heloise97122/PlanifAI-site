@@ -4,95 +4,36 @@
     <meta charset="UTF-8">
     <title>RH-AI | Générateur de contrat</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script>
-        function toggleFields() {
-            const type = document.getElementById("type_contrat").value;
-            document.querySelectorAll(".option").forEach(el => el.style.display = "none");
-
-            if (type === "CDI" || type === "CDD") {
-                document.getElementById("periode_essai").style.display = "block";
-                document.getElementById("renouvelable").style.display = "block";
-            }
-            if (type === "Stage") {
-                document.getElementById("gratification").style.display = "block";
-                document.getElementById("tuteur").style.display = "block";
-                document.getElementById("convention").style.display = "block";
-            }
-            if (type === "Alternance") {
-                document.getElementById("alternance_type").style.display = "block";
-                document.getElementById("alternance_duree").style.display = "block";
-                document.getElementById("centre_formation").style.display = "block";
-                document.getElementById("rythme").style.display = "block";
-            }
-        }
-    </script>
 </head>
-<body onload="toggleFields()">
-    <div class="container">
-        <h1>Générateur de contrat RH-AI</h1>
+<body>
+    <button onclick="toggleTheme()" class="theme-toggle">Changer de thème</button>
+
+    <div class="form-container">
+        <h1>Générateur de contrat RH</h1>
         <form method="post" action="/generate">
-            <label>Type de contrat</label>
-            <select name="type_contrat" id="type_contrat" onchange="toggleFields()" required>
-                <option value="CDI">CDI</option>
-                <option value="CDD">CDD</option>
-                <option value="Stage">Stage</option>
-                <option value="Alternance">Alternance</option>
-                <option value="Freelance">Freelance</option>
-            </select>
+            <input name="nom" placeholder="Nom" required />
+            <input name="poste" placeholder="Poste" required />
+            <input name="type_contrat" placeholder="Type de contrat" required />
+            <input name="date_debut" type="date" required />
+            <input name="duree" placeholder="Durée du contrat" required />
+            <input name="periode_essai" placeholder="Durée période d’essai (ex: 2 mois)" required />
+            
+            <label>Renouvelable ?</label>
+            <input type="radio" name="renouvelable" value="Oui" checked> Oui
+            <input type="radio" name="renouvelable" value="Non"> Non
 
-            <input type="text" name="nom" placeholder="Nom du salarié" required>
-            <input type="text" name="poste" placeholder="Poste" required>
-            <input type="date" name="date_debut" required>
-            <input type="text" name="duree" placeholder="Durée du contrat" required>
-            <input type="text" name="salaire" placeholder="Salaire mensuel brut" required>
-            <input type="text" name="adresse" placeholder="Adresse de l'entreprise" required>
+            <input name="salaire" placeholder="Salaire mensuel" required />
+            <input name="adresse" placeholder="Adresse de l'entreprise" required />
+            <input name="logo_url" placeholder="URL du logo (optionnel)" />
 
-            <div id="periode_essai" class="option">
-                <label>Période d’essai</label>
-                <input type="text" name="periode_essai" placeholder="Ex : 2 mois">
-            </div>
-            <div id="renouvelable" class="option">
-                <label>Renouvelable ?</label>
-                <select name="renouvelable">
-                    <option value="Oui">Oui</option>
-                    <option value="Non">Non</option>
-                </select>
-            </div>
-            <div id="gratification" class="option">
-                <label>Gratification mensuelle</label>
-                <input type="text" name="gratification" placeholder="Ex : 500 €">
-            </div>
-            <div id="tuteur" class="option">
-                <label>Tuteur</label>
-                <input type="text" name="tuteur" placeholder="Nom du tuteur référent">
-            </div>
-            <div id="convention" class="option">
-                <label>Convention de stage</label>
-                <input type="text" name="convention" placeholder="Numéro / Titre">
-            </div>
-            <div id="alternance_type" class="option">
-                <label>Type d'alternance</label>
-                <select name="alternance_type">
-                    <option value="Apprentissage">Apprentissage</option>
-                    <option value="Professionnalisation">Professionnalisation</option>
-                </select>
-            </div>
-            <div id="alternance_duree" class="option">
-                <label>Durée de l'alternance</label>
-                <input type="text" name="alternance_duree" placeholder="12 ou 24 mois">
-            </div>
-            <div id="centre_formation" class="option">
-                <label>Centre de formation</label>
-                <input type="text" name="centre_formation" placeholder="Nom de l’école ou CFA">
-            </div>
-            <div id="rythme" class="option">
-                <label>Rythme</label>
-                <input type="text" name="rythme" placeholder="Ex : 3j entreprise / 2j école">
-            </div>
-
-            <input type="text" name="logo_url" placeholder="URL du logo (optionnel)">
             <button type="submit">Générer le contrat</button>
         </form>
     </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
 </body>
 </html>

@@ -1,1 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat de prestation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; font-size: 14px; line-height: 1.6; }
+        h1 { text-align: center; font-size: 22px; }
+        h2 { font-size: 18px; margin-top: 30px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Contrat de Prestation de Services</h1>
+    <p><strong>Prestataire :</strong> {{ nom }}</p>
+    <p><strong>Mission :</strong> {{ poste }}</p>
+    <p><strong>Date de début :</strong> {{ date_debut }}</p>
+    <p><strong>Durée estimée :</strong> {{ duree }}</p>
+    <p><strong>Rémunération :</strong> {{ salaire }}</p>
 
+    <h2>Engagements</h2>
+    <p>Le prestataire s’engage à livrer les prestations définies dans les délais convenus. L’entreprise s’engage à régler les sommes dues.</p>
+
+    <h2>Clause de confidentialité</h2>
+    <p>Toute information obtenue dans le cadre de la mission est confidentielle et ne devra pas être divulguée.</p>
+
+    <p style="margin-top: 60px;">Fait à {{ adresse }}, le {{ date_debut }}</p>
+</body>
+</html>

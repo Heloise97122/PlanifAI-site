@@ -12,6 +12,11 @@ app = FastAPI()
 env = Environment(loader=FileSystemLoader("templates"))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.get("/", response_class=HTMLResponse)
+async def accueil():
+    template = env.get_template("index.html")
+    return template.render()
+
 @app.get("/rh-ai", response_class=HTMLResponse)
 async def formulaire():
     return """
@@ -27,10 +32,10 @@ async def formulaire():
             <input name='poste' placeholder="Poste" required />
             <input name='type_contrat' placeholder="Type de contrat" required />
             <input name='date_debut' type='date' placeholder="Date de début" required />
-            <input name='duree' placeholder="Durée" required />
+            <input name='duree' placeholder="Durée du contrat" required />
             <input name='salaire' placeholder="Salaire mensuel" required />
             <input name='adresse' placeholder="Adresse de l'entreprise" required />
-            <input name='periode_essai' placeholder="Durée de la période d'essai (ex: 2 mois)" required />
+            <input name='periode_essai' placeholder="Période d'essai (ex: 2 mois)" required />
             <label>Renouvelable ?</label>
             <input type='radio' name='renouvelable' value='Oui' checked> Oui
             <input type='radio' name='renouvelable' value='Non'> Non

@@ -4,60 +4,109 @@
     <meta charset="UTF-8">
     <title>Contrat de travail</title>
     <style>
-        body { font-family: 'Georgia', serif; margin: 40px; }
-        h1 { font-size: 22pt; text-align: center; }
-        h2 { font-size: 16pt; margin-top: 30px; }
-        p, li { font-size: 12pt; }
-        .section { margin-bottom: 20px; }
-        ul { margin: 10px 0; }
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 12pt;
+            color: #222;
+            line-height: 1.6;
+            margin: 3cm;
+        }
+
+        h1, h2 {
+            color: #003366;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+        }
+
+        h1 {
+            font-size: 20pt;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 14pt;
+            margin-top: 25px;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .signature {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature div {
+            width: 40%;
+            text-align: center;
+        }
+
+        ul {
+            margin-left: 20px;
+        }
+
+        .logo {
+            width: 100px;
+            float: right;
+        }
     </style>
 </head>
 <body>
-    <h1>Contrat de travail</h1>
 
-    <p>Entre l'entreprise située à <strong>{{ adresse }}</strong>, et le salarié <strong>{{ nom }}</strong>, il est convenu ce qui suit :</p>
+{% if logo_url %}
+    <img src="{{ logo_url }}" class="logo" />
+{% endif %}
 
-    <div class="section">
-        <h2>Poste</h2>
-        <p>Le salarié exercera la fonction de <strong>{{ poste }}</strong>.</p>
+<h1>Contrat de travail</h1>
+
+<div class="section">
+    <h2>Informations générales</h2>
+    <p><strong>Nom du salarié :</strong> {{ nom }}</p>
+    <p><strong>Poste :</strong> {{ poste }}</p>
+    <p><strong>Type de contrat :</strong> {{ type_contrat }}</p>
+    <p><strong>Date de début :</strong> {{ date_debut }}</p>
+    <p><strong>Durée :</strong> {{ duree }}</p>
+    <p><strong>Salaire mensuel brut :</strong> {{ salaire }}</p>
+    <p><strong>Adresse de l'entreprise :</strong> {{ adresse }}</p>
+</div>
+
+<div class="section">
+    <h2>Période d'essai</h2>
+    <p>Une période d’essai de <strong>{{ periode_essai }}</strong> est prévue. Celle-ci est <strong>{{ renouvelable }}</strong> en cas d’accord entre les deux parties.</p>
+</div>
+
+<div class="section">
+    <h2>Obligations légales et mentions</h2>
+    <ul>
+        <li>Le présent contrat respecte les dispositions du Code du Travail.</li>
+        <li>Le salarié bénéficie des droits liés à son poste (congés payés, protection sociale, etc.).</li>
+        <li>Les horaires, lieu de travail et conditions de télétravail éventuel seront définis par l'employeur.</li>
+        <li>Le remboursement partiel des frais de transport est applicable conformément à la législation en vigueur.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Conditions complémentaires</h2>
+    <p>Ce contrat pourra être modifié d’un commun accord par avenant signé par les deux parties.</p>
+</div>
+
+<div class="signature">
+    <div>
+        <p>Fait à {{ adresse }}</p>
+        <p>Le {{ date_debut }}</p>
+        <p>Signature de l'employeur</p>
     </div>
-
-    <div class="section">
-        <h2>Type de contrat</h2>
-        <p>Contrat : <strong>{{ type_contrat }}</strong></p>
+    <div>
+        <p>Signature du salarié</p>
     </div>
+</div>
 
-    <div class="section">
-        <h2>Date de début</h2>
-        <p>Le contrat débutera le <strong>{{ date_debut }}</strong>.</p>
-    </div>
-
-    <div class="section">
-        <h2>Durée</h2>
-        <p>Durée prévue : <strong>{{ duree }} mois</strong>.</p>
-    </div>
-
-    <div class="section">
-        <h2>Salaire</h2>
-        <p>Salaire mensuel brut : <strong>{{ salaire }} €</strong></p>
-    </div>
-
-    <div class="section">
-        <h2>Conditions complémentaires</h2>
-        <ul>
-            <li>Période d'essai : {{ periode_essai }} {{ 'renouvelable' if renouvelable == 'Oui' else 'non renouvelable' }}</li>
-            <li>Temps de travail : {{ temps_travail }}</li>
-            <li>Remboursement transport : {{ remboursement_transport }}</li>
-            <li>Droits aux congés : {{ conges }}</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Dispositions légales</h2>
-        <p>Ce contrat est établi conformément aux dispositions du Code du travail. Le salarié bénéficie des droits liés à son statut, notamment le respect du temps de travail, de la sécurité au travail, et de la confidentialité des données.</p>
-    </div>
-
-    <p>Fait à <strong>{{ adresse }}</strong>, le ...</p>
-    <p>Signature de l’employeur</p>
 </body>
 </html>

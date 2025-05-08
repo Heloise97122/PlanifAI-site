@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat CDI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-top: 30px;
+            border-bottom: 1px solid #ccc;
+        }
+        .signature {
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    {% if logo_url %}
+    <div style="text-align: right;">
+        <img src="{{ logo_url }}" alt="Logo" height="60">
+    </div>
+    {% endif %}
 
+    <h1>Contrat à Durée Indéterminée (CDI)</h1>
+
+    <p>Entre l’entreprise située à <strong>{{ adresse }}</strong>, ci-après dénommée "l’Employeur",</p>
+    <p>Et <strong>{{ nom }}</strong>, ci-après dénommé "le Salarié", pour le poste de <strong>{{ poste }}</strong>.</p>
+
+    <h2>1. Date d’entrée en fonction</h2>
+    <p>Le salarié prendra ses fonctions à compter du <strong>{{ date_debut }}</strong>.</p>
+
+    <h2>2. Durée du travail</h2>
+    <p>Le contrat est conclu sans limitation de durée.</p>
+
+    <h2>3. Rémunération</h2>
+    <p>Le salarié percevra une rémunération brute mensuelle de <strong>{{ salaire }}</strong>, versée en fin de mois.</p>
+
+    <h2>4. Période d’essai</h2>
+    <p>Une période d’essai de <strong>{{ periode_essai }}</strong> est prévue. Celle-ci est <strong>{{ renouvelable }}</strong> renouvelable.</p>
+
+    <h2>5. Lieu de travail</h2>
+    <p>Le salarié exercera son activité à l’adresse suivante : <strong>{{ adresse }}</strong>.</p>
+
+    <h2>6. Obligations générales</h2>
+    <p>Les parties s’engagent à respecter les dispositions du Code du Travail et de la convention collective applicable.</p>
+
+    <h2>7. Confidentialité</h2>
+    <p>Le salarié s’engage à la plus stricte confidentialité sur les informations dont il pourrait avoir connaissance.</p>
+
+    <div class="signature">
+        <p>Fait à <strong>{{ adresse }}</strong>, le {{ date_debut }}</p>
+        <p>Signature de l’Employeur : ____________________</p>
+        <p>Signature du Salarié : ____________________</p>
+    </div>
+</body>
+</html>

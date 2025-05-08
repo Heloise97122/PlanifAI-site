@@ -1,1 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Arial", sans-serif;
+            margin: 40px;
+            font-size: 14px;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 16px;
+            margin-top: 30px;
+            color: #444;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 200px;
+            float: right;
+        }
+    </style>
+    <title>Contrat de travail</title>
+</head>
+<body>
 
+{% if logo_url %}
+    <img class="logo" src="{{ logo_url }}" alt="Logo">
+{% endif %}
+
+<h1>Contrat de travail</h1>
+
+<div class="section">
+    <strong>Employeur :</strong> {{ adresse }}<br>
+    <strong>Nom du salarié :</strong> {{ nom }}<br>
+    <strong>Poste :</strong> {{ poste }}<br>
+    <strong>Type de contrat :</strong> {{ type_contrat }}<br>
+    <strong>Date de début :</strong> {{ date_debut }}<br>
+    <strong>Durée :</strong> {{ duree }}<br>
+    <strong>Salaire mensuel brut :</strong> {{ salaire }} €
+</div>
+
+<div class="section">
+    <h2>Période d'essai</h2>
+    <p>Une période d'essai de {{ periode_essai }} est prévue. Celle-ci est 
+    {% if renouvelable == 'Oui' %}renouvelable{% else %}non renouvelable{% endif %}.</p>
+</div>
+
+{% if contrat_special == 'Stage' %}
+<div class="section">
+    <h2>Informations spécifiques au stage</h2>
+    <p>Établissement de formation : {{ ecole }}</p>
+    <p>Gratification mensuelle : {{ gratification }} €</p>
+    <p>Tuteur référent : {{ tuteur }}</p>
+</div>
+{% elif contrat_special == 'Alternance' %}
+<div class="section">
+    <h2>Informations spécifiques à l’alternance</h2>
+    <p>Type : {{ type_contrat }}</p>
+    <p>Établissement : {{ ecole }}</p>
+    <p>Rythme de l’alternance : {{ rythme }}</p>
+</div>
+{% endif %}
+
+<div class="section">
+    <h2>Dispositions légales</h2>
+    <p>Ce contrat respecte les dispositions prévues par le Code du travail français. En cas de litige, le Conseil de prud’hommes sera compétent. Le salarié bénéficiera des droits liés à son contrat selon la législation en vigueur : congés payés, temps de travail, sécurité sociale, etc.</p>
+</div>
+
+<div class="section">
+    <p>Fait à {{ adresse }}, le {{ date_debut }}</p>
+    <p>Signature de l’employeur : _____________________</p>
+    <p>Signature du salarié : ________________________</p>
+</div>
+
+</body>
+</html>

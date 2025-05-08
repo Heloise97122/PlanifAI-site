@@ -1,1 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Convention de stage</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; font-size: 14px; line-height: 1.6; }
+        h1 { text-align: center; font-size: 22px; }
+        h2 { font-size: 18px; margin-top: 30px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Convention de Stage</h1>
+    <p><strong>Stagiaire :</strong> {{ nom }}</p>
+    <p><strong>Établissement :</strong> {{ centre }}</p>
+    <p><strong>Encadrant / Tuteur :</strong> {{ tuteur }}</p>
+    <p><strong>Date de début :</strong> {{ date_debut }}</p>
+    <p><strong>Durée :</strong> {{ duree }}</p>
 
+    <h2>Gratification</h2>
+    <p>Le stagiaire percevra une gratification mensuelle de <strong>{{ salaire }}</strong>.</p>
+
+    <h2>Lieu de stage</h2>
+    <p>{{ adresse }}</p>
+
+    <h2>Objectifs</h2>
+    <p>Ce stage a pour but de développer les compétences professionnelles du stagiaire en lien avec son cursus scolaire.</p>
+
+    <h2>Engagements</h2>
+    <p>Le stagiaire s’engage à respecter le règlement intérieur de l'entreprise et la confidentialité des données traitées.</p>
+
+    <p style="margin-top: 60px;">Fait à {{ adresse }}, le {{ date_debut }}</p>
+</body>
+</html>

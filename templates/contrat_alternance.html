@@ -1,1 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat d'alternance</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; font-size: 14px; line-height: 1.6; }
+        h1 { text-align: center; font-size: 22px; }
+        h2 { font-size: 18px; margin-top: 30px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Contrat d’Alternance</h1>
+    <p><strong>Nom :</strong> {{ nom }}</p>
+    <p><strong>Poste :</strong> {{ poste }}</p>
+    <p><strong>Type :</strong> {{ type_contrat }} (apprentissage / professionnalisation)</p>
+    <p><strong>Centre de formation :</strong> {{ centre }}</p>
+    <p><strong>Rythme :</strong> {{ rythme }}</p>
+    <p><strong>Date de début :</strong> {{ date_debut }}</p>
+    <p><strong>Durée :</strong> {{ duree }}</p>
+    <p><strong>Salaire :</strong> {{ salaire }}</p>
 
+    <h2>Engagements</h2>
+    <p>L’employeur s’engage à fournir les moyens nécessaires à l’apprentissage, et l’alternant à suivre les formations prévues.</p>
+
+    <p style="margin-top: 60px;">Fait à {{ adresse }}, le {{ date_debut }}</p>
+</body>
+</html>

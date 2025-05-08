@@ -1,20 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Attestation employeur</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Attestation d'emploi</title>
+    <style>
+        body {
+            font-family: "Georgia", serif;
+            margin: 3rem;
+            line-height: 1.8;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+        }
+        .infos {
+            margin-top: 2rem;
+        }
+        .signature {
+            margin-top: 4rem;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
 </head>
 <body>
-    <h1>Attestation de travail</h1>
 
-    <p>Je soussigné <strong>{{ entreprise }}</strong>, situé à <strong>{{ adresse }}</strong>, certifie que :</p>
+    <h1>Attestation d'emploi</h1>
 
-    <p><strong>{{ nom }}</strong> est employé(e) en tant que <strong>{{ poste }}</strong>, sous contrat <strong>{{ type_contrat }}</strong>, depuis le <strong>{{ date_debut }}</strong>.</p>
+    <p>Je soussigné(e), <strong>{{ employeur }}</strong>, représentant légal de l’entreprise <strong>{{ entreprise }}</strong>, située à <strong>{{ adresse }}</strong>, atteste par la présente que :</p>
 
-    <p>Cette attestation est délivrée pour servir et faire valoir ce que de droit.</p>
+    <div class="infos">
+        <p><strong>{{ nom_employe }}</strong> occupe le poste de <strong>{{ poste }}</strong> dans notre société depuis le <strong>{{ date_embauche }}</strong>.</p>
+        <p>Son contrat de travail est de type <strong>{{ type_contrat }}</strong> et son salaire mensuel brut s’élève à <strong>{{ salaire }}</strong>.</p>
+    </div>
 
-    <p>Fait à <strong>{{ adresse }}</strong>, le {{ date_du_jour }}.</p>
-    <p>Signature de l’employeur</p>
+    <p>La présente attestation est délivrée à la demande de l’intéressé(e) pour servir et faire valoir ce que de droit.</p>
+
+    <div class="signature">
+        <div>
+            <p>Fait à : {{ adresse }}</p>
+            <p>Le : {{ date_du_jour }}</p>
+        </div>
+        <div>
+            <p><strong>Signature de l’employeur</strong></p>
+            <p>________________________</p>
+        </div>
+    </div>
+
 </body>
 </html>

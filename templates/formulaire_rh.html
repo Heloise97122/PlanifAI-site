@@ -2,38 +2,26 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>RH-AI | Générateur de contrat</title>
+    <title>Générateur de contrat RH</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <button onclick="toggleTheme()" class="theme-toggle">Changer de thème</button>
-
-    <div class="form-container">
-        <h1>Générateur de contrat RH</h1>
-        <form method="post" action="/generate">
-            <input name="nom" placeholder="Nom" required />
-            <input name="poste" placeholder="Poste" required />
-            <input name="type_contrat" placeholder="Type de contrat" required />
-            <input name="date_debut" type="date" required />
-            <input name="duree" placeholder="Durée du contrat" required />
-            <input name="periode_essai" placeholder="Durée période d’essai (ex: 2 mois)" required />
-            
-            <label>Renouvelable ?</label>
-            <input type="radio" name="renouvelable" value="Oui" checked> Oui
-            <input type="radio" name="renouvelable" value="Non"> Non
-
-            <input name="salaire" placeholder="Salaire mensuel" required />
-            <input name="adresse" placeholder="Adresse de l'entreprise" required />
-            <input name="logo_url" placeholder="URL du logo (optionnel)" />
-
-            <button type="submit">Générer le contrat</button>
-        </form>
-    </div>
-
-    <script>
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-        }
-    </script>
+    <h2>Générateur de contrat RH</h2>
+    <form method="post" action="/generate">
+        <input name="nom" placeholder="Nom" required>
+        <input name="poste" placeholder="Poste" required>
+        <input name="type_contrat" placeholder="Type de contrat (CDI, CDD, stage, freelance...)" required>
+        <input name="date_debut" type="date" required>
+        <input name="duree" placeholder="Durée (en mois ou jours)" required>
+        <input name="salaire" placeholder="Salaire brut mensuel (en €)" required>
+        <input name="adresse" placeholder="Adresse de l'entreprise" required>
+        <input name="periode_essai" placeholder="Durée de la période d'essai (ex : 1 mois)" />
+        <label>Renouvelable ?</label>
+        <input type="radio" name="renouvelable" value="Oui" checked> Oui
+        <input type="radio" name="renouvelable" value="Non"> Non
+        <input name="entreprise" placeholder="Nom de l'entreprise" required>
+        <input name="logo_url" placeholder="URL du logo (optionnel)">
+        <button type="submit">Générer le contrat</button>
+    </form>
 </body>
 </html>

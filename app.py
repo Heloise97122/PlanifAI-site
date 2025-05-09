@@ -14,6 +14,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
+# ROUTE: Accueil (page d'intro ou home stylée)
+@app.get("/home", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
+
 # ROUTE: Dashboard
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
@@ -44,4 +49,4 @@ async def alternance(request: Request):
 async def stage(request: Request):
     return templates.TemplateResponse("formulaire_stage.html", {"request": request})
 
-# (Les routes POST pour générer les PDFs sont à conserver ou ajouter selon les fichiers déjà faits)
+# (Ajoute ici les routes POST pour chaque génération de PDF si pas encore intégrées)

@@ -6,14 +6,22 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-logo">PlanifAI</div>
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/dashboard">Tableau de bord</a></li>
+            <li><a href="/rh-ai">RH-AI</a></li>
+        </ul>
+    </nav>
+
     <header>
         <h1>Tableau de bord — Vos agents IA</h1>
         <p>Gérez, essayez et découvrez vos assistants IA pour automatiser votre activité.</p>
     </header>
 
     <div class="dashboard-grid">
-
-        <!-- Exemple de carte agent -->
+        <!-- Carte RH-AI -->
         <div class="agent-card">
             <h2>RH-AI</h2>
             <p>Génère des contrats, attestations et documents RH personnalisés.</p>
@@ -28,37 +36,7 @@
             </div>
             <span class="status available">Disponible</span>
         </div>
-
-        <div class="agent-card">
-            <h2>Compta-AI</h2>
-            <p>Crée et classe automatiquement vos devis, factures et exports comptables.</p>
-            <ul class="tags">
-                <li>#Factures</li>
-                <li>#Devis</li>
-                <li>#Comptabilité</li>
-            </ul>
-            <div class="card-actions">
-                <a href="#" class="button disabled">À venir</a>
-            </div>
-            <span class="status upcoming">En développement</span>
-        </div>
-
-        <div class="agent-card">
-            <h2>Client-AI</h2>
-            <p>Centralise les échanges, automatise les relances, facilite la relation client.</p>
-            <ul class="tags">
-                <li>#CRM</li>
-                <li>#Relance</li>
-                <li>#Clients</li>
-            </ul>
-            <div class="card-actions">
-                <a href="#" class="button disabled">À venir</a>
-            </div>
-            <span class="status upcoming">En développement</span>
-        </div>
-
-        <!-- Tu pourras dupliquer et adapter les blocs ci-dessus pour d’autres agents -->
-
+        <!-- Tu peux ajouter d'autres agents ici -->
     </div>
 </body>
 </html>

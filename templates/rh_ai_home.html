@@ -2,18 +2,25 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>RH-AI - Accueil</title>
+    <title>Accueil — PlanifAI</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Bienvenue sur <span class="highlight">RH-AI</span></h1>
-    <p class="subtitle">Choisissez un service RH :</p>
-    <div class="button-container">
-        <a class="button" href="/rh-ai">Générateur de contrat RH</a>
-        <a class="button" href="/freelance">Contrat freelance</a>
-        <a class="button" href="/attestation">Attestation employeur</a>
-        <a class="button" href="/alternance">Contrat alternance</a>
-        <a class="button" href="/stage">Convention de stage</a>
-    </div>
+    <nav class="navbar">
+        <div class="nav-logo">PlanifAI</div>
+        <ul class="nav-links">
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/dashboard">Tableau de bord</a></li>
+            <li><a href="/rh-ai">RH-AI</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Bienvenue sur PlanifAI</h1>
+        <p>Des agents intelligents pour automatiser votre activité sans coder.</p>
+        <div class="button-container">
+            <a href="/dashboard" class="button">Accéder au tableau de bord</a>
+        </div>
+    </header>
 </body>
 </html>

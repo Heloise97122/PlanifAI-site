@@ -9,22 +9,15 @@ import os
 
 app = FastAPI()
 
-# Config
+# Configuration
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
-# PAGE ACCUEIL RH
-@app.get("/rh-ai-home", response_class=HTMLResponse)
-async def rh_ai_home(request: Request):
-    return templates.TemplateResponse("rh_ai_home.html", {"request": request})
-
-# DASHBOARD
+# ROUTES GET : affichage des pages
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
-
-# FORMULAIRES
 
 @app.get("/formulaire_rh", response_class=HTMLResponse)
 async def formulaire_rh(request: Request):
@@ -46,7 +39,7 @@ async def alternance(request: Request):
 async def stage(request: Request):
     return templates.TemplateResponse("formulaire_stage.html", {"request": request})
 
-# ROUTES DE GENERATION DE PDF
+# ROUTES POST : génération de PDF
 
 @app.post("/generate_rh")
 async def generate_rh(
@@ -75,10 +68,100 @@ async def generate_rh(
     )
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         HTML(string=html_content).write_pdf(tmp.name)
-        return FileResponse(tmp.name, filename=f"Contrat_{nom}.pdf")
+        return FileResponse(tmp.name, filename=f"Contrat_RH_{nom}.pdf")
 
-# Tu peux dupliquer cette logique pour les autres types de PDF :
-# - generate_freelance
-# - generate_attestation
-# - generate_alternance
-# - generate_stage
+@app.post("/generate_freelance")
+async def generate_freelance(
+    nom: str = Form(...),
+    mission: str = Form(...),
+    date_debut: str = Form(...),
+    date_fin: str = Form(...),
+    tarif: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
+):
+    html_content = env.get_template("contrat_freelance_template.html").render(
+        nom=nom,
+        mission=mission,
+        date_debut=date_debut,
+        date_fin=date_fin,
+        tarif=tarif,
+        adresse=adresse,
+        logo_url=logo_url
+    )
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        HTML(string=html_content).write_pdf(tmp.name)
+        return FileResponse(tmp.name, filename=f"Freelance_{nom}.pdf")
+
+@app.post("/generate_attestation")
+async def generate_attestation(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    date_entree: str = Form(...),
+    date_sortie: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
+):
+    html_content = env.get_template("attestation_template.html").render(
+        nom=nom,
+        poste=poste,
+        date_entree=date_entree,
+        date_sortie=date_sortie,
+        adresse=adresse,
+        logo_url=logo_url
+    )
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        HTML(string=html_content).write_pdf(tmp.name)
+        return FileResponse(tmp.name, filename=f"Attestation_{nom}.pdf")
+
+@app.post("/generate_alternance")
+async def generate_alternance(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    type_alternance: str = Form(...),
+    duree: str = Form(...),
+    centre_formation: str = Form(...),
+    rythme: str = Form(...),
+    salaire: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
+):
+    html_content = env.get_template("contrat_alternance_template.html").render(
+        nom=nom,
+        poste=poste,
+        type_alternance=type_alternance,
+        duree=duree,
+        centre_formation=centre_formation,
+        rythme=rythme,
+        salaire=salaire,
+        adresse=adresse,
+        logo_url=logo_url
+    )
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        HTML(string=html_content).write_pdf(tmp.name)
+        return FileResponse(tmp.name, filename=f"Alternance_{nom}.pdf")
+
+@app.post("/generate_stage")
+async def generate_stage(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    duree: str = Form(...),
+    gratification: str = Form(...),
+    tuteur: str = Form(...),
+    centre_formation: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
+):
+    html_content = env.get_template("contrat_stage_template.html").render(
+        nom=nom,
+        poste=poste,
+        duree=duree,
+        gratification=gratification,
+        tuteur=tuteur,
+        centre_formation=centre_formation,
+        adresse=adresse,
+        logo_url=logo_url
+    )
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        HTML(string=html_content).write_pdf(tmp.name)
+        return FileResponse(tmp.name, filename=f"Stage_{nom}.pdf")

@@ -9,22 +9,20 @@ import os
 
 app = FastAPI()
 
-# Configuration des templates et fichiers statiques
+# Dossiers
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
-# ROUTE: Accueil RH-AI
-@app.get("/rh-ai-home", response_class=HTMLResponse)
-async def rh_ai_home(request: Request):
-    return templates.TemplateResponse("rh_ai_home.html", {"request": request})
+# === ROUTES HTML ===
 
-# ROUTE: Dashboard principal
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
-# ROUTES FORMULAIRES (Affichage)
+@app.get("/rh-ai", response_class=HTMLResponse)
+async def rh_ai_home(request: Request):
+    return templates.TemplateResponse("rh_ai_home.html", {"request": request})
 
 @app.get("/formulaire_rh", response_class=HTMLResponse)
 async def formulaire_rh(request: Request):
@@ -32,45 +30,45 @@ async def formulaire_rh(request: Request):
 
 @app.get("/freelance", response_class=HTMLResponse)
 async def freelance(request: Request):
-    return templates.TemplateResponse("formulaire_freelance.html", {"request": request})
-
-@app.get("/attestation", response_class=HTMLResponse)
-async def attestation(request: Request):
-    return templates.TemplateResponse("formulaire_attestation.html", {"request": request})
+    return templates.TemplateResponse("contrat_freelance.html", {"request": request})
 
 @app.get("/alternance", response_class=HTMLResponse)
 async def alternance(request: Request):
-    return templates.TemplateResponse("formulaire_alternance.html", {"request": request})
+    return templates.TemplateResponse("contrat_alternance.html", {"request": request})
 
 @app.get("/stage", response_class=HTMLResponse)
 async def stage(request: Request):
-    return templates.TemplateResponse("formulaire_stage.html", {"request": request})
+    return templates.TemplateResponse("contrat_stage.html", {"request": request})
+
+@app.get("/attestation", response_class=HTMLResponse)
+async def attestation(request: Request):
+    return templates.TemplateResponse("attestation_template.html", {"request": request})
+
+@app.get("/cdi", response_class=HTMLResponse)
+async def contrat_cdi(request: Request):
+    return templates.TemplateResponse("contrat_cdi.html", {"request": request})
+
+@app.get("/cdd", response_class=HTMLResponse)
+async def contrat_cdd(request: Request):
+    return templates.TemplateResponse("contrat_cdd.html", {"request": request})
 
 
-# ROUTES POST PDF (génération contrats & attestations)
+# === ROUTE GÉNÉRATION PDF (exemple RH) ===
 
-@app.post("/generate_pdf", response_class=FileResponse)
-async def generate_pdf(
-    template_name: str = Form(...),
+@app.post("/generate_rh", response_class=FileResponse)
+async def generate_rh_contract(
     nom: str = Form(...),
-    poste: str = Form(None),
-    type_contrat: str = Form(None),
-    date_debut: str = Form(None),
-    duree: str = Form(None),
-    salaire: str = Form(None),
-    adresse: str = Form(None),
-    periode_essai: str = Form(None),
-    renouvelable: str = Form(None),
-    entreprise: str = Form(None),
-    objet: str = Form(None),
-    lieu: str = Form(None),
-    tuteur: str = Form(None),
-    rythme: str = Form(None),
-    organisme: str = Form(None),
-    gratification: str = Form(None),
-    logo_url: str = Form(None),
+    poste: str = Form(...),
+    type_contrat: str = Form(...),
+    date_debut: str = Form(...),
+    duree: str = Form(...),
+    salaire: str = Form(...),
+    adresse: str = Form(...),
+    periode_essai: str = Form(...),
+    renouvelable: str = Form(...),
+    logo_url: str = Form(None)
 ):
-    template = env.get_template(template_name)
+    template = env.get_template("contrat_template.html")
     html_content = template.render(
         nom=nom,
         poste=poste,
@@ -81,15 +79,9 @@ async def generate_pdf(
         adresse=adresse,
         periode_essai=periode_essai,
         renouvelable=renouvelable,
-        entreprise=entreprise,
-        objet=objet,
-        lieu=lieu,
-        tuteur=tuteur,
-        rythme=rythme,
-        organisme=organisme,
-        gratification=gratification,
-        logo_url=logo_url,
+        logo_url=logo_url
     )
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
-        HTML(string=html_content).write_pdf(tmp_pdf.name)
-        return FileResponse(tmp_pdf.name, filename=f"document_{nom}.pdf")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        HTML(string=html_content).write_pdf(tmp.name)
+        return FileResponse(tmp.name, filename=f"contrat_{nom}.pdf")

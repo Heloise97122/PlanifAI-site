@@ -14,37 +14,56 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
-# DASHBOARD
+# ===== ROUTES PAGES PRINCIPALES =====
+
 @app.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
+async def accueil(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
-# PAGE D'ACCUEIL RH-AI
-@app.get("/rh-ai-home", response_class=HTMLResponse)
-async def rh_ai_home(request: Request):
+@app.get("/rh-ai", response_class=HTMLResponse)
+async def page_rh_ai(request: Request):
     return templates.TemplateResponse("rh_ai_home.html", {"request": request})
 
-# CONTRAT RH
+# ===== ROUTES FORMULAIRES CONTRACTUELS =====
+
 @app.get("/formulaire_rh", response_class=HTMLResponse)
 async def formulaire_rh(request: Request):
     return templates.TemplateResponse("formulaire_rh.html", {"request": request})
 
-# CONTRAT FREELANCE
 @app.get("/freelance", response_class=HTMLResponse)
 async def freelance(request: Request):
-    return templates.TemplateResponse("formulaire_freelance.html", {"request": request})
+    return templates.TemplateResponse("contrat_freelance.html", {"request": request})
 
-# ATTESTATION EMPLOYEUR
-@app.get("/attestation", response_class=HTMLResponse)
-async def attestation(request: Request):
-    return templates.TemplateResponse("formulaire_attestation.html", {"request": request})
-
-# ALTERNANCE
 @app.get("/alternance", response_class=HTMLResponse)
 async def alternance(request: Request):
-    return templates.TemplateResponse("formulaire_alternance.html", {"request": request})
+    return templates.TemplateResponse("contrat_alternance.html", {"request": request})
 
-# STAGE
 @app.get("/stage", response_class=HTMLResponse)
 async def stage(request: Request):
-    return templates.TemplateResponse("formulaire_stage.html", {"request": request})
+    return templates.TemplateResponse("contrat_stage.html", {"request": request})
+
+@app.get("/attestation", response_class=HTMLResponse)
+async def attestation(request: Request):
+    return templates.TemplateResponse("attestation_template.html", {"request": request})
+
+# ===== EXEMPLES OU MODELES DE CONTRATS =====
+
+@app.get("/modele", response_class=HTMLResponse)
+async def modele(request: Request):
+    return templates.TemplateResponse("contrat_modele.html", {"request": request})
+
+@app.get("/cdi", response_class=HTMLResponse)
+async def cdi(request: Request):
+    return templates.TemplateResponse("contrat_cdi.html", {"request": request})
+
+@app.get("/cdd", response_class=HTMLResponse)
+async def cdd(request: Request):
+    return templates.TemplateResponse("contrat_cdd.html", {"request": request})
+
+# ===== ROUTE PDF GÉNÉRIQUE =====
+
+@app.post("/generate_pdf")
+async def generate_pdf(content: str = Form(...), filename: str = Form("document.pdf")):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+        HTML(string=content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=filename)

@@ -4,63 +4,75 @@
     <meta charset="UTF-8">
     <title>Contrat CDI</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        h1 {
-            text-align: center;
-            font-size: 22px;
-        }
-        h2 {
-            font-size: 18px;
-            margin-top: 30px;
-            border-bottom: 1px solid #ccc;
-        }
-        .signature {
-            margin-top: 60px;
-        }
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+        h1 { text-align: center; font-size: 24px; }
+        h2 { font-size: 20px; margin-top: 30px; }
+        p { margin: 10px 0; }
+        .section { margin-top: 20px; }
     </style>
 </head>
 <body>
-    {% if logo_url %}
-    <div style="text-align: right;">
-        <img src="{{ logo_url }}" alt="Logo" height="60">
+    <h1>Contrat de travail à durée indéterminée (CDI)</h1>
+
+    <p><strong>Employeur :</strong> {{ entreprise }}</p>
+    <p><strong>Adresse :</strong> {{ adresse }}</p>
+
+    <p><strong>Salarié(e) :</strong> {{ nom }}</p>
+    <p><strong>Poste :</strong> {{ poste }}</p>
+    <p><strong>Date de début du contrat :</strong> {{ date_debut }}</p>
+
+    <div class="section">
+        <h2>1. Nature du contrat</h2>
+        <p>Le présent contrat est conclu à durée indéterminée. Il prend effet à compter du {{ date_debut }}.</p>
     </div>
-    {% endif %}
 
-    <h1>Contrat à Durée Indéterminée (CDI)</h1>
-
-    <p>Entre l’entreprise située à <strong>{{ adresse }}</strong>, ci-après dénommée "l’Employeur",</p>
-    <p>Et <strong>{{ nom }}</strong>, ci-après dénommé "le Salarié", pour le poste de <strong>{{ poste }}</strong>.</p>
-
-    <h2>1. Date d’entrée en fonction</h2>
-    <p>Le salarié prendra ses fonctions à compter du <strong>{{ date_debut }}</strong>.</p>
-
-    <h2>2. Durée du travail</h2>
-    <p>Le contrat est conclu sans limitation de durée.</p>
-
-    <h2>3. Rémunération</h2>
-    <p>Le salarié percevra une rémunération brute mensuelle de <strong>{{ salaire }}</strong>, versée en fin de mois.</p>
-
-    <h2>4. Période d’essai</h2>
-    <p>Une période d’essai de <strong>{{ periode_essai }}</strong> est prévue. Celle-ci est <strong>{{ renouvelable }}</strong> renouvelable.</p>
-
-    <h2>5. Lieu de travail</h2>
-    <p>Le salarié exercera son activité à l’adresse suivante : <strong>{{ adresse }}</strong>.</p>
-
-    <h2>6. Obligations générales</h2>
-    <p>Les parties s’engagent à respecter les dispositions du Code du Travail et de la convention collective applicable.</p>
-
-    <h2>7. Confidentialité</h2>
-    <p>Le salarié s’engage à la plus stricte confidentialité sur les informations dont il pourrait avoir connaissance.</p>
-
-    <div class="signature">
-        <p>Fait à <strong>{{ adresse }}</strong>, le {{ date_debut }}</p>
-        <p>Signature de l’Employeur : ____________________</p>
-        <p>Signature du Salarié : ____________________</p>
+    <div class="section">
+        <h2>2. Fonctions</h2>
+        <p>Le salarié exercera les fonctions suivantes : {{ poste }}. Il pourra se voir confier d’autres tâches en lien avec ses compétences.</p>
     </div>
+
+    <div class="section">
+        <h2>3. Lieu de travail</h2>
+        <p>Le salarié exercera ses fonctions à l'adresse de l’entreprise ou dans tout autre lieu déterminé par l’employeur dans le cadre de ses activités.</p>
+    </div>
+
+    <div class="section">
+        <h2>4. Rémunération</h2>
+        <p>Le salarié percevra une rémunération brute mensuelle de {{ salaire }} euros.</p>
+    </div>
+
+    <div class="section">
+        <h2>5. Temps de travail</h2>
+        <p>Le salarié travaillera à temps plein, selon une durée hebdomadaire de 35 heures.</p>
+    </div>
+
+    <div class="section">
+        <h2>6. Période d’essai</h2>
+        <p>La période d’essai est fixée à {{ periode_essai }}. Elle est {{ renouvelable }}.</p>
+    </div>
+
+    <div class="section">
+        <h2>7. Convention collective</h2>
+        <p>Ce contrat est régi par la convention collective applicable au secteur d’activité de l’entreprise.</p>
+    </div>
+
+    <div class="section">
+        <h2>8. Confidentialité</h2>
+        <p>Le salarié s'engage à respecter une stricte confidentialité concernant toutes les informations relatives à l'entreprise.</p>
+    </div>
+
+    <div class="section">
+        <h2>9. Données personnelles</h2>
+        <p>Conformément au RGPD, les données du salarié seront traitées de manière confidentielle et sécurisée.</p>
+    </div>
+
+    <div class="section">
+        <h2>10. Résiliation du contrat</h2>
+        <p>Le contrat peut être rompu selon les dispositions légales en vigueur, avec respect du préavis prévu par le Code du Travail.</p>
+    </div>
+
+    <br><br>
+    <p>Fait à {{ lieu }}, le {{ date_signature }}</p>
+    <p><strong>Employeur</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Salarié(e)</strong></p>
 </body>
 </html>

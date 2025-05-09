@@ -1,107 +1,64 @@
-/* Reset de base */
-body, h1, h2, h3, p, ul, ol, li, input, label, button {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f8;
-    color: #1e1e1e;
+    background-color: #f8f9fa;
+    color: #1a1a1a;
     padding: 2rem;
-    max-width: 900px;
     margin: auto;
+    max-width: 900px;
     line-height: 1.6;
 }
 
-/* Titres */
-h1 {
-    font-size: 2rem;
-    color: #2c3e50;
-    margin-bottom: 1rem;
+h1, h2 {
+    color: #1e1e1e;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.3rem;
 }
 
-h2 {
-    font-size: 1.5rem;
-    color: #34495e;
-    margin: 1.5rem 0 1rem;
-}
-
-/* Formulaires */
 form {
-    background-color: white;
-    padding: 2rem;
+    background: white;
+    padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 2rem;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 input, select, textarea {
     width: 100%;
     padding: 0.8rem;
-    margin-top: 0.5rem;
-    margin-bottom: 1.2rem;
+    margin: 0.5rem 0 1rem;
     border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 1rem;
-}
-
-label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.3rem;
 }
 
 button {
     background-color: #007bff;
     color: white;
+    padding: 0.7rem 1.2rem;
     border: none;
-    padding: 0.9rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.3s ease;
 }
 
 button:hover {
     background-color: #0056b3;
 }
 
-/* Conteneurs de boutons et liens */
 .button-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
     margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .button {
     background-color: #2c3e50;
     color: white;
-    padding: 0.8rem 1.4rem;
+    text-align: center;
+    padding: 1rem;
     border-radius: 6px;
     text-decoration: none;
-    font-weight: 500;
-    transition: background 0.3s ease;
+    font-weight: bold;
 }
 
 .button:hover {
-    background-color: #1e2a38;
-}
-
-.button.disabled {
-    background-color: #aaa;
-    pointer-events: none;
-}
-
-/* Responsive */
-@media screen and (max-width: 600px) {
-    body {
-        padding: 1rem;
-    }
-
-    .button-container {
-        flex-direction: column;
-    }
+    background-color: #1a252f;
 }

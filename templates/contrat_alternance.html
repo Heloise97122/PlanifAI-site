@@ -4,25 +4,32 @@
     <meta charset="UTF-8">
     <title>Contrat d'alternance</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; font-size: 14px; line-height: 1.6; }
-        h1 { text-align: center; font-size: 22px; }
-        h2 { font-size: 18px; margin-top: 30px; border-bottom: 1px solid #ccc; }
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { font-size: 22px; }
+        h2 { font-size: 18px; }
+        p { line-height: 1.6; }
     </style>
 </head>
 <body>
-    <h1>Contrat d’Alternance</h1>
-    <p><strong>Nom :</strong> {{ nom }}</p>
-    <p><strong>Poste :</strong> {{ poste }}</p>
-    <p><strong>Type :</strong> {{ type_contrat }} (apprentissage / professionnalisation)</p>
-    <p><strong>Centre de formation :</strong> {{ centre }}</p>
-    <p><strong>Rythme :</strong> {{ rythme }}</p>
-    <p><strong>Date de début :</strong> {{ date_debut }}</p>
+    <h1>Contrat d'alternance</h1>
+
+    {% if logo_url %}
+        <img src="{{ logo_url }}" alt="Logo" style="max-width: 120px;">
+    {% endif %}
+
+    <p>Ce contrat est établi entre l'entreprise <strong>{{ entreprise }}</strong>, située à <strong>{{ adresse }}</strong>, et <strong>{{ nom }}</strong> pour le poste de <strong>{{ poste }}</strong>.</p>
+
+    <h2>Détails du contrat</h2>
+    <p><strong>Type :</strong> {{ type_alternance }}</p>
     <p><strong>Durée :</strong> {{ duree }}</p>
+    <p><strong>Date de début :</strong> {{ date_debut }}</p>
     <p><strong>Salaire :</strong> {{ salaire }}</p>
+    <p><strong>Établissement / Centre de formation :</strong> {{ ecole }}</p>
+    <p><strong>Rythme :</strong> {{ rythme }}</p>
 
-    <h2>Engagements</h2>
-    <p>L’employeur s’engage à fournir les moyens nécessaires à l’apprentissage, et l’alternant à suivre les formations prévues.</p>
+    <h2>Mentions légales</h2>
+    <p>Le contrat est établi conformément aux dispositions du Code du Travail relatives à l'alternance. L'alternant bénéficie des droits des salariés en matière de congés, protection sociale et sécurité.</p>
 
-    <p style="margin-top: 60px;">Fait à {{ adresse }}, le {{ date_debut }}</p>
+    <p>Un tuteur désigné accompagnera l’alternant pendant toute la durée du contrat : <strong>{{ tuteur }}</strong>.</p>
 </body>
 </html>

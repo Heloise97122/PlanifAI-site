@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat CDD</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        h1 { text-align: center; font-size: 24px; }
+        h2 { font-size: 18px; margin-top: 30px; }
+        p { margin: 10px 0; }
+        .section { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Contrat de travail à durée déterminée (CDD)</h1>
 
+    <p><strong>Employeur :</strong> {{ entreprise }}</p>
+    <p><strong>Adresse :</strong> {{ adresse }}</p>
+
+    <p><strong>Salarié(e) :</strong> {{ nom }}</p>
+    <p><strong>Poste :</strong> {{ poste }}</p>
+    <p><strong>Date de début :</strong> {{ date_debut }}</p>
+    <p><strong>Date de fin :</strong> {{ date_fin }}</p>
+
+    <div class="section">
+        <h2>1. Motif du recours</h2>
+        <p>{{ motif }}</p>
+    </div>
+
+    <div class="section">
+        <h2>2. Durée et renouvellement</h2>
+        <p>Ce contrat est conclu pour une durée de {{ duree }}. Il est {{ renouvelable }}.</p>
+    </div>
+
+    <div class="section">
+        <h2>3. Rémunération</h2>
+        <p>{{ salaire }} euros bruts mensuels seront versés au salarié.</p>
+    </div>
+
+    <div class="section">
+        <h2>4. Avantages</h2>
+        <p>{{ avantages }}</p>
+    </div>
+
+    <div class="section">
+        <h2>5. Signature</h2>
+        <p>Fait à {{ lieu }}, le {{ date_signature }}</p>
+        <p><strong>Employeur</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Salarié(e)</strong></p>
+    </div>
+</body>
+</html>

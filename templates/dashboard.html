@@ -2,33 +2,63 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>RH-AI | Tableau de bord</title>
+    <title>PlanifAI — Tableau de bord</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <aside class="sidebar">
+    <header>
+        <h1>Tableau de bord — Vos agents IA</h1>
+        <p>Gérez, essayez et découvrez vos assistants IA pour automatiser votre activité.</p>
+    </header>
+
+    <div class="dashboard-grid">
+
+        <!-- Exemple de carte agent -->
+        <div class="agent-card">
             <h2>RH-AI</h2>
-            <nav>
-                <a href="/formulaire_rh">Contrat RH</a>
-                <a href="/freelance">Contrat freelance</a>
-                <a href="/attestation">Attestation employeur</a>
-                <a href="/alternance">Contrat alternance</a>
-                <a href="/stage">Convention de stage</a>
-            </nav>
-        </aside>
-        <main class="main-content">
-            <header>
-                <h1>Bienvenue sur votre tableau de bord RH</h1>
-            </header>
-            <section class="quick-access">
-                <a class="card" href="/formulaire_rh">Générer un contrat RH</a>
-                <a class="card" href="/freelance">Générer un contrat freelance</a>
-                <a class="card" href="/attestation">Créer une attestation</a>
-                <a class="card" href="/alternance">Créer un contrat alternance</a>
-                <a class="card" href="/stage">Créer une convention de stage</a>
-            </section>
-        </main>
+            <p>Génère des contrats, attestations et documents RH personnalisés.</p>
+            <ul class="tags">
+                <li>#PDF</li>
+                <li>#Contrat</li>
+                <li>#RH</li>
+            </ul>
+            <div class="card-actions">
+                <a href="/rh-ai" class="button">Essayer</a>
+                <a href="/static/exemple_rh.pdf" class="button secondary">Exemple PDF</a>
+            </div>
+            <span class="status available">Disponible</span>
+        </div>
+
+        <div class="agent-card">
+            <h2>Compta-AI</h2>
+            <p>Crée et classe automatiquement vos devis, factures et exports comptables.</p>
+            <ul class="tags">
+                <li>#Factures</li>
+                <li>#Devis</li>
+                <li>#Comptabilité</li>
+            </ul>
+            <div class="card-actions">
+                <a href="#" class="button disabled">À venir</a>
+            </div>
+            <span class="status upcoming">En développement</span>
+        </div>
+
+        <div class="agent-card">
+            <h2>Client-AI</h2>
+            <p>Centralise les échanges, automatise les relances, facilite la relation client.</p>
+            <ul class="tags">
+                <li>#CRM</li>
+                <li>#Relance</li>
+                <li>#Clients</li>
+            </ul>
+            <div class="card-actions">
+                <a href="#" class="button disabled">À venir</a>
+            </div>
+            <span class="status upcoming">En développement</span>
+        </div>
+
+        <!-- Tu pourras dupliquer et adapter les blocs ci-dessus pour d’autres agents -->
+
     </div>
 </body>
 </html>

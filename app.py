@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -9,61 +9,45 @@ import os
 
 app = FastAPI()
 
-# Configuration des chemins
+# Configuration
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
-# ===== ROUTES PAGES PRINCIPALES =====
-
+# Accueil principal (tableau de bord)
 @app.get("/", response_class=HTMLResponse)
 async def accueil(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
+# Page RH-AI
 @app.get("/rh-ai", response_class=HTMLResponse)
-async def page_rh_ai(request: Request):
+async def rh_ai_home(request: Request):
     return templates.TemplateResponse("rh_ai_home.html", {"request": request})
 
-# ===== ROUTES FORMULAIRES CONTRACTUELS =====
-
-@app.get("/formulaire_rh", response_class=HTMLResponse)
-async def formulaire_rh(request: Request):
-    return templates.TemplateResponse("formulaire_rh.html", {"request": request})
-
-@app.get("/freelance", response_class=HTMLResponse)
-async def freelance(request: Request):
-    return templates.TemplateResponse("contrat_freelance.html", {"request": request})
-
-@app.get("/alternance", response_class=HTMLResponse)
-async def alternance(request: Request):
-    return templates.TemplateResponse("contrat_alternance.html", {"request": request})
-
-@app.get("/stage", response_class=HTMLResponse)
-async def stage(request: Request):
-    return templates.TemplateResponse("contrat_stage.html", {"request": request})
-
+# Formulaire Attestation employeur
 @app.get("/attestation", response_class=HTMLResponse)
-async def attestation(request: Request):
-    return templates.TemplateResponse("attestation_template.html", {"request": request})
+async def formulaire_attestation(request: Request):
+    return templates.TemplateResponse("formulaire_attestation.html", {"request": request})
 
-# ===== EXEMPLES OU MODELES DE CONTRATS =====
-
-@app.get("/modele", response_class=HTMLResponse)
-async def modele(request: Request):
-    return templates.TemplateResponse("contrat_modele.html", {"request": request})
-
-@app.get("/cdi", response_class=HTMLResponse)
-async def cdi(request: Request):
-    return templates.TemplateResponse("contrat_cdi.html", {"request": request})
-
-@app.get("/cdd", response_class=HTMLResponse)
-async def cdd(request: Request):
-    return templates.TemplateResponse("contrat_cdd.html", {"request": request})
-
-# ===== ROUTE PDF GÉNÉRIQUE =====
-
-@app.post("/generate_pdf")
-async def generate_pdf(content: str = Form(...), filename: str = Form("document.pdf")):
+# Génération PDF Attestation
+@app.post("/generate_attestation", response_class=FileResponse)
+async def generate_attestation(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    entreprise: str = Form(...),
+    date_debut: str = Form(...),
+    lieu: str = Form(...),
+    date_signature: str = Form(...)
+):
+    template = env.get_template("attestation_template.html")
+    html_content = template.render(
+        nom=nom,
+        poste=poste,
+        entreprise=entreprise,
+        date_debut=date_debut,
+        lieu=lieu,
+        date_signature=date_signature
+    )
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
-        HTML(string=content).write_pdf(tmp_pdf.name)
-        return FileResponse(tmp_pdf.name, filename=filename)
+        HTML(string=html_content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=f"attestation_{nom}.pdf")

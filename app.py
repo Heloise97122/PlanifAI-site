@@ -4,27 +4,21 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import tempfile
-import os
 
 app = FastAPI()
-
-# Configuration Jinja2 pour accéder aux fichiers templates
 env = Environment(loader=FileSystemLoader("templates"))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Page d'accueil RH
 @app.get("/rh-ai", response_class=HTMLResponse)
 async def rh_home():
     template = env.get_template("rh_ai_home.html")
     return HTMLResponse(content=template.render())
 
-# Formulaire RH global
 @app.get("/formulaire", response_class=HTMLResponse)
 async def formulaire():
     template = env.get_template("formulaire_rh.html")
     return HTMLResponse(content=template.render())
 
-# Génération des contrats dynamiques
 @app.post("/generate-contract", response_class=HTMLResponse)
 async def generate_contract(
     nom: str = Form(...),
@@ -45,7 +39,6 @@ async def generate_contract(
     ecole: str = Form(None),
     rythme: str = Form(None)
 ):
-    # Sélection dynamique du bon template
     if type_contrat.lower() == "cdi":
         template_file = "contrat_cdi.html"
     elif type_contrat.lower() == "cdd":
@@ -56,3 +49,47 @@ async def generate_contract(
         template_file = "contrat_alternance.html"
     elif type_contrat.lower() == "freelance":
         template_file = "contrat_freelance.html"
+    else:
+        template_file = "contrat_modele.html"
+
+    template = env.get_template(template_file)
+    html_content = template.render(
+        nom=nom,
+        poste=poste,
+        type_contrat=type_contrat,
+        date_debut=date_debut,
+        duree=duree,
+        salaire=salaire,
+        adresse=adresse,
+        periode_essai=periode_essai,
+        renouvelable=renouvelable,
+        temps_travail=temps_travail,
+        remboursement_transport=remboursement_transport,
+        droits_conges=droits_conges,
+        logo_url=logo_url,
+        gratification=gratification,
+        tuteur=tuteur,
+        ecole=ecole,
+        rythme=rythme
+    )
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+        HTML(string=html_content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=f"contrat_{nom}.pdf")
+
+@app.post("/generate-attestation", response_class=HTMLResponse)
+async def generate_attestation(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    date_debut: str = Form(...),
+    adresse: str = Form(...)
+):
+    template = env.get_template("attestation_template.html")
+    html_content = template.render(
+        nom=nom,
+        poste=poste,
+        date_debut=date_debut,
+        adresse=adresse
+    )
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+        HTML(string=html_content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=f"attestation_{nom}.pdf")

@@ -4,23 +4,29 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import tempfile
+import os
 
 app = FastAPI()
+
+# Jinja2 + fichiers statiques
 env = Environment(loader=FileSystemLoader("templates"))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# PAGE ACCUEIL
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    template = env.get_template("index.html")
+    return HTMLResponse(template.render())
+
+# FORMULAIRE RH GÉNÉRAL
 @app.get("/rh-ai", response_class=HTMLResponse)
-async def rh_home():
-    template = env.get_template("rh_ai_home.html")
-    return HTMLResponse(content=template.render())
-
-@app.get("/formulaire", response_class=HTMLResponse)
-async def formulaire():
+async def formulaire_rh():
     template = env.get_template("formulaire_rh.html")
-    return HTMLResponse(content=template.render())
+    return HTMLResponse(template.render())
 
-@app.post("/generate-contract", response_class=HTMLResponse)
-async def generate_contract(
+# GÉNÉRATION CONTRAT CDI / CDD
+@app.post("/generate-contrat", response_class=FileResponse)
+async def generate_contrat(
     nom: str = Form(...),
     poste: str = Form(...),
     type_contrat: str = Form(...),
@@ -30,29 +36,9 @@ async def generate_contract(
     adresse: str = Form(...),
     periode_essai: str = Form(...),
     renouvelable: str = Form(...),
-    temps_travail: str = Form(...),
-    remboursement_transport: str = Form(...),
-    droits_conges: str = Form(...),
-    logo_url: str = Form(None),
-    gratification: str = Form(None),
-    tuteur: str = Form(None),
-    ecole: str = Form(None),
-    rythme: str = Form(None)
+    logo_url: str = Form(None)
 ):
-    if type_contrat.lower() == "cdi":
-        template_file = "contrat_cdi.html"
-    elif type_contrat.lower() == "cdd":
-        template_file = "contrat_cdd.html"
-    elif type_contrat.lower() == "stage":
-        template_file = "contrat_stage.html"
-    elif type_contrat.lower() == "alternance":
-        template_file = "contrat_alternance.html"
-    elif type_contrat.lower() == "freelance":
-        template_file = "contrat_freelance.html"
-    else:
-        template_file = "contrat_modele.html"
-
-    template = env.get_template(template_file)
+    template = env.get_template("contrat_cdi_cdd.html")
     html_content = template.render(
         nom=nom,
         poste=poste,
@@ -63,33 +49,69 @@ async def generate_contract(
         adresse=adresse,
         periode_essai=periode_essai,
         renouvelable=renouvelable,
-        temps_travail=temps_travail,
-        remboursement_transport=remboursement_transport,
-        droits_conges=droits_conges,
-        logo_url=logo_url,
-        gratification=gratification,
-        tuteur=tuteur,
-        ecole=ecole,
-        rythme=rythme
+        logo_url=logo_url
     )
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
         HTML(string=html_content).write_pdf(tmp_pdf.name)
         return FileResponse(tmp_pdf.name, filename=f"contrat_{nom}.pdf")
 
-@app.post("/generate-attestation", response_class=HTMLResponse)
+# FORMULAIRE FREELANCE
+@app.get("/freelance", response_class=HTMLResponse)
+async def formulaire_freelance():
+    template = env.get_template("formulaire_freelance.html")
+    return HTMLResponse(template.render())
+
+# GÉNÉRATION CONTRAT FREELANCE
+@app.post("/generate-freelance", response_class=FileResponse)
+async def generate_freelance(
+    nom: str = Form(...),
+    mission: str = Form(...),
+    duree: str = Form(...),
+    remuneration: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
+):
+    template = env.get_template("contrat_freelance.html")
+    html_content = template.render(
+        nom=nom,
+        mission=mission,
+        duree=duree,
+        remuneration=remuneration,
+        adresse=adresse,
+        logo_url=logo_url
+    )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+        HTML(string=html_content).write_pdf(tmp_pdf.name)
+        return FileResponse(tmp_pdf.name, filename=f"freelance_{nom}.pdf")
+
+# FORMULAIRE ATTESTATION
+@app.get("/attestation", response_class=HTMLResponse)
+async def formulaire_attestation():
+    template = env.get_template("formulaire_attestation.html")
+    return HTMLResponse(template.render())
+
+# GÉNÉRATION ATTESTATION
+@app.post("/generate-attestation", response_class=FileResponse)
 async def generate_attestation(
     nom: str = Form(...),
     poste: str = Form(...),
     date_debut: str = Form(...),
-    adresse: str = Form(...)
+    date_fin: str = Form(...),
+    adresse: str = Form(...),
+    logo_url: str = Form(None)
 ):
-    template = env.get_template("attestation_template.html")
+    template = env.get_template("attestation.html")
     html_content = template.render(
         nom=nom,
         poste=poste,
         date_debut=date_debut,
-        adresse=adresse
+        date_fin=date_fin,
+        adresse=adresse,
+        logo_url=logo_url
     )
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
         HTML(string=html_content).write_pdf(tmp_pdf.name)
         return FileResponse(tmp_pdf.name, filename=f"attestation_{nom}.pdf")

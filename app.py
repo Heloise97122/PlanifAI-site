@@ -9,44 +9,40 @@ import os
 
 app = FastAPI()
 
-# Configurations
+# Configuration des chemins
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
-# ROUTE: Accueil (page d'intro ou home stylée)
-@app.get("/home", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
-
-# ROUTE: Dashboard
+# PAGE D'ACCUEIL RH-AI
 @app.get("/", response_class=HTMLResponse)
+async def accueil(request: Request):
+    return templates.TemplateResponse("rh_ai_home.html", {"request": request})
+
+# TABLEAU DE BORD
+@app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
-# ROUTE: Contrat RH
+# FORMULAIRES
 @app.get("/formulaire_rh", response_class=HTMLResponse)
 async def formulaire_rh(request: Request):
     return templates.TemplateResponse("formulaire_rh.html", {"request": request})
 
-# ROUTE: Freelance
 @app.get("/freelance", response_class=HTMLResponse)
-async def freelance(request: Request):
+async def formulaire_freelance(request: Request):
     return templates.TemplateResponse("formulaire_freelance.html", {"request": request})
 
-# ROUTE: Attestation
 @app.get("/attestation", response_class=HTMLResponse)
-async def attestation(request: Request):
+async def formulaire_attestation(request: Request):
     return templates.TemplateResponse("formulaire_attestation.html", {"request": request})
 
-# ROUTE: Alternance
 @app.get("/alternance", response_class=HTMLResponse)
-async def alternance(request: Request):
+async def formulaire_alternance(request: Request):
     return templates.TemplateResponse("formulaire_alternance.html", {"request": request})
 
-# ROUTE: Stage
 @app.get("/stage", response_class=HTMLResponse)
-async def stage(request: Request):
+async def formulaire_stage(request: Request):
     return templates.TemplateResponse("formulaire_stage.html", {"request": request})
 
-# (Ajoute ici les routes POST pour chaque génération de PDF si pas encore intégrées)
+# Tu peux ajouter ici toutes les routes POST pour générer les PDF pour chaque type de contrat si ce n'est pas déjà fait.

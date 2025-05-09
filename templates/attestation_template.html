@@ -4,49 +4,20 @@
     <meta charset="UTF-8">
     <title>Attestation d'emploi</title>
     <style>
-        body {
-            font-family: "Georgia", serif;
-            margin: 3rem;
-            line-height: 1.8;
-            color: #222;
-        }
-        h1 {
-            text-align: center;
-            font-size: 1.8rem;
-        }
-        .infos {
-            margin-top: 2rem;
-        }
-        .signature {
-            margin-top: 4rem;
-            display: flex;
-            justify-content: space-between;
-        }
+        body { font-family: 'Arial', sans-serif; margin: 40px; font-size: 15px; }
+        h1 { text-align: center; }
     </style>
 </head>
 <body>
-
     <h1>Attestation d'emploi</h1>
+    <p>Je soussigné <strong>{{ employeur }}</strong>, représentant de l'entreprise située à <strong>{{ adresse_entreprise }}</strong>, certifie que :</p>
 
-    <p>Je soussigné(e), <strong>{{ employeur }}</strong>, représentant légal de l’entreprise <strong>{{ entreprise }}</strong>, située à <strong>{{ adresse }}</strong>, atteste par la présente que :</p>
+    <p><strong>{{ nom }}</strong> occupe le poste de <strong>{{ poste }}</strong> depuis le <strong>{{ date_debut }}</strong>.</p>
 
-    <div class="infos">
-        <p><strong>{{ nom_employe }}</strong> occupe le poste de <strong>{{ poste }}</strong> dans notre société depuis le <strong>{{ date_embauche }}</strong>.</p>
-        <p>Son contrat de travail est de type <strong>{{ type_contrat }}</strong> et son salaire mensuel brut s’élève à <strong>{{ salaire }}</strong>.</p>
-    </div>
+    <p>Ce document est délivré à la demande de l'intéressé(e) pour servir et faire valoir ce que de droit.</p>
 
-    <p>La présente attestation est délivrée à la demande de l’intéressé(e) pour servir et faire valoir ce que de droit.</p>
+    <p>Fait à <strong>{{ adresse_entreprise }}</strong>, le {{ date_aujourd_hui }}</p>
 
-    <div class="signature">
-        <div>
-            <p>Fait à : {{ adresse }}</p>
-            <p>Le : {{ date_du_jour }}</p>
-        </div>
-        <div>
-            <p><strong>Signature de l’employeur</strong></p>
-            <p>________________________</p>
-        </div>
-    </div>
-
+    <p>Signature de l’employeur</p>
 </body>
 </html>

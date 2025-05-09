@@ -2,81 +2,33 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Convention de stage</title>
+    <title>Convention de Stage</title>
     <style>
-        body {
-            font-family: 'Georgia', serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 2rem;
-        }
-        h1, h2 {
-            text-align: center;
-        }
-        .section {
-            margin-bottom: 2rem;
-        }
-        .signature {
-            margin-top: 3rem;
-            display: flex;
-            justify-content: space-between;
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        h1 { text-align: center; font-size: 24px; }
+        h2 { font-size: 18px; margin-top: 30px; }
+        p { margin: 10px 0; }
     </style>
 </head>
 <body>
+    <h1>Convention de Stage</h1>
 
-    <h1>Convention de stage</h1>
+    <p><strong>Stagiaire :</strong> {{ nom }}</p>
+    <p><strong>Établissement de formation :</strong> {{ ecole }}</p>
+    <p><strong>Tuteur pédagogique :</strong> {{ tuteur }}</p>
 
-    <div class="section">
-        <p><strong>Nom du stagiaire :</strong> {{ nom }}</p>
-        <p><strong>Poste occupé :</strong> {{ poste }}</p>
-        <p><strong>Établissement d’enseignement :</strong> {{ ecole }}</p>
-        <p><strong>Durée du stage :</strong> {{ duree }}</p>
-        <p><strong>Date de début :</strong> {{ date_debut }}</p>
-        <p><strong>Gratification mensuelle :</strong> {{ salaire }}</p>
-        <p><strong>Adresse de l’entreprise :</strong> {{ adresse }}</p>
-    </div>
+    <p><strong>Entreprise d'accueil :</strong> {{ entreprise }}</p>
+    <p><strong>Adresse :</strong> {{ adresse }}</p>
 
-    <div class="section">
-        <h3>Encadrement</h3>
-        <p>Le stagiaire sera suivi par un tuteur professionnel au sein de l’entreprise, chargé de l'accompagner dans ses missions et de valider ses acquis.</p>
-    </div>
+    <p><strong>Poste occupé :</strong> {{ poste }}</p>
+    <p><strong>Durée du stage :</strong> du {{ date_debut }} au {{ date_fin }}</p>
+    <p><strong>Gratification mensuelle :</strong> {{ gratification }} €</p>
 
-    <div class="section">
-        <h3>Objectifs pédagogiques</h3>
-        <p>Le stage a pour but de permettre au stagiaire de mettre en application les connaissances acquises durant sa formation et de découvrir le fonctionnement d’une entreprise.</p>
-    </div>
+    <h2>Objectifs du stage</h2>
+    <p>{{ objectifs }}</p>
 
-    <div class="section">
-        <h3>Conditions de stage</h3>
-        <p>Le stagiaire s’engage à respecter les règles de l’entreprise, y compris les horaires de travail, la confidentialité et le règlement intérieur.</p>
-        <p>Le stage ne donne pas lieu à une embauche automatique à son issue.</p>
-    </div>
+    <p>Fait à {{ lieu }}, le {{ date_signature }}</p>
 
-    <div class="section">
-        <h3>Assurance</h3>
-        <p>Le stagiaire est couvert par l’assurance responsabilité civile souscrite par l’établissement d’enseignement. L’entreprise s’engage à fournir les conditions nécessaires à la sécurité du stagiaire.</p>
-    </div>
-
-    <div class="section">
-        <h3>Transport</h3>
-        <p>La participation aux frais de transport est régie par les dispositions légales en vigueur. Elle peut être prise en charge à hauteur de 50% si applicable.</p>
-    </div>
-
-    <div class="signature">
-        <div>
-            <p>Fait à : {{ adresse }}</p>
-            <p>Le : {{ date_debut }}</p>
-            <p><strong>L’entreprise</strong></p>
-            <br><br>
-            <p>Signature :</p>
-        </div>
-        <div>
-            <p><strong>Le stagiaire</strong></p>
-            <br><br>
-            <p>Signature :</p>
-        </div>
-    </div>
-
+    <p><strong>Signature de l'entreprise</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Signature du stagiaire</strong></p>
 </body>
 </html>

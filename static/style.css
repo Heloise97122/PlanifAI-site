@@ -1,23 +1,61 @@
-body {
+mbody {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f7f8fa;
+    background-color: #f5f7fa;
     color: #1a1a1a;
     padding: 2rem;
-    max-width: 700px;
     margin: auto;
+    max-width: 800px;
     line-height: 1.6;
 }
 
 h1 {
-    color: #1e1e1e;
     font-size: 2rem;
-    border-bottom: 2px solid #ccc;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    color: #34495e;
 }
 
 p {
-    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+form {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    margin-top: 2rem;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
 }
 
 .button-container {
@@ -28,7 +66,6 @@ p {
 }
 
 .button {
-    display: block;
     background-color: #2c3e50;
     color: white;
     text-align: center;

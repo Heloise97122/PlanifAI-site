@@ -4,31 +4,55 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import tempfile
+import os
 
 app = FastAPI()
 
+# Configuration Jinja2 pour accéder aux fichiers templates
 env = Environment(loader=FileSystemLoader("templates"))
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Page d'accueil RH
+@app.get("/rh-ai", response_class=HTMLResponse)
+async def rh_home():
+    template = env.get_template("rh_ai_home.html")
+    return HTMLResponse(content=template.render())
 
-@app.get("/alternance", response_class=HTMLResponse)
-async def formulaire_alternance():
-    return """
-    <html>
-    <head>
-        <link rel="stylesheet" href="/static/style.css">
-        <title>RH-AI | Contrat d'alternance</title>
-    </head>
-    <body>
-        <h2>Contrat d'alternance</h2>
-        <form method="post" action="/generate-alternance">
-            <input name="nom" placeholder="Nom de l'alternant" required />
-            <input name="poste" placeholder="Poste" required />
-            <input name="type_alternance" placeholder="Type (apprentissage / pro)" required />
-            <input name="date_debut" type="date" placeholder="Date de début" required />
-            <input name="duree" placeholder="Durée (ex: 12 mois)" required />
-            <input name="salaire" placeholder="Salaire" required />
-            <input name="adresse" placeholder="Adresse de l'entreprise" required />
-            <input name="entreprise" placeholder="Nom de l'entreprise" required />
-            <input name="ecole" placeholder="Nom de l'école ou centre de formation" required />
-            <input name="rythme" placeholder="Rythme (ex: 3j
+# Formulaire RH global
+@app.get("/formulaire", response_class=HTMLResponse)
+async def formulaire():
+    template = env.get_template("formulaire_rh.html")
+    return HTMLResponse(content=template.render())
+
+# Génération des contrats dynamiques
+@app.post("/generate-contract", response_class=HTMLResponse)
+async def generate_contract(
+    nom: str = Form(...),
+    poste: str = Form(...),
+    type_contrat: str = Form(...),
+    date_debut: str = Form(...),
+    duree: str = Form(...),
+    salaire: str = Form(...),
+    adresse: str = Form(...),
+    periode_essai: str = Form(...),
+    renouvelable: str = Form(...),
+    temps_travail: str = Form(...),
+    remboursement_transport: str = Form(...),
+    droits_conges: str = Form(...),
+    logo_url: str = Form(None),
+    gratification: str = Form(None),
+    tuteur: str = Form(None),
+    ecole: str = Form(None),
+    rythme: str = Form(None)
+):
+    # Sélection dynamique du bon template
+    if type_contrat.lower() == "cdi":
+        template_file = "contrat_cdi.html"
+    elif type_contrat.lower() == "cdd":
+        template_file = "contrat_cdd.html"
+    elif type_contrat.lower() == "stage":
+        template_file = "contrat_stage.html"
+    elif type_contrat.lower() == "alternance":
+        template_file = "contrat_alternance.html"
+    elif type_contrat.lower() == "freelance":
+        template_file = "contrat_freelance.html"

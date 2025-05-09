@@ -14,7 +14,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
-# Accueil principal (tableau de bord)
+# Accueil tableau de bord
 @app.get("/", response_class=HTMLResponse)
 async def accueil(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
@@ -27,7 +27,7 @@ async def rh_ai_home(request: Request):
 # Formulaire Attestation employeur
 @app.get("/attestation", response_class=HTMLResponse)
 async def formulaire_attestation(request: Request):
-    return templates.TemplateResponse("formulaire_attestation.html", {"request": request})
+    return templates.TemplateResponse("formulaire_rh.html", {"request": request})
 
 # Génération PDF Attestation
 @app.post("/generate_attestation", response_class=FileResponse)

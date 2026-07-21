@@ -5,7 +5,10 @@ from fastapi.templating import Jinja2Templates
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 import tempfile
+import logging
 import re
+
+logger = logging.getLogger("planifai")
 
 app = FastAPI()
 
@@ -22,14 +25,49 @@ def _slug(value: str) -> str:
     return value.strip("_") or "document"
 
 
-def render_pdf(template_name: str, filename_prefix: str, **context) -> FileResponse:
-    """Rend un template en HTML puis le convertit en PDF téléchargeable."""
-    template = env.get_template(template_name)
-    html_content = template.render(**context)
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-    HTML(string=html_content).write_pdf(tmp.name)
-    filename = f"{filename_prefix}_{_slug(context.get('nom'))}.pdf"
-    return FileResponse(tmp.name, filename=filename, media_type="application/pdf")
+def _error_page() -> HTMLResponse:
+    """Page d'erreur claire pour l'utilisateur (sans détail technique)."""
+    return HTMLResponse(
+        content="""<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<title>PlanifAI | Erreur</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+    <h1>Le PDF n'a pas pu être généré</h1>
+    <p>Un problème technique est survenu. Vous pouvez :</p>
+    <ul>
+        <li>vérifier que tous les champs obligatoires sont remplis ;</li>
+        <li>réessayer sans renseigner l'URL du logo (une adresse invalide peut bloquer la génération) ;</li>
+        <li>revenir en arrière et soumettre à nouveau le formulaire.</li>
+    </ul>
+    <p><a href="/">&larr; Retour au tableau de bord</a></p>
+</body></html>""",
+        status_code=500,
+    )
+
+
+def render_pdf(template_name: str, filename_prefix: str, **context):
+    """Rend un template en HTML puis le convertit en PDF téléchargeable.
+
+    En cas d'échec (template, WeasyPrint, logo inaccessible...), l'erreur est
+    journalisée côté serveur et une page claire est renvoyée à l'utilisateur.
+    """
+    try:
+        template = env.get_template(template_name)
+        html_content = template.render(**context)
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        HTML(string=html_content).write_pdf(tmp.name)
+        filename = f"{filename_prefix}_{_slug(context.get('nom'))}.pdf"
+        return FileResponse(tmp.name, filename=filename, media_type="application/pdf")
+    except Exception:
+        logger.exception("Échec de génération du PDF (%s)", template_name)
+        return _error_page()
+
+
+# === SANTÉ / MONITORING ===
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "PlanifAI"}
 
 
 # === PAGES HTML (formulaires) ===

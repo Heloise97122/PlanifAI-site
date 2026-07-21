@@ -1,0 +1,36 @@
+{% extends "form_base.html" %}
+{% block page_title %}Devis{% endblock %}
+{% block heading %}Créer un devis{% endblock %}
+{% block intro %}Renseignez l'émetteur, le client et les prestations. Les totaux HT / TVA / TTC sont calculés automatiquement.{% endblock %}
+{% block action %}/generate/devis{% endblock %}
+{% block fields %}
+    <h2>Émetteur</h2>
+    <label>Entreprise</label>
+    <input name="entreprise" required>
+    <label>Adresse</label>
+    <input name="adresse" required>
+    <label>SIRET (optionnel)</label>
+    <input name="siret">
+    <label>Email / téléphone (optionnel)</label>
+    <input name="email">
+
+    <h2>Client</h2>
+    <label>Nom du client</label>
+    <input name="client_nom" required>
+    <label>Adresse du client</label>
+    <input name="client_adresse" required>
+
+    <h2>Devis</h2>
+    <label>Numéro de devis</label>
+    <input name="numero" placeholder="Ex : DEV-2026-001" required>
+    <label>Date</label>
+    <input name="date" type="date" required>
+    <label>Valable jusqu'au (optionnel)</label>
+    <input name="validite" type="date">
+
+    {% include "_lignes_facturation.html" %}
+
+    <h2>Logo</h2>
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

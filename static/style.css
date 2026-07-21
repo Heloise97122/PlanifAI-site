@@ -106,3 +106,46 @@ button:disabled {
     background-color: #9bbce0;
     cursor: progress;
 }
+
+table.lignes-form {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+table.lignes-form th {
+    text-align: left;
+    font-size: 0.85rem;
+    color: #34495e;
+    padding: 0.3rem 0.4rem;
+}
+
+table.lignes-form td {
+    padding: 0.2rem 0.4rem;
+    vertical-align: middle;
+}
+
+table.lignes-form input,
+table.lignes-form select {
+    margin: 0;
+    padding: 0.5rem;
+}
+
+.btn-suppr {
+    background-color: #e74c3c;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.9rem;
+}
+
+.btn-suppr:hover {
+    background-color: #c0392b;
+}
+
+.button-secondaire {
+    background-color: #6c7a89;
+    margin-bottom: 1.5rem;
+}
+
+.button-secondaire:hover {
+    background-color: #55606b;
+}

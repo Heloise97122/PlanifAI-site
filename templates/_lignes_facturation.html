@@ -1,0 +1,65 @@
+<h2>Prestations</h2>
+<table class="lignes-form" id="lignes">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Qté</th>
+            <th>PU HT (€)</th>
+            <th>TVA</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(3) %}
+        <tr class="ligne">
+            <td><input name="description" placeholder="Prestation / produit"></td>
+            <td><input name="quantite" type="text" inputmode="decimal" value="1" class="qte"></td>
+            <td><input name="prix_unitaire" type="text" inputmode="decimal" placeholder="0,00" class="pu"></td>
+            <td>
+                <select name="taux_tva">
+                    <option value="20">20 %</option>
+                    <option value="10">10 %</option>
+                    <option value="5.5">5,5 %</option>
+                    <option value="2.1">2,1 %</option>
+                    <option value="0">0 %</option>
+                </select>
+            </td>
+            <td><button type="button" class="btn-suppr" title="Supprimer la ligne">✕</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button type="button" id="ajouter-ligne" class="button-secondaire">+ Ajouter une ligne</button>
+
+<script>
+(function () {
+    var corps = document.querySelector('#lignes tbody');
+    var ajouter = document.getElementById('ajouter-ligne');
+
+    function brancherSuppression(bouton) {
+        bouton.addEventListener('click', function () {
+            var lignes = corps.querySelectorAll('tr.ligne');
+            if (lignes.length > 1) {
+                bouton.closest('tr').remove();
+            } else {
+                // On ne supprime pas la dernière ligne : on la vide.
+                bouton.closest('tr').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+            }
+        });
+    }
+
+    corps.querySelectorAll('.btn-suppr').forEach(brancherSuppression);
+
+    ajouter.addEventListener('click', function () {
+        var modele = corps.querySelector('tr.ligne');
+        var copie = modele.cloneNode(true);
+        copie.querySelectorAll('input').forEach(function (i) {
+            i.value = (i.classList.contains('qte')) ? '1' : '';
+        });
+        var select = copie.querySelector('select');
+        if (select) select.selectedIndex = 0;
+        corps.appendChild(copie);
+        brancherSuppression(copie.querySelector('.btn-suppr'));
+    });
+})();
+</script>

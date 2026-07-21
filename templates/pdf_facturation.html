@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ type_document }} {{ numero }}</title>
+    <style>
+        @page { margin: 2cm; }
+        body { font-family: "Helvetica", Arial, sans-serif; font-size: 10.5pt; color: #222; line-height: 1.5; }
+        .entete { display: flex; justify-content: space-between; align-items: flex-start; }
+        .entete .logo { max-width: 130px; max-height: 70px; }
+        h1 { color: #003366; font-size: 22pt; margin: 0 0 4px 0; }
+        .numero { color: #555; font-size: 11pt; }
+        .parties { display: flex; justify-content: space-between; margin-top: 25px; }
+        .partie { width: 48%; }
+        .partie h2 { font-size: 11pt; color: #003366; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+        .meta { margin-top: 18px; font-size: 10pt; color: #333; }
+        table.lignes { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.lignes th { background: #003366; color: #fff; padding: 7px 8px; font-size: 9.5pt; text-align: left; }
+        table.lignes td { padding: 7px 8px; border-bottom: 1px solid #e0e0e0; font-size: 10pt; }
+        table.lignes td.num, table.lignes th.num { text-align: right; white-space: nowrap; }
+        .totaux { margin-top: 18px; width: 55%; margin-left: 45%; }
+        .totaux table { width: 100%; border-collapse: collapse; }
+        .totaux td { padding: 5px 8px; }
+        .totaux td.label { text-align: right; color: #333; }
+        .totaux td.val { text-align: right; white-space: nowrap; }
+        .totaux tr.ttc td { font-weight: bold; font-size: 12pt; color: #003366; border-top: 2px solid #003366; }
+        .mentions { margin-top: 35px; font-size: 9pt; color: #666; }
+        .accord { margin-top: 40px; font-size: 10pt; }
+    </style>
+</head>
+<body>
+
+<div class="entete">
+    <div>
+        <h1>{{ type_document }}</h1>
+        <div class="numero">N° {{ numero }}</div>
+    </div>
+    {% if logo_url %}<img src="{{ logo_url }}" class="logo" />{% endif %}
+</div>
+
+<div class="parties">
+    <div class="partie">
+        <h2>Émetteur</h2>
+        <p><strong>{{ entreprise }}</strong><br>
+        {{ adresse }}
+        {% if siret %}<br>SIRET : {{ siret }}{% endif %}
+        {% if email %}<br>{{ email }}{% endif %}</p>
+    </div>
+    <div class="partie">
+        <h2>Client</h2>
+        <p><strong>{{ client_nom }}</strong><br>
+        {{ client_adresse }}</p>
+    </div>
+</div>
+
+<div class="meta">
+    <strong>Date :</strong> {{ date }}
+    {% if date_limite %}&nbsp;&nbsp;|&nbsp;&nbsp; <strong>{{ date_limite_label }} :</strong> {{ date_limite }}{% endif %}
+</div>
+
+<table class="lignes">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th class="num">Qté</th>
+            <th class="num">PU HT</th>
+            <th class="num">TVA</th>
+            <th class="num">Montant HT</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for l in calc.lignes %}
+        <tr>
+            <td>{{ l.description }}</td>
+            <td class="num">{{ l.quantite|string|replace('.', ',') }}</td>
+            <td class="num">{{ l.prix_unitaire|eur }}</td>
+            <td class="num">{{ l.taux_tva|string|replace('.', ',') }} %</td>
+            <td class="num">{{ l.montant_ht|eur }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="totaux">
+    <table>
+        <tr>
+            <td class="label">Total HT</td>
+            <td class="val">{{ calc.total_ht|eur }}</td>
+        </tr>
+        {% for t in calc.tva_par_taux %}
+        <tr>
+            <td class="label">TVA {{ t.taux|string|replace('.', ',') }} % (sur {{ t.base_ht|eur }})</td>
+            <td class="val">{{ t.montant_tva|eur }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="ttc">
+            <td class="label">Total TTC</td>
+            <td class="val">{{ calc.total_ttc|eur }}</td>
+        </tr>
+    </table>
+</div>
+
+{% if type_document == "Devis" %}
+<div class="accord">
+    <p>Devis valable jusqu'au {{ date_limite or "…" }}. Bon pour accord (date et signature) :</p>
+    <p style="margin-top:40px;">________________________________</p>
+</div>
+{% else %}
+<div class="mentions">
+    <p>Règlement à réception{% if date_limite %}, au plus tard le {{ date_limite }}{% endif %}.
+    En cas de retard de paiement, une indemnité forfaitaire de 40 € pour frais de recouvrement sera due (art. L441-10 du Code de commerce).</p>
+</div>
+{% endif %}
+
+</body>
+</html>

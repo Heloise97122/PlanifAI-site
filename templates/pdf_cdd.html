@@ -1,0 +1,45 @@
+{% extends "pdf_base.html" %}
+{% block doc_title %}Contrat de travail à durée déterminée{% endblock %}
+{% block titre %}Contrat de travail à durée déterminée (CDD){% endblock %}
+
+{% block corps %}
+<div class="section">
+    <p>Entre les soussignés :</p>
+    <p><strong>{{ entreprise }}</strong>, dont le siège est situé {{ adresse }}, ci-après « l'Employeur »,</p>
+    <p>et <strong>{{ nom }}</strong>, ci-après « le Salarié »,</p>
+    <p>il a été convenu ce qui suit :</p>
+</div>
+
+<div class="section">
+    <h2>Article 1 — Objet et motif</h2>
+    <p>Le Salarié est engagé en contrat à durée déterminée au poste de <strong>{{ poste }}</strong>.</p>
+    <p>Motif du recours : <strong>{{ motif }}</strong>.</p>
+</div>
+
+<div class="section">
+    <h2>Article 2 — Durée</h2>
+    <p>Le contrat prend effet le <strong>{{ date_debut }}</strong> pour une durée de <strong>{{ duree }}</strong>
+    {% if date_fin %}, soit jusqu'au <strong>{{ date_fin }}</strong>{% endif %}.</p>
+    <p>Ce contrat est <strong>{% if renouvelable == "Oui" %}renouvelable{% else %}non renouvelable{% endif %}</strong>
+    dans les limites prévues par la loi.</p>
+</div>
+
+<div class="section">
+    <h2>Article 3 — Rémunération</h2>
+    <p>Le Salarié percevra une rémunération brute mensuelle de <strong>{{ salaire }} €</strong>.</p>
+</div>
+
+<div class="section">
+    <h2>Article 4 — Période d'essai</h2>
+    <p>Une période d'essai de <strong>{{ periode_essai }}</strong> est prévue, conformément à la législation en vigueur.</p>
+</div>
+
+<div class="section">
+    <h2>Article 5 — Mentions légales</h2>
+    <ul class="mentions">
+        <li>À l'issue du contrat, le Salarié percevra une indemnité de fin de contrat conformément à l'article L1243-8 du Code du travail, sauf exceptions légales.</li>
+        <li>Le Salarié bénéficie des congés payés et de la protection sociale liés à son emploi.</li>
+        <li>Toute modification fera l'objet d'un avenant signé par les deux parties.</li>
+    </ul>
+</div>
+{% endblock %}

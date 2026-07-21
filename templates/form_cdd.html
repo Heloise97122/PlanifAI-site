@@ -1,0 +1,33 @@
+{% extends "form_base.html" %}
+{% block page_title %}Contrat CDD{% endblock %}
+{% block heading %}Générer un contrat CDD{% endblock %}
+{% block action %}/generate/cdd{% endblock %}
+{% block fields %}
+    <label>Nom du salarié</label>
+    <input name="nom" required>
+    <label>Poste</label>
+    <input name="poste" required>
+    <label>Nom de l'entreprise</label>
+    <input name="entreprise" required>
+    <label>Adresse de l'entreprise</label>
+    <input name="adresse" required>
+    <label>Motif du recours au CDD</label>
+    <input name="motif" placeholder="Ex : remplacement, accroissement d'activité..." required>
+    <label>Date de début</label>
+    <input name="date_debut" type="date" required>
+    <label>Date de fin</label>
+    <input name="date_fin" type="date">
+    <label>Durée (ex : 6 mois)</label>
+    <input name="duree" required>
+    <label>Salaire brut mensuel (€)</label>
+    <input name="salaire" required>
+    <label>Période d'essai (ex : 2 semaines)</label>
+    <input name="periode_essai">
+    <label>Renouvelable ?</label>
+    <select name="renouvelable">
+        <option value="Oui">Oui</option>
+        <option value="Non" selected>Non</option>
+    </select>
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "form_base.html" %}
+{% block page_title %}Contrat CDI{% endblock %}
+{% block heading %}Générer un contrat CDI{% endblock %}
+{% block action %}/generate/cdi{% endblock %}
+{% block fields %}
+    <label>Nom du salarié</label>
+    <input name="nom" required>
+    <label>Poste</label>
+    <input name="poste" required>
+    <label>Nom de l'entreprise</label>
+    <input name="entreprise" required>
+    <label>Adresse de l'entreprise</label>
+    <input name="adresse" required>
+    <label>Date de début</label>
+    <input name="date_debut" type="date" required>
+    <label>Salaire brut mensuel (€)</label>
+    <input name="salaire" required>
+    <label>Période d'essai (ex : 2 mois)</label>
+    <input name="periode_essai">
+    <label>Période d'essai renouvelable ?</label>
+    <select name="renouvelable">
+        <option value="Oui">Oui</option>
+        <option value="Non" selected>Non</option>
+    </select>
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

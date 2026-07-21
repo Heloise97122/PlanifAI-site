@@ -1,0 +1,45 @@
+{% extends "pdf_base.html" %}
+{% block doc_title %}Contrat de prestation freelance{% endblock %}
+{% block titre %}Contrat de prestation de services (Freelance){% endblock %}
+{% block signataire_gauche %}Signature du Client{% endblock %}
+{% block signataire_droite %}Signature du Prestataire{% endblock %}
+
+{% block corps %}
+<div class="section">
+    <p>Entre les soussignés :</p>
+    <p><strong>{{ entreprise }}</strong>, dont le siège est situé {{ adresse }}, ci-après « le Client »,</p>
+    <p>et <strong>{{ nom }}</strong>, travailleur indépendant, ci-après « le Prestataire »,</p>
+    <p>il a été convenu ce qui suit :</p>
+</div>
+
+<div class="section">
+    <h2>Article 1 — Objet de la mission</h2>
+    <p>Le Prestataire réalisera pour le Client la mission suivante :</p>
+    <p>{{ mission }}</p>
+</div>
+
+<div class="section">
+    <h2>Article 2 — Durée</h2>
+    <p>La mission débute le <strong>{{ date_debut }}</strong>
+    {% if duree %} pour une durée de <strong>{{ duree }}</strong>{% endif %}
+    {% if date_fin %}, soit jusqu'au <strong>{{ date_fin }}</strong>{% endif %}.</p>
+</div>
+
+<div class="section">
+    <h2>Article 3 — Rémunération et facturation</h2>
+    <table class="infos">
+        <tr><td class="label">Tarif</td><td>{{ tjm }} € {{ unite_tarif or "par jour" }}</td></tr>
+        <tr><td class="label">Modalités de paiement</td><td>{{ modalites_paiement }}</td></tr>
+    </table>
+    <p class="mentions">Le Prestataire facturera ses prestations et est responsable de ses propres déclarations sociales et fiscales.</p>
+</div>
+
+<div class="section">
+    <h2>Article 4 — Mentions légales</h2>
+    <ul class="mentions">
+        <li>Le Prestataire agit en toute indépendance ; aucun lien de subordination n'existe entre les parties.</li>
+        <li>Le présent contrat ne constitue pas un contrat de travail.</li>
+        <li>Chaque partie peut résilier le contrat dans les conditions prévues d'un commun accord.</li>
+    </ul>
+</div>
+{% endblock %}

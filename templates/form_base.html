@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | {% block page_title %}Formulaire{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <p><a href="/">&larr; Retour au tableau de bord</a></p>
+    <h1>{% block heading %}Formulaire{% endblock %}</h1>
+    <p>{% block intro %}Renseignez les informations puis générez le PDF.{% endblock %}</p>
+    <form method="post" action="{% block action %}/{% endblock %}">
+        {% block fields %}{% endblock %}
+        <button type="submit">Générer le PDF</button>
+    </form>
+</body>
+</html>

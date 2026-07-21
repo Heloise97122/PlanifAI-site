@@ -1,0 +1,22 @@
+{% extends "form_base.html" %}
+{% block page_title %}Attestation employeur{% endblock %}
+{% block heading %}Générer une attestation d'employeur{% endblock %}
+{% block action %}/generate/attestation{% endblock %}
+{% block fields %}
+    <label>Nom du salarié</label>
+    <input name="nom" required>
+    <label>Poste occupé</label>
+    <input name="poste" required>
+    <label>Type de contrat</label>
+    <input name="type_contrat" placeholder="CDI, CDD..." required>
+    <label>Nom de l'entreprise</label>
+    <input name="entreprise" required>
+    <label>Adresse de l'entreprise</label>
+    <input name="adresse" required>
+    <label>Date d'entrée</label>
+    <input name="date_debut" type="date" required>
+    <label>Date de sortie (laisser vide si toujours en poste)</label>
+    <input name="date_fin" type="date">
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block doc_title %}Document{% endblock %}</title>
+    <style>
+        @page { margin: 2.5cm; }
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 11pt;
+            color: #222;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #003366;
+            font-size: 20pt;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        h2 {
+            color: #003366;
+            font-size: 13pt;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+            margin-top: 22px;
+        }
+        p { margin: 8px 0; }
+        .section { margin-bottom: 18px; }
+        ul { margin-left: 18px; }
+        table.infos { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        table.infos td { padding: 4px 8px; vertical-align: top; }
+        table.infos td.label { font-weight: bold; width: 45%; }
+        .signature {
+            margin-top: 55px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature div { width: 45%; text-align: center; }
+        .logo { max-width: 120px; max-height: 70px; float: right; }
+        .mentions { font-size: 9.5pt; color: #555; }
+    </style>
+</head>
+<body>
+
+{% if logo_url %}<img src="{{ logo_url }}" class="logo" />{% endif %}
+
+<h1>{% block titre %}Document{% endblock %}</h1>
+
+{% block corps %}{% endblock %}
+
+<div class="signature">
+    <div>
+        <p>Fait à {{ lieu or adresse }},</p>
+        <p>le {{ date_edition or date_debut }}</p>
+        <p>{% block signataire_gauche %}Signature de l'employeur{% endblock %}</p>
+    </div>
+    <div>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>{% block signataire_droite %}Signature du salarié{% endblock %}</p>
+    </div>
+</div>
+
+</body>
+</html>

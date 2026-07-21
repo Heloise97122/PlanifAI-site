@@ -1,151 +1,172 @@
-body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f9f9fb;
-    color: #1a1a1a;
-    padding: 2rem;
-    max-width: 800px;
-    margin: auto;
-    line-height: 1.6;
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+    --ink:#16233D;
+    --ink-soft:#2C3E5C;
+    --paper:#F1F3F5;
+    --card:#FFFFFF;
+    --accent:#3B6FD4;
+    --accent-deep:#2B54A8;
+    --steel:#4A6B8A;
+    --line:#D5CFC1;
+    --line-soft:#E4DFD4;
+    --danger:#BE4A34;
+    --ok:#4E7A51;
+    --muted:#6E6A5F;
 }
 
-h1 {
-    color: #2c3e50;
-    font-size: 2rem;
-    border-bottom: 2px solid #ccc;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.5rem;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    max-width:960px;
+    margin:0 auto;
+    padding:0 18px 70px;
 }
 
-h2 {
-    color: #34495e;
-    font-size: 1.5rem;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;line-height:1.1}
+h1{font-size:clamp(26px,5vw,40px);font-weight:700;margin:22px 0 6px}
+h2{font-size:18px;font-weight:700;color:var(--ink);margin:26px 0 12px}
+
+a{color:var(--accent-deep);text-decoration:none}
+a:hover{text-decoration:underline}
+
+p{margin:8px 0}
+
+/* ---------- Header ---------- */
+.top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 0 16px;border-bottom:2px solid var(--ink);
+}
+.brand{display:flex;align-items:baseline;gap:2px;font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;color:var(--ink)}
+.brand:hover{text-decoration:none}
+.brand .dot{color:var(--accent)}
+.brand small{font-family:'IBM Plex Sans';font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:8px}
+.top .tag{
+    display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;
+    background:var(--ink);color:#fff;padding:6px 13px;border-radius:100px;
+}
+.top .tag .pin{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* ---------- Greeting ---------- */
+.greet{padding:26px 0 6px}
+.greet .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:10px}
+.greet h1{margin:0}
+.greet h1 .thin{color:var(--muted);font-weight:600}
+
+/* ---------- Échéances strip ---------- */
+.echeances{margin:16px 0 30px;border:1px solid var(--line);background:var(--card);border-radius:14px;overflow:hidden}
+.echeances .head{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line-soft)}
+.echeances .head b{font-family:'Bricolage Grotesque';font-weight:700;font-size:14px}
+.echeances .head .count{margin-left:auto;font-size:12px;color:var(--muted)}
+.tick{display:flex;gap:10px;overflow-x:auto;padding:14px 16px}
+.tick .empty{color:var(--muted);font-size:13.5px;padding:2px 0}
+.chip{flex:0 0 auto;min-width:190px;border:1px solid var(--line);border-left:3px solid var(--steel);border-radius:9px;padding:10px 12px;background:#fff}
+.chip.warn{border-left-color:var(--accent)}
+.chip.late{border-left-color:var(--danger)}
+.chip .t{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.chip .n{font-weight:600;font-size:14px;margin-top:3px}
+.chip .sub{font-size:12.5px;color:var(--ink-soft)}
+
+/* ---------- Doors (tuiles) ---------- */
+.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.door{
+    position:relative;display:block;text-align:left;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:20px 18px 18px;overflow:hidden;color:var(--ink);
+    transition:transform .16s ease,box-shadow .16s ease,border-color .16s;
+}
+.door:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(22,35,61,.5);border-color:var(--ink);text-decoration:none}
+.door:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.door .idx{position:absolute;top:16px;right:18px;font-family:'Bricolage Grotesque';font-weight:700;font-size:13px;color:var(--line)}
+.door .ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;margin-bottom:16px;background:var(--ink);color:#fff}
+.door.fa .ic{background:var(--steel)}
+.door.pl .ic{background:var(--accent-deep)}
+.door .ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.9}
+.door h3{font-size:19px;font-weight:700;margin-bottom:4px}
+.door p{font-size:13px;color:var(--muted);min-height:34px;margin:0}
+.door .go{position:absolute;bottom:18px;right:18px;color:var(--accent-deep);opacity:0;transition:opacity .16s,transform .16s;transform:translateX(-4px)}
+.door:hover .go{opacity:1;transform:translateX(0)}
+
+.footnote{margin-top:30px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6}
+.footnote b{color:var(--ink-soft);font-weight:600}
+
+/* ---------- Formulaires ---------- */
+.back{font-size:13.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;margin:18px 0 2px}
+.back:hover{color:var(--ink);text-decoration:none}
+
+form{
+    background:var(--card);
+    padding:22px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    max-width:640px;
+}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:14px 0 5px;letter-spacing:.01em}
+input,select,textarea{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    font-size:15px;
+    transition:border-color .14s,box-shadow .14s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,111,212,.18)}
+textarea{resize:vertical}
+
+.hint{color:var(--muted);font-size:0.9rem;margin:-2px 0 14px}
+
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* bouton principal de génération (submit du formulaire) */
+form button[type="submit"]{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;margin-top:22px;
+    background:var(--accent-deep);color:#fff;font-weight:600;font-size:15px;
+    padding:13px;border-radius:11px;transition:background .15s,transform .1s;
+}
+form button[type="submit"]:hover{background:var(--accent)}
+form button[type="submit"]:active{transform:scale(.99)}
+form button[type="submit"]:disabled{background:#cbb488;cursor:progress}
+
+/* ---------- Boutons de navigation (hubs) ---------- */
+.button-container{display:flex;flex-direction:column;gap:10px;margin:6px 0 2px}
+.button{
+    display:inline-flex;align-items:center;background:var(--ink);color:#fff;
+    text-align:left;padding:14px 16px;border-radius:11px;font-weight:600;
+    text-decoration:none;transition:background .15s,transform .1s;
+}
+.button:hover{background:var(--ink-soft);text-decoration:none;transform:translateY(-1px)}
+
+/* ---------- Tableaux de lignes (facture / planning) ---------- */
+table.lignes-form{width:100%;border-collapse:collapse;margin-bottom:1rem;display:block;overflow-x:auto}
+table.lignes-form th{text-align:left;font-size:0.8rem;color:var(--ink-soft);padding:0.3rem 0.4rem;white-space:nowrap}
+table.lignes-form td{padding:0.25rem 0.4rem;vertical-align:middle}
+table.lignes-form input,table.lignes-form select{margin:0;padding:0.55rem}
+.btn-suppr{background:#f3e4e0;color:var(--danger);padding:0.45rem 0.7rem;border-radius:8px;font-size:0.9rem}
+.btn-suppr:hover{background:#ecd2cc}
+.button-secondaire{
+    display:inline-block;background:transparent;color:var(--ink-soft);
+    border:1px solid var(--line);padding:0.6rem 1rem;border-radius:10px;
+    font-weight:600;margin-bottom:1.2rem;
+}
+.button-secondaire:hover{background:var(--line-soft)}
+
+/* ---------- Indicateur de chargement ---------- */
+.loader{
+    display:none;margin-top:1.4rem;padding:1rem;
+    background:#fff;border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;color:var(--ink);font-weight:500;text-align:center;
 }
 
-form {
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-input, select, textarea {
-    width: 100%;
-    padding: 0.8rem;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-}
-
-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-.button-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.button {
-    background-color: #34495e;
-    color: white;
-    text-align: center;
-    padding: 0.8rem 1.2rem;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background 0.3s ease;
-}
-
-.button:hover {
-    background-color: #2c3e50;
-}
-
-.button.disabled {
-    background-color: #ccc;
-    pointer-events: none;
-    cursor: default;
-}
-
-.hint {
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: -0.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.loader {
-    display: none;
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background-color: #eef4ff;
-    border: 1px solid #b6d0ff;
-    border-radius: 6px;
-    color: #2c3e50;
-    font-weight: 500;
-    text-align: center;
-}
-
-button:disabled {
-    background-color: #9bbce0;
-    cursor: progress;
-}
-
-table.lignes-form {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-}
-
-table.lignes-form th {
-    text-align: left;
-    font-size: 0.85rem;
-    color: #34495e;
-    padding: 0.3rem 0.4rem;
-}
-
-table.lignes-form td {
-    padding: 0.2rem 0.4rem;
-    vertical-align: middle;
-}
-
-table.lignes-form input,
-table.lignes-form select {
-    margin: 0;
-    padding: 0.5rem;
-}
-
-.btn-suppr {
-    background-color: #e74c3c;
-    padding: 0.4rem 0.7rem;
-    font-size: 0.9rem;
-}
-
-.btn-suppr:hover {
-    background-color: #c0392b;
-}
-
-.button-secondaire {
-    background-color: #6c7a89;
-    margin-bottom: 1.5rem;
-}
-
-.button-secondaire:hover {
-    background-color: #55606b;
+/* ---------- Responsive ---------- */
+@media(max-width:680px){
+    .doors{grid-template-columns:1fr}
+    body{padding:0 14px 60px}
+    form{padding:18px}
 }

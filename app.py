@@ -124,6 +124,10 @@ async def form_attestation(request: Request):
 async def formulaire_rh(request: Request):
     return templates.TemplateResponse(request, "form_cdi.html")
 
+@app.get("/facturation", response_class=HTMLResponse)
+async def facturation_home(request: Request):
+    return templates.TemplateResponse(request, "facturation_home.html")
+
 @app.get("/facture", response_class=HTMLResponse)
 async def form_facture(request: Request):
     return templates.TemplateResponse(request, "form_facture.html")

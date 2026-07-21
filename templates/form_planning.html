@@ -1,0 +1,19 @@
+{% extends "form_base.html" %}
+{% block page_title %}Planning{% endblock %}
+{% block heading %}Créer un planning hebdomadaire{% endblock %}
+{% block intro %}Saisissez les créneaux de la semaine : la grille par intervenant et par jour est générée automatiquement en PDF.{% endblock %}
+{% block action %}/generate/planning{% endblock %}
+{% block fields %}
+    <label>Titre du planning (optionnel)</label>
+    <input name="titre" placeholder="Ex : Équipe chantier">
+    <label>Entreprise (optionnel)</label>
+    <input name="entreprise">
+    <label>Semaine (choisissez une date de la semaine)</label>
+    <input name="semaine_debut" type="date" required>
+
+    {% include "_creneaux_planning.html" %}
+
+    <h2>Logo</h2>
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

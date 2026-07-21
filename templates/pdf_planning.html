@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Planning{% if titre %} — {{ titre }}{% endif %}</title>
+    <style>
+        @page { size: A4 landscape; margin: 1.5cm; }
+        body { font-family: "Helvetica", Arial, sans-serif; font-size: 10pt; color: #222; }
+        .entete { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        h1 { color: #003366; font-size: 18pt; margin: 0; }
+        .sous-titre { color: #555; font-size: 11pt; margin-top: 2px; }
+        .logo { max-width: 120px; max-height: 60px; }
+        table.planning { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        table.planning th, table.planning td { border: 1px solid #b9c4d0; padding: 6px; vertical-align: top; }
+        table.planning thead th { background: #003366; color: #fff; font-size: 9.5pt; }
+        table.planning th.jour .date { display: block; font-weight: normal; font-size: 8.5pt; color: #d5e0f0; }
+        table.planning td.nom { background: #eef2f7; font-weight: bold; width: 13%; }
+        table.planning td .creneau { display: block; margin-bottom: 3px; font-size: 9pt; }
+        table.planning td.vide { color: #bbb; }
+        .pied { margin-top: 14px; font-size: 8.5pt; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="entete">
+    <div>
+        <h1>Planning{% if titre %} — {{ titre }}{% endif %}</h1>
+        <div class="sous-titre">
+            {% if entreprise %}{{ entreprise }} · {% endif %}Semaine du {{ jours[0].date }} au {{ jours[6].date }}
+        </div>
+    </div>
+    {% if logo_url %}<img src="{{ logo_url }}" class="logo" />{% endif %}
+</div>
+
+<table class="planning">
+    <thead>
+        <tr>
+            <th>Intervenant</th>
+            {% for j in jours %}
+            <th class="jour">{{ j.nom }}<span class="date">{{ j.date }}</span></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for nom in intervenants %}
+        <tr>
+            <td class="nom">{{ nom }}</td>
+            {% for j in jours %}
+            {% set items = grille[nom].get(j.index, []) %}
+            <td {% if not items %}class="vide"{% endif %}>
+                {% for item in items %}<span class="creneau">{{ item }}</span>{% endfor %}
+                {% if not items %}—{% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        {% if not intervenants %}
+        <tr><td colspan="8" style="text-align:center; color:#999;">Aucun créneau saisi.</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<p class="pied">Planning généré avec PlanifAI.</p>
+
+</body>
+</html>

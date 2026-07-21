@@ -11,6 +11,7 @@ import logging
 import re
 
 import billing
+import planning
 
 logger = logging.getLogger("planifai")
 
@@ -130,6 +131,10 @@ async def form_facture(request: Request):
 @app.get("/devis", response_class=HTMLResponse)
 async def form_devis(request: Request):
     return templates.TemplateResponse(request, "form_devis.html")
+
+@app.get("/planning", response_class=HTMLResponse)
+async def form_planning(request: Request):
+    return templates.TemplateResponse(request, "form_planning.html")
 
 
 # === GÉNÉRATION PDF ===
@@ -336,6 +341,37 @@ async def generate_devis(
         numero=numero, date=date,
         date_limite=validite, date_limite_label="Validité",
         calc=calc, logo_url=logo_url,
+    )
+
+
+@app.post("/generate/planning", response_class=FileResponse)
+async def generate_planning(
+    semaine_debut: str = Form(...),
+    titre: str = Form(""),
+    entreprise: str = Form(""),
+    intervenant: List[str] = Form([]),
+    jour: List[str] = Form([]),
+    heure_debut: List[str] = Form([]),
+    heure_fin: List[str] = Form([]),
+    activite: List[str] = Form([]),
+    logo_url: str = Form(None),
+):
+    creneaux = []
+    for i in range(max(len(intervenant), len(jour), len(activite))):
+        creneaux.append({
+            "intervenant": intervenant[i] if i < len(intervenant) else "",
+            "jour": jour[i] if i < len(jour) else "",
+            "heure_debut": heure_debut[i] if i < len(heure_debut) else "",
+            "heure_fin": heure_fin[i] if i < len(heure_fin) else "",
+            "activite": activite[i] if i < len(activite) else "",
+        })
+    grille = planning.construire_planning(creneaux)
+    jours = planning.semaine_jours(semaine_debut)
+    return render_pdf(
+        "pdf_planning.html", "planning",
+        nom=f"semaine_{semaine_debut}", titre=titre, entreprise=entreprise,
+        jours=jours, intervenants=grille["intervenants"], grille=grille["grille"],
+        logo_url=logo_url,
     )
 
 

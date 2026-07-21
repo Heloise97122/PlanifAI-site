@@ -1,0 +1,67 @@
+<h2>Créneaux</h2>
+<p class="hint">Ajoutez une ligne par créneau (une personne peut en avoir plusieurs par jour).</p>
+<table class="lignes-form" id="creneaux">
+    <thead>
+        <tr>
+            <th>Intervenant</th>
+            <th>Jour</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Activité</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(4) %}
+        <tr class="ligne">
+            <td><input name="intervenant" placeholder="Nom"></td>
+            <td>
+                <select name="jour">
+                    <option value="0">Lundi</option>
+                    <option value="1">Mardi</option>
+                    <option value="2">Mercredi</option>
+                    <option value="3">Jeudi</option>
+                    <option value="4">Vendredi</option>
+                    <option value="5">Samedi</option>
+                    <option value="6">Dimanche</option>
+                </select>
+            </td>
+            <td><input name="heure_debut" type="time"></td>
+            <td><input name="heure_fin" type="time"></td>
+            <td><input name="activite" placeholder="Chantier, tâche..."></td>
+            <td><button type="button" class="btn-suppr" title="Supprimer la ligne">✕</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button type="button" id="ajouter-creneau" class="button-secondaire">+ Ajouter un créneau</button>
+
+<script>
+(function () {
+    var corps = document.querySelector('#creneaux tbody');
+    var ajouter = document.getElementById('ajouter-creneau');
+
+    function brancherSuppression(bouton) {
+        bouton.addEventListener('click', function () {
+            var lignes = corps.querySelectorAll('tr.ligne');
+            if (lignes.length > 1) {
+                bouton.closest('tr').remove();
+            } else {
+                bouton.closest('tr').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+            }
+        });
+    }
+
+    corps.querySelectorAll('.btn-suppr').forEach(brancherSuppression);
+
+    ajouter.addEventListener('click', function () {
+        var modele = corps.querySelector('tr.ligne');
+        var copie = modele.cloneNode(true);
+        copie.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+        var select = copie.querySelector('select');
+        if (select) select.selectedIndex = 0;
+        corps.appendChild(copie);
+        brancherSuppression(copie.querySelector('.btn-suppr'));
+    });
+})();
+</script>

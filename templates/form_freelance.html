@@ -1,0 +1,32 @@
+{% extends "form_base.html" %}
+{% block page_title %}Contrat freelance{% endblock %}
+{% block heading %}Générer un contrat freelance{% endblock %}
+{% block action %}/generate/freelance{% endblock %}
+{% block fields %}
+    <label>Nom du prestataire</label>
+    <input name="nom" required>
+    <label>Nom du client (entreprise)</label>
+    <input name="entreprise" required>
+    <label>Adresse du client</label>
+    <input name="adresse" required>
+    <label>Description de la mission</label>
+    <textarea name="mission" rows="3" required></textarea>
+    <label>Tarif (€)</label>
+    <input name="tjm" required>
+    <label>Unité du tarif</label>
+    <select name="unite_tarif">
+        <option value="par jour" selected>par jour (TJM)</option>
+        <option value="par heure">par heure</option>
+        <option value="forfait">au forfait</option>
+    </select>
+    <label>Modalités de paiement</label>
+    <input name="modalites_paiement" placeholder="Ex : à 30 jours, sur facture">
+    <label>Date de début</label>
+    <input name="date_debut" type="date" required>
+    <label>Date de fin</label>
+    <input name="date_fin" type="date">
+    <label>Durée (optionnel)</label>
+    <input name="duree" placeholder="Ex : 3 mois">
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

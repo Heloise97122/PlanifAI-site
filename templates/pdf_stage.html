@@ -1,0 +1,44 @@
+{% extends "pdf_base.html" %}
+{% block doc_title %}Convention de stage{% endblock %}
+{% block titre %}Convention de stage{% endblock %}
+{% block signataire_gauche %}Signature de l'entreprise d'accueil{% endblock %}
+{% block signataire_droite %}Signature du stagiaire{% endblock %}
+
+{% block corps %}
+<div class="section">
+    <p>La présente convention est conclue entre :</p>
+    <p><strong>{{ entreprise }}</strong>, dont le siège est situé {{ adresse }}, ci-après « l'Entreprise d'accueil »,</p>
+    <p><strong>{{ nom }}</strong>, stagiaire, ci-après « le Stagiaire »,</p>
+    <p>et l'établissement d'enseignement : <strong>{{ ecole }}</strong>.</p>
+</div>
+
+<div class="section">
+    <h2>Article 1 — Objet du stage</h2>
+    <p>Le Stagiaire effectuera un stage au sein de l'Entreprise d'accueil, sur les missions suivantes :</p>
+    <p>{{ missions }}</p>
+</div>
+
+<div class="section">
+    <h2>Article 2 — Durée</h2>
+    <p>Le stage débute le <strong>{{ date_debut }}</strong> pour une durée de <strong>{{ duree }}</strong>
+    {% if date_fin %}, soit jusqu'au <strong>{{ date_fin }}</strong>{% endif %}.</p>
+</div>
+
+<div class="section">
+    <h2>Article 3 — Encadrement et gratification</h2>
+    <table class="infos">
+        <tr><td class="label">Tuteur en entreprise</td><td>{{ tuteur }}</td></tr>
+        <tr><td class="label">Gratification mensuelle</td><td>{{ gratification }} €</td></tr>
+    </table>
+    <p class="mentions">Une gratification est obligatoire pour tout stage supérieur à deux mois, conformément à la législation en vigueur.</p>
+</div>
+
+<div class="section">
+    <h2>Article 4 — Mentions légales</h2>
+    <ul class="mentions">
+        <li>Le Stagiaire conserve son statut d'étudiant et n'est pas lié par un contrat de travail.</li>
+        <li>Le stage fait l'objet d'un suivi pédagogique par l'établissement d'enseignement.</li>
+        <li>Le Stagiaire est soumis au règlement intérieur de l'Entreprise d'accueil.</li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "pdf_base.html" %}
+{% block doc_title %}Contrat de travail à durée indéterminée{% endblock %}
+{% block titre %}Contrat de travail à durée indéterminée (CDI){% endblock %}
+
+{% block corps %}
+<div class="section">
+    <p>Entre les soussignés :</p>
+    <p><strong>{{ entreprise }}</strong>, dont le siège est situé {{ adresse }}, ci-après « l'Employeur »,</p>
+    <p>et <strong>{{ nom }}</strong>, ci-après « le Salarié »,</p>
+    <p>il a été convenu ce qui suit :</p>
+</div>
+
+<div class="section">
+    <h2>Article 1 — Engagement</h2>
+    <p>Le Salarié est engagé en contrat à durée indéterminée à compter du <strong>{{ date_debut }}</strong>,
+    au poste de <strong>{{ poste }}</strong>.</p>
+</div>
+
+<div class="section">
+    <h2>Article 2 — Rémunération</h2>
+    <p>En contrepartie de son travail, le Salarié percevra une rémunération brute mensuelle de
+    <strong>{{ salaire }} €</strong>.</p>
+</div>
+
+<div class="section">
+    <h2>Article 3 — Période d'essai</h2>
+    <p>Le présent contrat est conclu avec une période d'essai de <strong>{{ periode_essai }}</strong>,
+    {% if renouvelable == "Oui" %}renouvelable une fois{% else %}non renouvelable{% endif %},
+    conformément à la convention collective applicable.</p>
+</div>
+
+<div class="section">
+    <h2>Article 4 — Mentions légales</h2>
+    <ul class="mentions">
+        <li>Le présent contrat est régi par les dispositions du Code du travail et de la convention collective applicable.</li>
+        <li>Le Salarié bénéficie des congés payés et de la protection sociale liés à son emploi.</li>
+        <li>Les horaires et le lieu de travail seront précisés par l'Employeur.</li>
+        <li>Toute modification fera l'objet d'un avenant signé par les deux parties.</li>
+    </ul>
+</div>
+{% endblock %}

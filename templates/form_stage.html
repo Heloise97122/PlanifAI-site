@@ -1,0 +1,28 @@
+{% extends "form_base.html" %}
+{% block page_title %}Convention de stage{% endblock %}
+{% block heading %}Générer une convention de stage{% endblock %}
+{% block action %}/generate/stage{% endblock %}
+{% block fields %}
+    <label>Nom du stagiaire</label>
+    <input name="nom" required>
+    <label>Établissement d'enseignement</label>
+    <input name="ecole" required>
+    <label>Nom de l'entreprise d'accueil</label>
+    <input name="entreprise" required>
+    <label>Adresse de l'entreprise</label>
+    <input name="adresse" required>
+    <label>Missions confiées</label>
+    <textarea name="missions" rows="3" required></textarea>
+    <label>Tuteur en entreprise</label>
+    <input name="tuteur" required>
+    <label>Gratification mensuelle (€)</label>
+    <input name="gratification" placeholder="0 si non gratifié">
+    <label>Date de début</label>
+    <input name="date_debut" type="date" required>
+    <label>Date de fin</label>
+    <input name="date_fin" type="date">
+    <label>Durée (ex : 3 mois)</label>
+    <input name="duree" required>
+    <label>URL du logo (optionnel)</label>
+    <input name="logo_url" placeholder="https://...">
+{% endblock %}

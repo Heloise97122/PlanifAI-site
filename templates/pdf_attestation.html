@@ -1,0 +1,27 @@
+{% extends "pdf_base.html" %}
+{% block doc_title %}Attestation d'employeur{% endblock %}
+{% block titre %}Attestation d'employeur{% endblock %}
+{% block signataire_gauche %}Cachet et signature de l'employeur{% endblock %}
+{% block signataire_droite %}&nbsp;{% endblock %}
+
+{% block corps %}
+<div class="section">
+    <p>Je soussigné(e), représentant de la société <strong>{{ entreprise }}</strong>,
+    dont le siège est situé {{ adresse }}, atteste que :</p>
+</div>
+
+<div class="section">
+    <table class="infos">
+        <tr><td class="label">Nom du salarié</td><td>{{ nom }}</td></tr>
+        <tr><td class="label">Poste occupé</td><td>{{ poste }}</td></tr>
+        <tr><td class="label">Type de contrat</td><td>{{ type_contrat }}</td></tr>
+        <tr><td class="label">Date d'entrée</td><td>{{ date_debut }}</td></tr>
+        <tr><td class="label">Situation actuelle</td>
+            <td>{% if date_fin %}Sorti(e) des effectifs le {{ date_fin }}{% else %}Toujours en poste à ce jour{% endif %}</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <p>La présente attestation est délivrée à l'intéressé(e) pour servir et valoir ce que de droit.</p>
+</div>
+{% endblock %}

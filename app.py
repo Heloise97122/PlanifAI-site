@@ -18,39 +18,39 @@ env = Environment(loader=FileSystemLoader("templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request, "dashboard.html")
 
 @app.get("/rh-ai", response_class=HTMLResponse)
 async def rh_ai_home(request: Request):
-    return templates.TemplateResponse("rh_ai_home.html", {"request": request})
+    return templates.TemplateResponse(request, "rh_ai_home.html")
 
 @app.get("/formulaire_rh", response_class=HTMLResponse)
 async def formulaire_rh(request: Request):
-    return templates.TemplateResponse("formulaire_rh.html", {"request": request})
+    return templates.TemplateResponse(request, "formulaire_rh.html")
 
 @app.get("/freelance", response_class=HTMLResponse)
 async def freelance(request: Request):
-    return templates.TemplateResponse("contrat_freelance.html", {"request": request})
+    return templates.TemplateResponse(request, "contrat_freelance.html")
 
 @app.get("/alternance", response_class=HTMLResponse)
 async def alternance(request: Request):
-    return templates.TemplateResponse("contrat_alternance.html", {"request": request})
+    return templates.TemplateResponse(request, "contrat_alternance.html")
 
 @app.get("/stage", response_class=HTMLResponse)
 async def stage(request: Request):
-    return templates.TemplateResponse("contrat_stage.html", {"request": request})
+    return templates.TemplateResponse(request, "contrat_stage.html")
 
 @app.get("/attestation", response_class=HTMLResponse)
 async def attestation(request: Request):
-    return templates.TemplateResponse("attestation_template.html", {"request": request})
+    return templates.TemplateResponse(request, "attestation_template.html")
 
 @app.get("/cdi", response_class=HTMLResponse)
 async def contrat_cdi(request: Request):
-    return templates.TemplateResponse("contrat_cdi.html", {"request": request})
+    return templates.TemplateResponse(request, "contrat_cdi.html")
 
 @app.get("/cdd", response_class=HTMLResponse)
 async def contrat_cdd(request: Request):
-    return templates.TemplateResponse("contrat_cdd.html", {"request": request})
+    return templates.TemplateResponse(request, "contrat_cdd.html")
 
 
 # === ROUTE GÉNÉRATION PDF (exemple RH) ===

@@ -43,3 +43,5 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     _ajouter_colonne_si_absente("users", "logo", "TEXT")
     _ajouter_colonne_si_absente("users", "mentions_legales", "TEXT")
+    _ajouter_colonne_si_absente("users", "reset_token_hash", "VARCHAR(64)")
+    _ajouter_colonne_si_absente("users", "reset_token_expires", "TIMESTAMP")

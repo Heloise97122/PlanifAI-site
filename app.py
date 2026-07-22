@@ -25,8 +25,24 @@ logger = logging.getLogger("planifai")
 
 app = FastAPI()
 
-# Création des tables au démarrage
-db.init_db()
+# Création des tables + diagnostic de base de données au démarrage.
+# Affiche dans les logs quel moteur est réellement utilisé (postgresql / sqlite),
+# sans jamais exposer le mot de passe.
+try:
+    db.init_db()
+    with db.engine.connect() as _conn:
+        _conn.exec_driver_sql("SELECT 1")
+    print(
+        f"[PlanifAI] Base de donnees OK — moteur={db.engine.url.get_backend_name()} "
+        f"hote={db.engine.url.host or 'local (sqlite ephemere)'}",
+        flush=True,
+    )
+except Exception as _e:
+    print(
+        f"[PlanifAI] ERREUR base de donnees — moteur={db.engine.url.get_backend_name()} "
+        f": {type(_e).__name__}: {_e}",
+        flush=True,
+    )
 
 # Dossiers
 app.mount("/static", StaticFiles(directory="static"), name="static")

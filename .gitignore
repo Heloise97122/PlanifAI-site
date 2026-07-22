@@ -9,3 +9,7 @@ env/
 # Fichiers temporaires
 *.pdf
 .DS_Store
+
+# Base de données locale
+planifai.db
+*.db

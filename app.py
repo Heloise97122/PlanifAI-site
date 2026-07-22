@@ -1,26 +1,141 @@
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 from decimal import Decimal
 from typing import List
 import tempfile
 import logging
+import os
 import re
 
 import billing
 import planning
+import db
+import models
+import auth
 
 logger = logging.getLogger("planifai")
 
 app = FastAPI()
 
+# Création des tables au démarrage
+db.init_db()
+
 # Dossiers
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
+
+# --- Sécurité : le site est privé, tout passe derrière la connexion ---
+PUBLIC_PATHS = {"/connexion", "/inscription", "/health", "/favicon.ico"}
+
+
+@app.middleware("http")
+async def garde_connexion(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("/static") or path in PUBLIC_PATHS:
+        return await call_next(request)
+    if not request.session.get("user_id"):
+        return RedirectResponse("/connexion", status_code=303)
+    return await call_next(request)
+
+
+# SessionMiddleware ajouté APRÈS la garde -> il l'enveloppe, la session est
+# donc disponible quand la garde s'exécute.
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.environ.get("SECRET_KEY", "dev-secret-a-changer-en-production"),
+    max_age=60 * 60 * 24 * 14,
+    same_site="lax",
+    https_only=False,
+)
+
+
+def utilisateur_courant(request: Request):
+    """Retourne l'utilisateur connecté (ou None)."""
+    uid = request.session.get("user_id")
+    if not uid:
+        return None
+    session = db.SessionLocal()
+    try:
+        return session.get(models.User, uid)
+    finally:
+        session.close()
+
+
+# === AUTHENTIFICATION ===
+
+@app.get("/connexion", response_class=HTMLResponse)
+async def page_connexion(request: Request):
+    return templates.TemplateResponse(request, "connexion.html")
+
+
+@app.post("/connexion")
+async def faire_connexion(request: Request, email: str = Form(...), mot_de_passe: str = Form(...)):
+    session = db.SessionLocal()
+    try:
+        user = session.query(models.User).filter(
+            models.User.email == email.strip().lower()
+        ).first()
+        if not user or not auth.verify_password(mot_de_passe, user.password_hash):
+            return templates.TemplateResponse(
+                request, "connexion.html",
+                {"erreur": "Email ou mot de passe incorrect."}, status_code=400,
+            )
+        request.session["user_id"] = user.id
+        return RedirectResponse("/", status_code=303)
+    finally:
+        session.close()
+
+
+@app.get("/inscription", response_class=HTMLResponse)
+async def page_inscription(request: Request):
+    return templates.TemplateResponse(request, "inscription.html")
+
+
+@app.post("/inscription")
+async def faire_inscription(
+    request: Request,
+    email: str = Form(...),
+    mot_de_passe: str = Form(...),
+    entreprise: str = Form(""),
+    adresse: str = Form(""),
+):
+    email = email.strip().lower()
+    if len(mot_de_passe) < 6:
+        return templates.TemplateResponse(
+            request, "inscription.html",
+            {"erreur": "Le mot de passe doit faire au moins 6 caractères."}, status_code=400,
+        )
+    session = db.SessionLocal()
+    try:
+        if session.query(models.User).filter(models.User.email == email).first():
+            return templates.TemplateResponse(
+                request, "inscription.html",
+                {"erreur": "Un compte existe déjà avec cet email."}, status_code=400,
+            )
+        user = models.User(
+            email=email,
+            password_hash=auth.hash_password(mot_de_passe),
+            entreprise=entreprise.strip(),
+            adresse=adresse.strip(),
+        )
+        session.add(user)
+        session.commit()
+        request.session["user_id"] = user.id
+        return RedirectResponse("/", status_code=303)
+    finally:
+        session.close()
+
+
+@app.get("/deconnexion")
+async def deconnexion(request: Request):
+    request.session.clear()
+    return RedirectResponse("/connexion", status_code=303)
 
 
 def format_eur(value) -> str:

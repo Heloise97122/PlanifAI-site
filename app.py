@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, File, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -12,6 +12,7 @@ import tempfile
 import logging
 import os
 import re
+import base64
 import json
 
 import billing
@@ -157,6 +158,66 @@ async def deconnexion(request: Request):
     return RedirectResponse("/connexion", status_code=303)
 
 
+# === MON ENTREPRISE (profil + logo) ===
+
+MAX_LOGO = 2_000_000  # 2 Mo
+
+
+@app.get("/mon-entreprise", response_class=HTMLResponse)
+async def page_entreprise(request: Request):
+    user = utilisateur_courant(request)
+    return templates.TemplateResponse(request, "mon_entreprise.html", {
+        "entreprise": user.entreprise if user else "",
+        "adresse": user.adresse if user else "",
+        "logo": user.logo if user else None,
+        "enregistre": request.query_params.get("ok") == "1",
+    })
+
+
+@app.post("/mon-entreprise")
+async def sauver_entreprise(
+    request: Request,
+    entreprise: str = Form(""),
+    adresse: str = Form(""),
+    logo: UploadFile = File(None),
+    supprimer_logo: str = Form(""),
+):
+    uid = request.session.get("user_id")
+    erreur = None
+    changer_logo = False
+    nouveau_logo = None
+
+    if supprimer_logo == "1":
+        changer_logo, nouveau_logo = True, None
+    elif logo is not None and logo.filename:
+        data = await logo.read()
+        ctype = logo.content_type or ""
+        if not ctype.startswith("image/"):
+            erreur = "Le fichier doit être une image (PNG, JPG…)."
+        elif len(data) > MAX_LOGO:
+            erreur = "Le logo est trop lourd (2 Mo maximum)."
+        else:
+            nouveau_logo = f"data:{ctype};base64," + base64.b64encode(data).decode()
+            changer_logo = True
+
+    session = db.SessionLocal()
+    try:
+        user = session.get(models.User, uid)
+        if erreur:
+            return templates.TemplateResponse(request, "mon_entreprise.html", {
+                "entreprise": entreprise, "adresse": adresse,
+                "logo": user.logo, "erreur": erreur,
+            }, status_code=400)
+        user.entreprise = entreprise.strip()
+        user.adresse = adresse.strip()
+        if changer_logo:
+            user.logo = nouveau_logo
+        session.commit()
+    finally:
+        session.close()
+    return RedirectResponse("/mon-entreprise?ok=1", status_code=303)
+
+
 def format_eur(value) -> str:
     """Formate un montant à la française : « 1 200,50 € »."""
     montant = Decimal(str(value)).quantize(Decimal("0.01"))
@@ -282,8 +343,7 @@ async def telecharger_document(request: Request, doc_id: int):
         fields = json.loads(doc.donnees or "{}")
     finally:
         session.close()
-    template, prefix, context = documents.build_context(type_, fields)
-    return render_pdf(template, prefix, **context)
+    return _render_with_logo(request, type_, fields)
 
 @app.get("/rh-ai", response_class=HTMLResponse)
 async def rh_ai_home(request: Request):
@@ -364,11 +424,19 @@ def _persist_document(request: Request, type_: str, fields: dict):
         logger.exception("Échec de sauvegarde du document (%s)", type_)
 
 
-def _save_and_render(request: Request, type_: str, fields: dict):
-    """Sauvegarde (si connecté) puis renvoie le PDF."""
-    _persist_document(request, type_, fields)
-    template, prefix, context = documents.build_context(type_, fields)
+def _render_with_logo(request: Request, type_: str, fields: dict):
+    """Injecte le logo du compte (data URI) puis renvoie le PDF."""
+    f = dict(fields)
+    user = utilisateur_courant(request)
+    f["logo_url"] = user.logo if (user and user.logo) else None
+    template, prefix, context = documents.build_context(type_, f)
     return render_pdf(template, prefix, **context)
+
+
+def _save_and_render(request: Request, type_: str, fields: dict):
+    """Sauvegarde les champs bruts (sans le logo) puis renvoie le PDF avec le logo du compte."""
+    _persist_document(request, type_, fields)
+    return _render_with_logo(request, type_, fields)
 
 
 @app.post("/generate/cdi", response_class=FileResponse)
@@ -557,6 +625,7 @@ async def generate_devis(
 
 @app.post("/generate/planning", response_class=FileResponse)
 async def generate_planning(
+    request: Request,
     semaine_debut: str = Form(...),
     titre: str = Form(""),
     entreprise: str = Form(""),
@@ -565,7 +634,6 @@ async def generate_planning(
     heure_debut: List[str] = Form([]),
     heure_fin: List[str] = Form([]),
     activite: List[str] = Form([]),
-    logo_url: str = Form(None),
 ):
     creneaux = []
     for i in range(max(len(intervenant), len(jour), len(activite))):
@@ -578,11 +646,13 @@ async def generate_planning(
         })
     grille = planning.construire_planning(creneaux)
     jours = planning.semaine_jours(semaine_debut)
+    user = utilisateur_courant(request)
+    logo = user.logo if (user and user.logo) else None
     return render_pdf(
         "pdf_planning.html", "planning",
         nom=f"semaine_{semaine_debut}", titre=titre, entreprise=entreprise,
         jours=jours, intervenants=grille["intervenants"], grille=grille["grille"],
-        logo_url=logo_url,
+        logo_url=logo,
     )
 
 

@@ -179,6 +179,12 @@ body.auth{max-width:none;display:flex;align-items:center;justify-content:center;
 .auth-card .sub{color:var(--muted);font-size:14px;margin:0 0 16px}
 .auth-alt{margin-top:16px;font-size:14px;color:var(--muted);text-align:center}
 .form-error{background:#fdecea;border:1px solid #f3c4bd;color:#a12a1c;padding:10px 12px;border-radius:9px;font-size:14px;margin-bottom:14px}
+.form-ok{background:#e6f4ea;border:1px solid #b7e0c3;color:#256b3c;padding:10px 12px;border-radius:9px;font-size:14px;margin-bottom:14px}
+.logo-actuel{display:flex;align-items:center;gap:16px;margin:6px 0 10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.logo-actuel img{max-width:150px;max-height:70px}
+.logo-actuel .check{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--muted);margin:0;font-size:13px}
+input[type=checkbox]{width:auto;margin:0}
+input[type=file]{padding:9px;background:#fff}
 .logout{font-size:13px;color:var(--muted)}
 .logout:hover{color:var(--danger);text-decoration:none}
 .topnav{display:flex;align-items:center;gap:16px;font-size:13px}

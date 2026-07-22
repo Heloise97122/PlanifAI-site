@@ -17,6 +17,8 @@ class User(Base):
     # Profil de l'entreprise, réutilisé pour pré-remplir les documents.
     entreprise = Column(String(255), default="")
     adresse = Column(String(255), default="")
+    # Logo de l'entreprise, stocké en data URI (base64) pour persister avec la base.
+    logo = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

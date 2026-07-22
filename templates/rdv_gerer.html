@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer mon rendez-vous</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+    <div class="top">
+        <span class="brand">Planif<span class="dot">·</span>AI</span>
+    </div>
+
+    <div class="rdv-wrap">
+    {% if introuvable %}
+        <h1>Rendez-vous introuvable</h1>
+        <p class="hint">Ce lien n'est plus valide. Le rendez-vous a peut-être déjà été annulé.</p>
+
+    {% elif annule_ok %}
+        <div class="form-ok" style="text-align:center;font-size:16px">✓ Rendez-vous annulé</div>
+        <p class="hint" style="text-align:center">Votre rendez-vous avec <strong>{{ entreprise }}</strong> a bien été annulé.</p>
+
+    {% elif reporte_ok %}
+        <div class="form-ok" style="text-align:center;font-size:16px">✓ Rendez-vous déplacé</div>
+        <p class="hint" style="text-align:center">Votre nouveau rendez-vous avec <strong>{{ entreprise }}</strong> :<br>
+        <strong>{{ jour_sel_label }}</strong>.</p>
+
+    {% elif reporter %}
+        <a class="back" href="/rdv/gerer/{{ token }}">‹ Retour</a>
+        <h1>Choisir un autre créneau</h1>
+        <p class="hint">Rendez-vous actuel : <strong>{{ jour_label|capitalize }} à {{ heure }}</strong></p>
+
+        {% if jours %}
+        <label>1. Choisissez un jour</label>
+        <div class="rdv-jours">
+            {% for j in jours %}
+            <a href="/rdv/gerer/{{ token }}/reporter?jour={{ j.iso }}" class="rdv-jour {% if j.sel %}sel{% endif %}">{{ j.label|capitalize }}</a>
+            {% endfor %}
+        </div>
+        {% if creneaux %}
+        <form method="post" action="/rdv/gerer/{{ token }}/reporter">
+            <input type="hidden" name="jour" value="{{ jour_sel }}">
+            <label>2. Nouveau créneau — {{ jour_sel_label|capitalize }}</label>
+            <div class="rdv-creneaux">
+                {% for c in creneaux %}
+                <label class="rdv-creneau"><input type="radio" name="heure" value="{{ c }}" required><span>{{ c }}</span></label>
+                {% endfor %}
+            </div>
+            <button type="submit">Confirmer le nouveau créneau</button>
+        </form>
+        {% else %}
+        <p class="list-empty">Aucun créneau libre ce jour-là. Choisissez un autre jour.</p>
+        {% endif %}
+        {% else %}
+        <div class="list-empty">Aucune disponibilité pour le moment.</div>
+        {% endif %}
+
+    {% else %}
+        <h1>Mon rendez-vous</h1>
+        <p class="hint">avec <strong>{{ entreprise }}</strong></p>
+        <div class="echeances" style="margin:16px 0">
+            <div class="tick" style="padding:16px">
+                <div>
+                    <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:17px">{{ jour_label|capitalize }} à {{ heure }}</div>
+                    {% if motif %}<div class="sub" style="margin-top:4px">{{ motif }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if annule %}
+        <div class="form-error">Ce rendez-vous a été annulé.</div>
+        {% elif passe %}
+        <p class="hint">Ce rendez-vous est passé.</p>
+        {% else %}
+        <a class="btn-lien" href="/rdv/gerer/{{ token }}/reporter">Choisir un autre créneau</a>
+        <form method="post" action="/rdv/gerer/{{ token }}/annuler" onsubmit="return confirm('Annuler définitivement ce rendez-vous ?');">
+            <button type="submit" class="btn-annuler">Annuler ce rendez-vous</button>
+        </form>
+        {% endif %}
+    {% endif %}
+    </div>
+</body>
+</html>

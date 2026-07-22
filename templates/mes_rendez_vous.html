@@ -36,6 +36,9 @@
                 <b>{{ r.jour_label|capitalize }} — {{ r.heure }}</b>
                 <span>{{ r.client_nom }}{% if r.client_tel %} · {{ r.client_tel }}{% endif %}{% if r.motif %} · {{ r.motif }}{% endif %}</span>
             </div>
+            <form method="post" action="/mes-rendez-vous/{{ r.id }}/annuler" onsubmit="return confirm('Annuler ce rendez-vous ? Le client sera prévenu par e-mail.');" style="margin:0">
+                <button type="submit" class="btn-annuler-mini">Annuler</button>
+            </form>
         </div>
         {% endfor %}
     </div>

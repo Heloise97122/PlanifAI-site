@@ -24,6 +24,7 @@ import db
 import models
 import auth
 import mailer
+import rdv
 
 logger = logging.getLogger("planifai")
 
@@ -58,7 +59,7 @@ PUBLIC_PATHS = {
     "/connexion", "/inscription", "/health", "/favicon.ico",
     "/mot-de-passe-oublie",
 }
-PUBLIC_PREFIXES = ("/static", "/reinitialiser")
+PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
 
 
 @app.middleware("http")
@@ -441,6 +442,215 @@ def render_pdf(template_name: str, filename_prefix: str, **context):
         return _error_page()
 
 
+# === PRISE DE RENDEZ-VOUS EN LIGNE ===
+
+RDV_HORIZON = 14  # nombre de jours réservables à l'avance
+
+
+def _slug_unique(session, souhaite: str, user_id: int) -> str:
+    """Retourne un slug libre, en ajoutant -2, -3… si déjà pris par un autre compte."""
+    base = rdv.slugify(souhaite)
+    candidat, n = base, 1
+    while True:
+        occupe = session.query(models.User).filter(
+            models.User.rdv_slug == candidat, models.User.id != user_id
+        ).first()
+        if not occupe:
+            return candidat
+        n += 1
+        candidat = f"{base}-{n}"
+
+
+@app.get("/mes-disponibilites", response_class=HTMLResponse)
+async def page_disponibilites(request: Request):
+    user = utilisateur_courant(request)
+    lien = None
+    if user and user.rdv_slug:
+        lien = f"{_base_url(request)}/rdv/{user.rdv_slug}"
+    return templates.TemplateResponse(request, "mes_disponibilites.html", {
+        "actif": bool(user and user.rdv_actif),
+        "jours": rdv.parse_jours(user.rdv_jours if user else "0,1,2,3,4"),
+        "heure_debut": (user.rdv_heure_debut if user else None) or "08:00",
+        "heure_fin": (user.rdv_heure_fin if user else None) or "17:00",
+        "duree": (user.rdv_duree if user else None) or 60,
+        "slug": user.rdv_slug if user else "",
+        "lien": lien,
+        "enregistre": request.query_params.get("ok") == "1",
+        "jours_noms": list(enumerate(rdv.JOURS_FR)),
+    })
+
+
+@app.post("/mes-disponibilites")
+async def sauver_disponibilites(
+    request: Request,
+    actif: str = Form(""),
+    jours: List[str] = Form([]),
+    heure_debut: str = Form("08:00"),
+    heure_fin: str = Form("17:00"),
+    duree: int = Form(60),
+    slug: str = Form(""),
+):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        user = session.get(models.User, uid)
+        user.rdv_actif = 1 if actif == "1" else 0
+        user.rdv_jours = ",".join(j for j in jours if j.isdigit()) or "0,1,2,3,4"
+        user.rdv_heure_debut = heure_debut
+        user.rdv_heure_fin = heure_fin
+        user.rdv_duree = duree if duree in (30, 60) else 60
+        souhaite = slug.strip() or user.entreprise or user.email.split("@")[0]
+        if not user.rdv_slug or slug.strip():
+            user.rdv_slug = _slug_unique(session, souhaite, user.id)
+        session.commit()
+    finally:
+        session.close()
+    return RedirectResponse("/mes-disponibilites?ok=1", status_code=303)
+
+
+@app.get("/mes-rendez-vous", response_class=HTMLResponse)
+async def page_mes_rdv(request: Request):
+    user = utilisateur_courant(request)
+    lien = f"{_base_url(request)}/rdv/{user.rdv_slug}" if (user and user.rdv_slug) else None
+    session = db.SessionLocal()
+    try:
+        rdvs = session.query(models.RendezVous).filter(
+            models.RendezVous.user_id == user.id,
+            models.RendezVous.statut == "confirme",
+            models.RendezVous.jour >= date.today(),
+        ).order_by(models.RendezVous.jour, models.RendezVous.heure).all()
+        items = [{
+            "jour_label": rdv.libelle_jour(r.jour), "heure": r.heure,
+            "client_nom": r.client_nom, "client_tel": r.client_tel,
+            "client_email": r.client_email, "motif": r.motif,
+        } for r in rdvs]
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "mes_rendez_vous.html", {
+        "rdvs": items, "actif": bool(user and user.rdv_actif), "lien": lien,
+    })
+
+
+def _pro_par_slug(session, slug: str):
+    return session.query(models.User).filter(models.User.rdv_slug == slug).first()
+
+
+@app.get("/rdv/{slug}", response_class=HTMLResponse)
+async def page_rdv_public(request: Request, slug: str):
+    session = db.SessionLocal()
+    try:
+        pro = _pro_par_slug(session, slug)
+        if not pro or not pro.rdv_actif:
+            return templates.TemplateResponse(request, "rdv_public.html", {"indisponible": True})
+
+        jours = rdv.jours_reservables(pro.rdv_jours, RDV_HORIZON)
+        jour_choisi = request.query_params.get("jour")
+        jour_sel = None
+        for j in jours:
+            if j.isoformat() == jour_choisi:
+                jour_sel = j
+                break
+        if jour_sel is None and jours:
+            jour_sel = jours[0]
+
+        creneaux = []
+        if jour_sel:
+            prises = [h for (h,) in session.query(models.RendezVous.heure).filter(
+                models.RendezVous.user_id == pro.id,
+                models.RendezVous.jour == jour_sel,
+                models.RendezVous.statut == "confirme",
+            ).all()]
+            creneaux = rdv.creneaux_libres(
+                jour_sel, pro.rdv_heure_debut or "08:00", pro.rdv_heure_fin or "17:00",
+                pro.rdv_duree or 60, prises)
+
+        jours_aff = [{"iso": j.isoformat(), "label": rdv.libelle_jour(j),
+                      "sel": (j == jour_sel)} for j in jours]
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "rdv_public.html", {
+        "entreprise": pro.entreprise or "Prise de rendez-vous",
+        "slug": slug, "jours": jours_aff, "creneaux": creneaux,
+        "jour_sel": jour_sel.isoformat() if jour_sel else "",
+        "jour_sel_label": rdv.libelle_jour(jour_sel) if jour_sel else "",
+    })
+
+
+@app.post("/rdv/{slug}", response_class=HTMLResponse)
+async def reserver_rdv(
+    request: Request, slug: str,
+    jour: str = Form(...), heure: str = Form(...),
+    client_nom: str = Form(...), client_tel: str = Form(""),
+    client_email: str = Form(""), motif: str = Form(""),
+):
+    session = db.SessionLocal()
+    try:
+        pro = _pro_par_slug(session, slug)
+        if not pro or not pro.rdv_actif:
+            return templates.TemplateResponse(request, "rdv_public.html", {"indisponible": True})
+        try:
+            jour_date = date.fromisoformat(jour)
+        except ValueError:
+            return RedirectResponse(f"/rdv/{slug}", status_code=303)
+
+        # Le créneau est-il toujours libre ? (évite la double réservation)
+        deja = session.query(models.RendezVous).filter(
+            models.RendezVous.user_id == pro.id,
+            models.RendezVous.jour == jour_date,
+            models.RendezVous.heure == heure,
+            models.RendezVous.statut == "confirme",
+        ).first()
+        if deja:
+            return templates.TemplateResponse(request, "rdv_public.html", {
+                "entreprise": pro.entreprise or "Prise de rendez-vous", "slug": slug,
+                "erreur": "Ce créneau vient d'être réservé. Merci d'en choisir un autre.",
+                "recommencer": True,
+            }, status_code=409)
+
+        rendezvous = models.RendezVous(
+            user_id=pro.id, jour=jour_date, heure=heure,
+            client_nom=client_nom.strip(), client_tel=client_tel.strip(),
+            client_email=client_email.strip(), motif=motif.strip(),
+        )
+        session.add(rendezvous)
+        session.commit()
+
+        jour_label = rdv.libelle_jour(jour_date)
+        pro_email = pro.email
+        pro_nom = pro.entreprise or "votre prestataire"
+    finally:
+        session.close()
+
+    # E-mails (best-effort : un échec d'envoi ne bloque pas la réservation).
+    if client_email.strip():
+        mailer.envoyer_email(
+            client_email.strip(),
+            f"Confirmation de votre rendez-vous — {pro_nom}",
+            f"<p>Bonjour {client_nom.strip()},</p>"
+            f"<p>Votre rendez-vous avec <strong>{pro_nom}</strong> est confirmé :</p>"
+            f"<p><strong>{jour_label} à {heure}</strong></p>"
+            + (f"<p>Motif : {motif.strip()}</p>" if motif.strip() else "")
+            + "<p>À bientôt !</p><p>— PlanifAI</p>",
+        )
+    if pro_email:
+        mailer.envoyer_email(
+            pro_email,
+            f"Nouveau rendez-vous : {client_nom.strip()} — {jour_label} à {heure}",
+            f"<p>Nouveau rendez-vous réservé en ligne :</p>"
+            f"<p><strong>{jour_label} à {heure}</strong></p>"
+            f"<p>Client : {client_nom.strip()}<br>"
+            f"Téléphone : {client_tel.strip() or '—'}<br>"
+            f"E-mail : {client_email.strip() or '—'}</p>"
+            + (f"<p>Motif : {motif.strip()}</p>" if motif.strip() else "")
+            + "<p>— PlanifAI</p>",
+        )
+
+    return templates.TemplateResponse(request, "rdv_public.html", {
+        "entreprise": pro_nom, "confirme": True,
+        "jour_sel_label": jour_label, "heure": heure,
+    })
+
+
 # === SANTÉ / MONITORING ===
 
 @app.get("/health")
@@ -475,6 +685,24 @@ async def dashboard(request: Request):
                     "urgent": 0 <= jours <= 7,
                     "retard": jours < 0,
                 })
+            # Rendez-vous à venir (7 prochains jours) dans les rappels.
+            prochains = session.query(models.RendezVous).filter(
+                models.RendezVous.user_id == uid,
+                models.RendezVous.statut == "confirme",
+                models.RendezVous.jour >= aujourdhui,
+                models.RendezVous.jour <= aujourdhui + timedelta(days=7),
+            ).order_by(models.RendezVous.jour, models.RendezVous.heure).all()
+            for r in prochains:
+                jours = (r.jour - aujourdhui).days
+                rappels.append({
+                    "label": f"RDV {r.heure}",
+                    "tiers": r.client_nom or "Client",
+                    "date": r.jour.strftime("%d/%m/%Y"),
+                    "jours": jours,
+                    "urgent": 0 <= jours <= 2,
+                    "retard": False,
+                })
+            rappels.sort(key=lambda x: x["jours"])
         finally:
             session.close()
     return templates.TemplateResponse(request, "dashboard.html", {"rappels": rappels})

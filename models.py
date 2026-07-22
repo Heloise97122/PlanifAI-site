@@ -25,7 +25,31 @@ class User(Base):
     # brut) + sa date d'expiration. Le lien envoyé par e-mail contient le jeton brut.
     reset_token_hash = Column(String(64), nullable=True)
     reset_token_expires = Column(DateTime, nullable=True)
+    # Prise de rendez-vous en ligne (page publique /rdv/<slug>).
+    rdv_actif = Column(Integer, default=0)                 # 0/1 : la prise de RDV est-elle ouverte
+    rdv_slug = Column(String(120), unique=True, index=True, nullable=True)
+    rdv_jours = Column(String(30), default="0,1,2,3,4")    # jours ouvrés (0 = lundi)
+    rdv_heure_debut = Column(String(5), default="08:00")
+    rdv_heure_fin = Column(String(5), default="17:00")
+    rdv_duree = Column(Integer, default=60)                # durée d'un créneau en minutes
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class RendezVous(Base):
+    """Un rendez-vous réservé par un client sur la page publique d'un pro."""
+
+    __tablename__ = "rendez_vous"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)  # le pro
+    jour = Column(Date, nullable=False, index=True)
+    heure = Column(String(5), nullable=False)              # « HH:MM »
+    client_nom = Column(String(255), default="")
+    client_email = Column(String(255), default="")
+    client_tel = Column(String(40), default="")
+    motif = Column(Text, default="")
+    statut = Column(String(20), default="confirme")        # confirme / annule
+    date_creation = Column(DateTime, default=datetime.utcnow)
 
 
 class Document(Base):

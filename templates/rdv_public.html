@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prise de rendez-vous{% if entreprise %} — {{ entreprise }}{% endif %}</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+    <div class="top">
+        <span class="brand">Planif<span class="dot">·</span>AI</span>
+    </div>
+
+    {% if indisponible %}
+    <div class="rdv-wrap">
+        <h1>Page indisponible</h1>
+        <p class="hint">La prise de rendez-vous en ligne n'est pas disponible pour ce lien.</p>
+    </div>
+
+    {% elif confirme %}
+    <div class="rdv-wrap">
+        <div class="form-ok" style="text-align:center;font-size:16px">✓ Rendez-vous confirmé</div>
+        <h1 style="text-align:center">C'est noté !</h1>
+        <p class="hint" style="text-align:center">Votre rendez-vous avec <strong>{{ entreprise }}</strong><br>
+        le <strong>{{ jour_sel_label }} à {{ heure }}</strong> est bien enregistré.</p>
+        <p class="hint" style="text-align:center">Un e-mail de confirmation vous a été envoyé si vous avez renseigné votre adresse.</p>
+    </div>
+
+    {% else %}
+    <div class="rdv-wrap">
+        <h1>Réserver un rendez-vous</h1>
+        <p class="hint">avec <strong>{{ entreprise }}</strong></p>
+
+        {% if erreur %}<div class="form-error">{{ erreur }}</div>{% endif %}
+        {% if recommencer %}<p><a class="back" href="/rdv/{{ slug }}">‹ Choisir un autre créneau</a></p>{% endif %}
+
+        {% if not recommencer %}
+        {% if jours %}
+        <label>1. Choisissez un jour</label>
+        <div class="rdv-jours">
+            {% for j in jours %}
+            <a href="/rdv/{{ slug }}?jour={{ j.iso }}" class="rdv-jour {% if j.sel %}sel{% endif %}">{{ j.label|capitalize }}</a>
+            {% endfor %}
+        </div>
+
+        {% if creneaux %}
+        <form method="post" action="/rdv/{{ slug }}">
+            <input type="hidden" name="jour" value="{{ jour_sel }}">
+
+            <label>2. Choisissez un créneau — {{ jour_sel_label|capitalize }}</label>
+            <div class="rdv-creneaux">
+                {% for c in creneaux %}
+                <label class="rdv-creneau">
+                    <input type="radio" name="heure" value="{{ c }}" required>
+                    <span>{{ c }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <label>3. Vos coordonnées</label>
+            <input name="client_nom" placeholder="Votre nom" required>
+            <input name="client_tel" placeholder="Téléphone" type="tel">
+            <input name="client_email" placeholder="E-mail (pour recevoir la confirmation)" type="email">
+            <textarea name="motif" rows="2" placeholder="Motif du rendez-vous (optionnel)"></textarea>
+
+            <button type="submit">Confirmer le rendez-vous</button>
+        </form>
+        {% else %}
+        <p class="list-empty">Aucun créneau libre ce jour-là. Choisissez un autre jour ci-dessus.</p>
+        {% endif %}
+
+        {% else %}
+        <div class="list-empty">Aucune disponibilité pour le moment. Revenez bientôt.</div>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | Mes rendez-vous</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+    <div class="top">
+        <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
+        <span class="topnav">
+            <a href="/mes-disponibilites">Mes disponibilités</a>
+            <a class="logout" href="/deconnexion">Se déconnecter</a>
+        </span>
+    </div>
+
+    <a class="back" href="/">‹ Tableau de bord</a>
+    <h1>Mes rendez-vous</h1>
+
+    {% if not actif %}
+    <div class="form-error" style="text-align:left">
+        La prise de rendez-vous en ligne n'est pas encore activée.
+        <a href="/mes-disponibilites">Configurer mes disponibilités →</a>
+    </div>
+    {% elif lien %}
+    <p class="hint">Votre page de réservation : <a href="{{ lien }}" target="_blank" style="word-break:break-all">{{ lien }}</a>
+    &nbsp;·&nbsp; <a href="/mes-disponibilites">Modifier mes disponibilités</a></p>
+    {% endif %}
+
+    {% if rdvs %}
+    <div class="doc-list">
+        {% for r in rdvs %}
+        <div class="doc-item" style="cursor:default">
+            <div class="doc-main">
+                <b>{{ r.jour_label|capitalize }} — {{ r.heure }}</b>
+                <span>{{ r.client_nom }}{% if r.client_tel %} · {{ r.client_tel }}{% endif %}{% if r.motif %} · {{ r.motif }}{% endif %}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="list-empty">Aucun rendez-vous à venir pour le moment.</div>
+    {% endif %}
+</body>
+</html>

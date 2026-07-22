@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | Mes disponibilités</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+    <div class="top">
+        <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
+        <a class="logout" href="/deconnexion">Se déconnecter</a>
+    </div>
+
+    <a class="back" href="/mes-rendez-vous">‹ Mes rendez-vous</a>
+    <h1>Mes disponibilités</h1>
+    <p class="hint">Définissez vos créneaux : vos clients pourront réserver eux-mêmes en ligne.</p>
+
+    {% if enregistre %}<div class="form-ok">✓ Disponibilités enregistrées.</div>{% endif %}
+
+    {% if lien and actif %}
+    <div class="form-ok" style="text-align:left">
+        Votre page de réservation est en ligne :<br>
+        <a href="{{ lien }}" target="_blank" style="word-break:break-all">{{ lien }}</a>
+        <p class="hint" style="margin-top:6px">Partagez ce lien à vos clients (SMS, WhatsApp, carte de visite…).</p>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/mes-disponibilites">
+        <label class="check" style="font-size:15px">
+            <input type="checkbox" name="actif" value="1" {% if actif %}checked{% endif %}>
+            Activer la prise de rendez-vous en ligne
+        </label>
+
+        <label style="margin-top:18px">Jours travaillés</label>
+        <div class="jours-grille">
+            {% for i, nom in jours_noms %}
+            <label class="jour-case">
+                <input type="checkbox" name="jours" value="{{ i }}" {% if i in jours %}checked{% endif %}>
+                <span>{{ nom|capitalize }}</span>
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="row">
+            <div>
+                <label>De</label>
+                <input type="time" name="heure_debut" value="{{ heure_debut }}">
+            </div>
+            <div>
+                <label>À</label>
+                <input type="time" name="heure_fin" value="{{ heure_fin }}">
+            </div>
+        </div>
+
+        <label>Durée d'un rendez-vous</label>
+        <select name="duree">
+            <option value="30" {% if duree == 30 %}selected{% endif %}>30 minutes</option>
+            <option value="60" {% if duree == 60 %}selected{% endif %}>1 heure</option>
+        </select>
+
+        <label>Personnaliser le lien (optionnel)</label>
+        <input name="slug" value="{{ slug }}" placeholder="ex : menuiserie-lefevre">
+        <p class="hint">Laissez vide pour générer automatiquement à partir du nom de votre entreprise.</p>
+
+        <button type="submit">Enregistrer</button>
+    </form>
+</body>
+</html>

@@ -6,3 +6,4 @@ weasyprint==69.0
 sqlalchemy==2.0.36
 bcrypt==4.2.1
 itsdangerous==2.2.0
+psycopg2-binary==2.9.10

@@ -213,3 +213,10 @@ input[type=file]{padding:9px;background:#fff}
     body{padding:0 14px 60px}
     form{padding:18px}
 }
+@media(max-width:560px){
+    /* Header : logo sur une ligne, menu dessous (sinon les liens débordent) */
+    .top{flex-direction:column;align-items:flex-start;gap:10px;padding:16px 0 12px}
+    .topnav{flex-wrap:wrap;gap:10px 16px}
+    .brand{font-size:20px}
+    h1{font-size:clamp(24px,7vw,32px)}
+}

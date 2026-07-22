@@ -49,6 +49,8 @@ class RendezVous(Base):
     client_tel = Column(String(40), default="")
     motif = Column(Text, default="")
     statut = Column(String(20), default="confirme")        # confirme / annule
+    # Jeton (haché) permettant au client de gérer son RDV depuis le lien de l'e-mail.
+    gestion_token_hash = Column(String(64), nullable=True, index=True)
     date_creation = Column(DateTime, default=datetime.utcnow)
 
 

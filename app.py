@@ -520,6 +520,7 @@ async def page_mes_rdv(request: Request):
             models.RendezVous.jour >= date.today(),
         ).order_by(models.RendezVous.jour, models.RendezVous.heure).all()
         items = [{
+            "id": r.id,
             "jour_label": rdv.libelle_jour(r.jour), "heure": r.heure,
             "client_nom": r.client_nom, "client_tel": r.client_tel,
             "client_email": r.client_email, "motif": r.motif,
@@ -607,10 +608,12 @@ async def reserver_rdv(
                 "recommencer": True,
             }, status_code=409)
 
+        token = secrets.token_urlsafe(24)
         rendezvous = models.RendezVous(
             user_id=pro.id, jour=jour_date, heure=heure,
             client_nom=client_nom.strip(), client_tel=client_tel.strip(),
             client_email=client_email.strip(), motif=motif.strip(),
+            gestion_token_hash=_hash_token(token),
         )
         session.add(rendezvous)
         session.commit()
@@ -621,6 +624,8 @@ async def reserver_rdv(
     finally:
         session.close()
 
+    lien_gestion = f"{_base_url(request)}/rdv/gerer/{token}"
+
     # E-mails (best-effort : un échec d'envoi ne bloque pas la réservation).
     if client_email.strip():
         mailer.envoyer_email(
@@ -630,6 +635,8 @@ async def reserver_rdv(
             f"<p>Votre rendez-vous avec <strong>{pro_nom}</strong> est confirmé :</p>"
             f"<p><strong>{jour_label} à {heure}</strong></p>"
             + (f"<p>Motif : {motif.strip()}</p>" if motif.strip() else "")
+            + f'<p>Besoin d\'annuler ou de déplacer ce rendez-vous ? '
+              f'<a href="{lien_gestion}">Gérer mon rendez-vous</a></p>'
             + "<p>À bientôt !</p><p>— PlanifAI</p>",
         )
     if pro_email:
@@ -649,6 +656,165 @@ async def reserver_rdv(
         "entreprise": pro_nom, "confirme": True,
         "jour_sel_label": jour_label, "heure": heure,
     })
+
+
+# --- Gestion d'un RDV par le client (annuler / reporter) via lien e-mail ---
+
+def _rdv_par_token(session, token: str):
+    return session.query(models.RendezVous).filter(
+        models.RendezVous.gestion_token_hash == _hash_token(token)
+    ).first()
+
+
+def _notifier(destinataire: str, sujet: str, html: str):
+    if destinataire:
+        mailer.envoyer_email(destinataire, sujet, html + "<p>— PlanifAI</p>")
+
+
+@app.get("/rdv/gerer/{token}", response_class=HTMLResponse)
+async def page_gerer_rdv(request: Request, token: str):
+    session = db.SessionLocal()
+    try:
+        r = _rdv_par_token(session, token)
+        if not r:
+            return templates.TemplateResponse(request, "rdv_gerer.html", {"introuvable": True})
+        pro = session.get(models.User, r.user_id)
+        ctx = {
+            "token": token,
+            "entreprise": (pro.entreprise if pro else "") or "votre prestataire",
+            "jour_label": rdv.libelle_jour(r.jour), "heure": r.heure,
+            "motif": r.motif,
+            "annule": r.statut == "annule",
+            "passe": r.jour < date.today(),
+        }
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "rdv_gerer.html", ctx)
+
+
+@app.post("/rdv/gerer/{token}/annuler", response_class=HTMLResponse)
+async def annuler_rdv_client(request: Request, token: str):
+    session = db.SessionLocal()
+    try:
+        r = _rdv_par_token(session, token)
+        if not r:
+            return templates.TemplateResponse(request, "rdv_gerer.html", {"introuvable": True})
+        pro = session.get(models.User, r.user_id)
+        entreprise = (pro.entreprise if pro else "") or "votre prestataire"
+        if r.statut != "annule":
+            r.statut = "annule"
+            session.commit()
+            jour_label = rdv.libelle_jour(r.jour)
+            _notifier(pro.email if pro else "",
+                      f"Rendez-vous annulé : {r.client_nom} — {jour_label} à {r.heure}",
+                      f"<p>Le client <strong>{r.client_nom}</strong> a annulé son rendez-vous "
+                      f"du <strong>{jour_label} à {r.heure}</strong>. Le créneau est de nouveau libre.</p>")
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "rdv_gerer.html", {
+        "entreprise": entreprise, "annule_ok": True,
+    })
+
+
+@app.get("/rdv/gerer/{token}/reporter", response_class=HTMLResponse)
+async def page_reporter_rdv(request: Request, token: str):
+    session = db.SessionLocal()
+    try:
+        r = _rdv_par_token(session, token)
+        if not r:
+            return templates.TemplateResponse(request, "rdv_gerer.html", {"introuvable": True})
+        pro = session.get(models.User, r.user_id)
+        jours = rdv.jours_reservables(pro.rdv_jours, RDV_HORIZON) if pro else []
+        jour_choisi = request.query_params.get("jour")
+        jour_sel = next((j for j in jours if j.isoformat() == jour_choisi), None) or (jours[0] if jours else None)
+        creneaux = []
+        if jour_sel:
+            prises = [h for (h,) in session.query(models.RendezVous.heure).filter(
+                models.RendezVous.user_id == pro.id, models.RendezVous.jour == jour_sel,
+                models.RendezVous.statut == "confirme", models.RendezVous.id != r.id,
+            ).all()]
+            creneaux = rdv.creneaux_libres(jour_sel, pro.rdv_heure_debut or "08:00",
+                                           pro.rdv_heure_fin or "17:00", pro.rdv_duree or 60, prises)
+        jours_aff = [{"iso": j.isoformat(), "label": rdv.libelle_jour(j), "sel": (j == jour_sel)} for j in jours]
+        ctx = {
+            "token": token, "reporter": True,
+            "entreprise": (pro.entreprise if pro else "") or "votre prestataire",
+            "jour_label": rdv.libelle_jour(r.jour), "heure": r.heure,
+            "jours": jours_aff, "creneaux": creneaux,
+            "jour_sel": jour_sel.isoformat() if jour_sel else "",
+            "jour_sel_label": rdv.libelle_jour(jour_sel) if jour_sel else "",
+        }
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "rdv_gerer.html", ctx)
+
+
+@app.post("/rdv/gerer/{token}/reporter", response_class=HTMLResponse)
+async def reporter_rdv(request: Request, token: str,
+                       jour: str = Form(...), heure: str = Form(...)):
+    session = db.SessionLocal()
+    try:
+        r = _rdv_par_token(session, token)
+        if not r:
+            return templates.TemplateResponse(request, "rdv_gerer.html", {"introuvable": True})
+        pro = session.get(models.User, r.user_id)
+        entreprise = (pro.entreprise if pro else "") or "votre prestataire"
+        try:
+            jour_date = date.fromisoformat(jour)
+        except ValueError:
+            return RedirectResponse(f"/rdv/gerer/{token}/reporter", status_code=303)
+
+        # Le nouveau créneau est-il libre ? (hors ce RDV lui-même)
+        deja = session.query(models.RendezVous).filter(
+            models.RendezVous.user_id == pro.id, models.RendezVous.jour == jour_date,
+            models.RendezVous.heure == heure, models.RendezVous.statut == "confirme",
+            models.RendezVous.id != r.id,
+        ).first()
+        if deja:
+            return RedirectResponse(f"/rdv/gerer/{token}/reporter", status_code=303)
+
+        ancien = f"{rdv.libelle_jour(r.jour)} à {r.heure}"
+        r.jour, r.heure, r.statut = jour_date, heure, "confirme"
+        session.commit()
+        nouveau = f"{rdv.libelle_jour(jour_date)} à {heure}"
+        client_email, client_nom = r.client_email, r.client_nom
+        pro_email = pro.email if pro else ""
+    finally:
+        session.close()
+
+    _notifier(client_email,
+              f"Rendez-vous déplacé — {entreprise}",
+              f"<p>Bonjour {client_nom},</p><p>Votre rendez-vous avec <strong>{entreprise}</strong> "
+              f"est désormais fixé au <strong>{nouveau}</strong> (au lieu du {ancien}).</p>"
+              f'<p><a href="{_base_url(request)}/rdv/gerer/{token}">Gérer mon rendez-vous</a></p>')
+    _notifier(pro_email,
+              f"Rendez-vous déplacé : {client_nom} — {nouveau}",
+              f"<p>Le client <strong>{client_nom}</strong> a déplacé son rendez-vous : "
+              f"<strong>{nouveau}</strong> (au lieu du {ancien}).</p>")
+
+    return templates.TemplateResponse(request, "rdv_gerer.html", {
+        "entreprise": entreprise, "reporte_ok": True, "jour_sel_label": nouveau,
+    })
+
+
+@app.post("/mes-rendez-vous/{rdv_id}/annuler")
+async def annuler_rdv_pro(request: Request, rdv_id: int):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        r = session.get(models.RendezVous, rdv_id)
+        if r and r.user_id == uid and r.statut != "annule":
+            r.statut = "annule"
+            session.commit()
+            jour_label = rdv.libelle_jour(r.jour)
+            _notifier(r.client_email,
+                      "Votre rendez-vous a été annulé",
+                      f"<p>Bonjour {r.client_nom},</p><p>Votre rendez-vous du "
+                      f"<strong>{jour_label} à {r.heure}</strong> a été annulé par le prestataire. "
+                      f"N'hésitez pas à réserver un autre créneau.</p>")
+    finally:
+        session.close()
+    return RedirectResponse("/mes-rendez-vous", status_code=303)
 
 
 # === SANTÉ / MONITORING ===

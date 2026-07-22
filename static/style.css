@@ -238,3 +238,9 @@ input[type=file]{padding:9px;background:#fff}
 .rdv-creneau span{display:block;text-align:center;padding:11px 6px;border:1px solid var(--line);border-radius:9px;background:#fff;font-weight:600;font-size:14px;color:var(--ink-soft);cursor:pointer;transition:border-color .12s,background .12s}
 .rdv-creneau input:checked+span{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
 .rdv-creneau input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.btn-lien{display:block;text-align:center;background:var(--accent-deep);color:#fff;font-weight:600;font-size:15px;padding:13px;border-radius:10px;margin-top:14px}
+.btn-lien:hover{background:var(--accent);color:#fff;text-decoration:none}
+form button[type="submit"].btn-annuler{width:100%;margin-top:10px;background:#fff;color:var(--danger);border:1px solid var(--danger)}
+form button[type="submit"].btn-annuler:hover{background:var(--danger);color:#fff}
+.btn-annuler-mini{padding:8px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--danger);border:1px solid var(--line);border-radius:8px;cursor:pointer;white-space:nowrap}
+.btn-annuler-mini:hover{background:var(--danger);color:#fff;border-color:var(--danger)}

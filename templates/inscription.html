@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | Créer un compte</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="auth">
+    <div class="auth-card">
+        <span class="brand">Planif<span class="dot">·</span>AI <small>Atelier</small></span>
+        <h1>Créer un compte</h1>
+        <p class="sub">Quelques secondes, et votre espace est prêt.</p>
+
+        {% if erreur %}<div class="form-error">{{ erreur }}</div>{% endif %}
+
+        <form method="post" action="/inscription">
+            <label>Email</label>
+            <input name="email" type="email" placeholder="vous@entreprise.fr" required>
+            <label>Mot de passe (6 caractères minimum)</label>
+            <input name="mot_de_passe" type="password" minlength="6" required>
+            <label>Nom de votre entreprise</label>
+            <input name="entreprise" placeholder="Ex : Menuiserie Lefèvre">
+            <label>Adresse (optionnel)</label>
+            <input name="adresse" placeholder="12 rue des Artisans, 97110 Pointe-à-Pitre">
+            <button type="submit">Créer mon compte</button>
+        </form>
+
+        <p class="auth-alt">Déjà un compte ? <a href="/connexion">Se connecter</a></p>
+    </div>
+</body>
+</html>

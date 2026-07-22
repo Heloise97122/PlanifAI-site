@@ -9,7 +9,10 @@
 <body>
     <div class="top">
         <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
-        <a class="logout" href="/deconnexion">Se déconnecter</a>
+        <span class="topnav">
+            <a href="/mes-documents">Mes documents</a>
+            <a class="logout" href="/deconnexion">Se déconnecter</a>
+        </span>
     </div>
 
     <section class="greet">
@@ -21,9 +24,28 @@
         <div class="head">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2B54A8" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
             <b>À ne pas oublier</b>
+            {% if rappels %}<span class="count">{{ rappels|length }} élément{{ 's' if rappels|length > 1 else '' }}</span>{% endif %}
         </div>
         <div class="tick">
-            <div class="empty">Aucun rappel pour le moment. (Les échéances s'afficheront ici quand la sauvegarde sera activée.)</div>
+            {% if rappels %}
+                {% for r in rappels %}
+                <div class="chip {% if r.retard %}late{% elif r.urgent %}warn{% endif %}">
+                    <div class="t">
+                        <span>{{ r.label }}</span>
+                        <span class="days {% if r.retard %}red{% endif %}">
+                            {%- if r.retard %}{{ -r.jours }} j de retard
+                            {%- elif r.jours == 0 %}aujourd'hui
+                            {%- elif r.jours == 1 %}demain
+                            {%- else %}dans {{ r.jours }} j{% endif -%}
+                        </span>
+                    </div>
+                    <div class="n">{{ r.tiers }}</div>
+                    <div class="sub">{{ r.date }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">Rien d'urgent pour le moment. 👍</div>
+            {% endif %}
         </div>
     </section>
 

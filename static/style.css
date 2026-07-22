@@ -181,6 +181,25 @@ body.auth{max-width:none;display:flex;align-items:center;justify-content:center;
 .form-error{background:#fdecea;border:1px solid #f3c4bd;color:#a12a1c;padding:10px 12px;border-radius:9px;font-size:14px;margin-bottom:14px}
 .logout{font-size:13px;color:var(--muted)}
 .logout:hover{color:var(--danger);text-decoration:none}
+.topnav{display:flex;align-items:center;gap:16px;font-size:13px}
+.topnav a{color:var(--muted)}
+.topnav a:hover{color:var(--ink);text-decoration:none}
+
+/* ---------- Historique des documents ---------- */
+.doc-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.doc-item{
+    display:flex;align-items:center;gap:14px;background:var(--card);
+    border:1px solid var(--line);border-radius:11px;padding:14px 16px;color:var(--ink);
+    transition:transform .14s ease,box-shadow .14s ease;
+}
+.doc-item:hover{transform:translateY(-2px);box-shadow:0 12px 26px -18px rgba(22,35,61,.5);text-decoration:none}
+.doc-main{flex:1;min-width:0}
+.doc-main b{display:block;font-family:'Bricolage Grotesque';font-weight:700;font-size:15px}
+.doc-main span{font-size:13px;color:var(--muted)}
+.doc-montant{font-family:'Bricolage Grotesque';font-weight:700;font-size:15px;white-space:nowrap}
+.doc-dl{font-size:13px;color:var(--accent-deep);font-weight:600;white-space:nowrap}
+.list-empty{text-align:center;color:var(--muted);font-size:14px;padding:28px 12px;border:1px dashed var(--line);border-radius:12px;margin-top:8px}
+@media(max-width:560px){.doc-dl{display:none}}
 
 /* ---------- Responsive ---------- */
 @media(max-width:680px){

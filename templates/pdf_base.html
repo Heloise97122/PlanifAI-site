@@ -4,60 +4,63 @@
     <meta charset="UTF-8">
     <title>{% block doc_title %}Document{% endblock %}</title>
     <style>
-        @page { margin: 2.5cm; }
-        body {
-            font-family: "Helvetica", Arial, sans-serif;
-            font-size: 11pt;
-            color: #222;
-            line-height: 1.6;
+        @page {
+            margin: 1.9cm 2.1cm 2.2cm;
+            @bottom-center { content: "Document généré avec PlanifAI"; font-size: 8pt; color: #9aa0a6; }
+            @bottom-right { content: "Page " counter(page) " / " counter(pages); font-size: 8pt; color: #9aa0a6; }
         }
-        h1 {
-            color: #003366;
-            font-size: 20pt;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        h2 {
-            color: #003366;
-            font-size: 13pt;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 4px;
-            margin-top: 22px;
-        }
-        p { margin: 8px 0; }
-        .section { margin-bottom: 18px; }
+        body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #2b2b2b; line-height: 1.6; }
+
+        .letterhead { display: flex; justify-content: space-between; align-items: flex-start;
+            border-bottom: 2.5pt solid #16233D; padding-bottom: 10px; }
+        .letterhead .company { font-size: 15pt; font-weight: bold; color: #16233D; }
+        .letterhead .company-sub { font-size: 9pt; color: #6E6A5F; margin-top: 2px; }
+        .letterhead .logo { max-width: 120px; max-height: 60px; }
+
+        .doc-type { margin: 20px 0 6px; font-size: 18pt; font-weight: bold; color: #16233D; }
+        .doc-type::after { content: ""; display: block; width: 54px; height: 3px; background: #3B6FD4; margin-top: 7px; }
+
+        h2 { color: #16233D; font-size: 12pt; margin: 20px 0 4px; }
+        h2::before { content: ""; display: inline-block; width: 8px; height: 8px; background: #3B6FD4;
+            border-radius: 2px; margin-right: 8px; vertical-align: middle; }
+        p { margin: 7px 0; }
+        .section { margin-bottom: 14px; }
         ul { margin-left: 18px; }
+
         table.infos { width: 100%; border-collapse: collapse; margin-top: 6px; }
-        table.infos td { padding: 4px 8px; vertical-align: top; }
-        table.infos td.label { font-weight: bold; width: 45%; }
-        .signature {
-            margin-top: 55px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .signature div { width: 45%; text-align: center; }
-        .logo { max-width: 120px; max-height: 70px; float: right; }
-        .mentions { font-size: 9.5pt; color: #555; }
+        table.infos td { padding: 6px 8px; vertical-align: top; border-bottom: 0.5pt solid #ececec; }
+        table.infos td.label { font-weight: bold; width: 42%; color: #16233D; }
+
+        .signature { margin-top: 48px; display: flex; justify-content: space-between; }
+        .signature div { width: 44%; }
+        .signature .who { font-size: 9.5pt; color: #555; margin-bottom: 40px; }
+        .signature .line { border-top: 0.5pt solid #999; padding-top: 5px; font-size: 9pt; color: #777; }
+
+        .mentions { font-size: 9pt; color: #666; }
     </style>
 </head>
 <body>
 
-{% if logo_url %}<img src="{{ logo_url }}" class="logo" />{% endif %}
+<div class="letterhead">
+    <div>
+        <div class="company">{{ entreprise or "Votre entreprise" }}</div>
+        {% if adresse %}<div class="company-sub">{{ adresse }}</div>{% endif %}
+    </div>
+    {% if logo_url %}<img src="{{ logo_url }}" class="logo" />{% endif %}
+</div>
 
-<h1>{% block titre %}Document{% endblock %}</h1>
+<div class="doc-type">{% block titre %}Document{% endblock %}</div>
 
 {% block corps %}{% endblock %}
 
 <div class="signature">
     <div>
-        <p>Fait à {{ lieu or adresse }},</p>
-        <p>le {{ date_edition or date_debut }}</p>
-        <p>{% block signataire_gauche %}Signature de l'employeur{% endblock %}</p>
+        <div class="who">Fait à {{ lieu or adresse }}, le {{ date_edition or date_debut }}</div>
+        <div class="line">{% block signataire_gauche %}Signature de l'employeur{% endblock %}</div>
     </div>
     <div>
-        <p>&nbsp;</p>
-        <p>&nbsp;</p>
-        <p>{% block signataire_droite %}Signature du salarié{% endblock %}</p>
+        <div class="who">&nbsp;</div>
+        <div class="line">{% block signataire_droite %}Signature du salarié{% endblock %}</div>
     </div>
 </div>
 

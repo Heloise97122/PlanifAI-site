@@ -9,10 +9,10 @@
     <input name="entreprise" required>
     <label>Adresse</label>
     <input name="adresse" required>
-    <label>SIRET (optionnel)</label>
-    <input name="siret">
-    <label>Email / téléphone (optionnel)</label>
-    <input name="email">
+    <div class="row">
+        <div><label>SIRET (optionnel)</label><input name="siret"></div>
+        <div><label>Email / téléphone (optionnel)</label><input name="email"></div>
+    </div>
 
     <h2>Client</h2>
     <label>Nom du client</label>
@@ -21,12 +21,11 @@
     <input name="client_adresse" required>
 
     <h2>Facture</h2>
-    <label>Numéro de facture</label>
-    <input name="numero" placeholder="Ex : 2026-001" required>
-    <label>Date</label>
-    <input name="date" type="date" required>
-    <label>Date d'échéance (optionnel)</label>
-    <input name="echeance" type="date">
+    <div class="row">
+        <div><label>Numéro</label><input name="numero" placeholder="Ex : 2026-001" required></div>
+        <div><label>Date</label><input name="date" type="date" required></div>
+        <div><label>Échéance (optionnel)</label><input name="echeance" type="date"></div>
+    </div>
 
     {% include "_lignes_facturation.html" %}
 

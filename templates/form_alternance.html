@@ -3,28 +3,28 @@
 {% block heading %}Générer un contrat d'alternance{% endblock %}
 {% block action %}/generate/alternance{% endblock %}
 {% block fields %}
-    <label>Nom de l'alternant</label>
-    <input name="nom" required>
-    <label>Poste / emploi</label>
-    <input name="poste" required>
+    <div class="row">
+        <div><label>Nom de l'alternant</label><input name="nom" required></div>
+        <div><label>Poste / emploi</label><input name="poste" required></div>
+    </div>
     <label>Nom de l'entreprise</label>
     <input name="entreprise" required>
     <label>Adresse de l'entreprise</label>
     <input name="adresse" required>
-    <label>Diplôme préparé</label>
-    <input name="diplome" required>
-    <label>Établissement de formation (CFA / école)</label>
-    <input name="cfa" required>
+    <div class="row">
+        <div><label>Diplôme préparé</label><input name="diplome" required></div>
+        <div><label>Établissement (CFA / école)</label><input name="cfa" required></div>
+    </div>
     <label>Maître d'apprentissage / tuteur</label>
     <input name="maitre_apprentissage" required>
-    <label>Date de début</label>
-    <input name="date_debut" type="date" required>
-    <label>Date de fin</label>
-    <input name="date_fin" type="date">
-    <label>Durée (ex : 24 mois)</label>
-    <input name="duree" required>
-    <label>Salaire brut mensuel (€)</label>
-    <input name="salaire" required>
+    <div class="row">
+        <div><label>Date de début</label><input name="date_debut" type="date" required></div>
+        <div><label>Date de fin</label><input name="date_fin" type="date"></div>
+    </div>
+    <div class="row">
+        <div><label>Durée (ex : 24 mois)</label><input name="duree" required></div>
+        <div><label>Salaire brut mensuel (€)</label><input name="salaire" required></div>
+    </div>
     <label>URL du logo (optionnel)</label>
     <input name="logo_url" placeholder="https://...">
 {% endblock %}

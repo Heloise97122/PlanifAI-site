@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | Mon entreprise</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="top">
+        <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
+        <a class="logout" href="/deconnexion">Se déconnecter</a>
+    </div>
+
+    <a class="back" href="/">‹ Tableau de bord</a>
+    <h1>Mon entreprise</h1>
+    <p class="hint">Ces informations et votre logo apparaîtront automatiquement sur tous vos documents.</p>
+
+    {% if enregistre %}<div class="form-ok">✓ Modifications enregistrées.</div>{% endif %}
+    {% if erreur %}<div class="form-error">{{ erreur }}</div>{% endif %}
+
+    <form method="post" action="/mon-entreprise" enctype="multipart/form-data">
+        <label>Nom de l'entreprise</label>
+        <input name="entreprise" value="{{ entreprise }}" placeholder="Ex : Menuiserie Lefèvre">
+        <label>Adresse</label>
+        <input name="adresse" value="{{ adresse }}" placeholder="12 rue des Artisans, 97110 Pointe-à-Pitre">
+
+        <label>Logo</label>
+        {% if logo %}
+        <div class="logo-actuel">
+            <img src="{{ logo }}" alt="Logo actuel">
+            <label class="check"><input type="checkbox" name="supprimer_logo" value="1"> Supprimer</label>
+        </div>
+        {% endif %}
+        <input type="file" name="logo" accept="image/*">
+        <p class="hint">PNG ou JPG, 2 Mo maximum. Laissez vide pour conserver le logo actuel.</p>
+
+        <button type="submit">Enregistrer</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | Mes documents</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="top">
+        <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
+        <a class="logout" href="/deconnexion">Se déconnecter</a>
+    </div>
+
+    <a class="back" href="/">‹ Tableau de bord</a>
+    <h1>Mes documents</h1>
+    <p class="hint">Retrouvez tout ce que vous avez généré. Cliquez pour retélécharger le PDF.</p>
+
+    {% if documents %}
+    <div class="doc-list">
+        {% for d in documents %}
+        <a class="doc-item" href="/document/{{ d.id }}">
+            <div class="doc-main">
+                <b>{{ d.titre }}</b>
+                <span>{% if d.tiers %}{{ d.tiers }} · {% endif %}{{ d.date }}</span>
+            </div>
+            {% if d.montant is not none %}<span class="doc-montant">{{ d.montant|eur }}</span>{% endif %}
+            <span class="doc-dl">Télécharger&nbsp;↓</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="list-empty">Aucun document pour l'instant.<br>Générez un contrat ou une facture : il apparaîtra ici automatiquement.</div>
+    {% endif %}
+</body>
+</html>

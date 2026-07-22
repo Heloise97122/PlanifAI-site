@@ -6,14 +6,17 @@ from starlette.middleware.sessions import SessionMiddleware
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 from decimal import Decimal
+from datetime import date, timedelta
 from typing import List
 import tempfile
 import logging
 import os
 import re
+import json
 
 import billing
 import planning
+import documents
 import db
 import models
 import auth
@@ -146,6 +149,7 @@ def format_eur(value) -> str:
 
 
 env.filters["eur"] = format_eur
+templates.env.filters["eur"] = format_eur
 
 
 def _slug(value: str) -> str:
@@ -204,7 +208,66 @@ async def health():
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    return templates.TemplateResponse(request, "dashboard.html")
+    rappels = []
+    uid = request.session.get("user_id")
+    if uid:
+        session = db.SessionLocal()
+        try:
+            aujourdhui = date.today()
+            limite = aujourdhui + timedelta(days=30)
+            docs = session.query(models.Document).filter(
+                models.Document.user_id == uid,
+                models.Document.date_echeance.isnot(None),
+                models.Document.date_echeance <= limite,
+                models.Document.date_echeance >= aujourdhui - timedelta(days=60),
+            ).order_by(models.Document.date_echeance).all()
+            for d in docs:
+                jours = (d.date_echeance - aujourdhui).days
+                rappels.append({
+                    "label": d.echeance_label or "Échéance",
+                    "tiers": d.tiers or d.titre,
+                    "date": d.date_echeance.strftime("%d/%m/%Y"),
+                    "jours": jours,
+                    "urgent": 0 <= jours <= 7,
+                    "retard": jours < 0,
+                })
+        finally:
+            session.close()
+    return templates.TemplateResponse(request, "dashboard.html", {"rappels": rappels})
+
+
+@app.get("/mes-documents", response_class=HTMLResponse)
+async def mes_documents(request: Request):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        docs = session.query(models.Document).filter(
+            models.Document.user_id == uid
+        ).order_by(models.Document.date_creation.desc()).all()
+        items = [{
+            "id": d.id, "type": d.type, "titre": d.titre, "tiers": d.tiers,
+            "montant": d.montant, "numero": d.numero,
+            "date": d.date_creation.strftime("%d/%m/%Y") if d.date_creation else "",
+        } for d in docs]
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "mes_documents.html", {"documents": items})
+
+
+@app.get("/document/{doc_id}", response_class=FileResponse)
+async def telecharger_document(request: Request, doc_id: int):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        doc = session.get(models.Document, doc_id)
+        if not doc or doc.user_id != uid:
+            return RedirectResponse("/mes-documents", status_code=303)
+        type_ = doc.type
+        fields = json.loads(doc.donnees or "{}")
+    finally:
+        session.close()
+    template, prefix, context = documents.build_context(type_, fields)
+    return render_pdf(template, prefix, **context)
 
 @app.get("/rh-ai", response_class=HTMLResponse)
 async def rh_ai_home(request: Request):
@@ -258,8 +321,43 @@ async def form_planning(request: Request):
 
 # === GÉNÉRATION PDF ===
 
+def _persist_document(request: Request, type_: str, fields: dict):
+    """Sauvegarde le document pour le client connecté (silencieux sinon)."""
+    uid = request.session.get("user_id")
+    if not uid:
+        return
+    try:
+        titre, tiers, numero, montant, statut, ech_iso, ech_label = documents.summarize(type_, fields)
+        ech_date = None
+        if ech_iso:
+            try:
+                ech_date = date.fromisoformat(ech_iso)
+            except ValueError:
+                ech_date = None
+        session = db.SessionLocal()
+        try:
+            session.add(models.Document(
+                user_id=uid, type=type_, titre=titre, tiers=tiers, numero=numero,
+                montant=montant, statut=statut, date_echeance=ech_date,
+                echeance_label=ech_label, donnees=json.dumps(fields, ensure_ascii=False),
+            ))
+            session.commit()
+        finally:
+            session.close()
+    except Exception:
+        logger.exception("Échec de sauvegarde du document (%s)", type_)
+
+
+def _save_and_render(request: Request, type_: str, fields: dict):
+    """Sauvegarde (si connecté) puis renvoie le PDF."""
+    _persist_document(request, type_, fields)
+    template, prefix, context = documents.build_context(type_, fields)
+    return render_pdf(template, prefix, **context)
+
+
 @app.post("/generate/cdi", response_class=FileResponse)
 async def generate_cdi(
+    request: Request,
     nom: str = Form(...),
     poste: str = Form(...),
     entreprise: str = Form(...),
@@ -270,16 +368,16 @@ async def generate_cdi(
     renouvelable: str = Form("Non"),
     logo_url: str = Form(None),
 ):
-    return render_pdf(
-        "pdf_cdi.html", "contrat_cdi",
-        nom=nom, poste=poste, entreprise=entreprise, adresse=adresse,
-        date_debut=date_debut, salaire=salaire, periode_essai=periode_essai,
-        renouvelable=renouvelable, logo_url=logo_url,
-    )
+    return _save_and_render(request, "cdi", {
+        "nom": nom, "poste": poste, "entreprise": entreprise, "adresse": adresse,
+        "date_debut": date_debut, "salaire": salaire, "periode_essai": periode_essai,
+        "renouvelable": renouvelable, "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/cdd", response_class=FileResponse)
 async def generate_cdd(
+    request: Request,
     nom: str = Form(...),
     poste: str = Form(...),
     entreprise: str = Form(...),
@@ -293,17 +391,17 @@ async def generate_cdd(
     renouvelable: str = Form("Non"),
     logo_url: str = Form(None),
 ):
-    return render_pdf(
-        "pdf_cdd.html", "contrat_cdd",
-        nom=nom, poste=poste, entreprise=entreprise, adresse=adresse,
-        motif=motif, date_debut=date_debut, date_fin=date_fin, duree=duree,
-        salaire=salaire, periode_essai=periode_essai, renouvelable=renouvelable,
-        logo_url=logo_url,
-    )
+    return _save_and_render(request, "cdd", {
+        "nom": nom, "poste": poste, "entreprise": entreprise, "adresse": adresse,
+        "motif": motif, "date_debut": date_debut, "date_fin": date_fin, "duree": duree,
+        "salaire": salaire, "periode_essai": periode_essai, "renouvelable": renouvelable,
+        "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/alternance", response_class=FileResponse)
 async def generate_alternance(
+    request: Request,
     nom: str = Form(...),
     poste: str = Form(...),
     entreprise: str = Form(...),
@@ -317,17 +415,17 @@ async def generate_alternance(
     salaire: str = Form(...),
     logo_url: str = Form(None),
 ):
-    return render_pdf(
-        "pdf_alternance.html", "contrat_alternance",
-        nom=nom, poste=poste, entreprise=entreprise, adresse=adresse,
-        diplome=diplome, cfa=cfa, maitre_apprentissage=maitre_apprentissage,
-        date_debut=date_debut, date_fin=date_fin, duree=duree, salaire=salaire,
-        logo_url=logo_url,
-    )
+    return _save_and_render(request, "alternance", {
+        "nom": nom, "poste": poste, "entreprise": entreprise, "adresse": adresse,
+        "diplome": diplome, "cfa": cfa, "maitre_apprentissage": maitre_apprentissage,
+        "date_debut": date_debut, "date_fin": date_fin, "duree": duree, "salaire": salaire,
+        "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/stage", response_class=FileResponse)
 async def generate_stage(
+    request: Request,
     nom: str = Form(...),
     ecole: str = Form(...),
     entreprise: str = Form(...),
@@ -340,16 +438,16 @@ async def generate_stage(
     duree: str = Form(...),
     logo_url: str = Form(None),
 ):
-    return render_pdf(
-        "pdf_stage.html", "convention_stage",
-        nom=nom, ecole=ecole, entreprise=entreprise, adresse=adresse,
-        missions=missions, tuteur=tuteur, gratification=gratification,
-        date_debut=date_debut, date_fin=date_fin, duree=duree, logo_url=logo_url,
-    )
+    return _save_and_render(request, "stage", {
+        "nom": nom, "ecole": ecole, "entreprise": entreprise, "adresse": adresse,
+        "missions": missions, "tuteur": tuteur, "gratification": gratification,
+        "date_debut": date_debut, "date_fin": date_fin, "duree": duree, "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/freelance", response_class=FileResponse)
 async def generate_freelance(
+    request: Request,
     nom: str = Form(...),
     entreprise: str = Form(...),
     adresse: str = Form(...),
@@ -362,16 +460,16 @@ async def generate_freelance(
     duree: str = Form(""),
     logo_url: str = Form(None),
 ):
-    return render_pdf(
-        "pdf_freelance.html", "contrat_freelance",
-        nom=nom, entreprise=entreprise, adresse=adresse, mission=mission,
-        tjm=tjm, unite_tarif=unite_tarif, modalites_paiement=modalites_paiement,
-        date_debut=date_debut, date_fin=date_fin, duree=duree, logo_url=logo_url,
-    )
+    return _save_and_render(request, "freelance", {
+        "nom": nom, "entreprise": entreprise, "adresse": adresse, "mission": mission,
+        "tjm": tjm, "unite_tarif": unite_tarif, "modalites_paiement": modalites_paiement,
+        "date_debut": date_debut, "date_fin": date_fin, "duree": duree, "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/attestation", response_class=FileResponse)
 async def generate_attestation(
+    request: Request,
     nom: str = Form(...),
     poste: str = Form(...),
     type_contrat: str = Form(...),
@@ -381,28 +479,15 @@ async def generate_attestation(
     date_fin: str = Form(""),
     logo_url: str = Form(None),
 ):
-    return render_pdf(
-        "pdf_attestation.html", "attestation",
-        nom=nom, poste=poste, type_contrat=type_contrat, entreprise=entreprise,
-        adresse=adresse, date_debut=date_debut, date_fin=date_fin, logo_url=logo_url,
-    )
-
-
-def _construire_lignes(descriptions, quantites, prix, taux):
-    """Reconstruit une liste de lignes à partir des champs répétés du formulaire."""
-    lignes = []
-    for i in range(max(len(descriptions), len(quantites), len(prix), len(taux))):
-        lignes.append({
-            "description": descriptions[i] if i < len(descriptions) else "",
-            "quantite": quantites[i] if i < len(quantites) else "0",
-            "prix_unitaire": prix[i] if i < len(prix) else "0",
-            "taux_tva": taux[i] if i < len(taux) else "0",
-        })
-    return lignes
+    return _save_and_render(request, "attestation", {
+        "nom": nom, "poste": poste, "type_contrat": type_contrat, "entreprise": entreprise,
+        "adresse": adresse, "date_debut": date_debut, "date_fin": date_fin, "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/facture", response_class=FileResponse)
 async def generate_facture(
+    request: Request,
     entreprise: str = Form(...),
     adresse: str = Form(...),
     siret: str = Form(""),
@@ -418,22 +503,18 @@ async def generate_facture(
     taux_tva: List[str] = Form([]),
     logo_url: str = Form(None),
 ):
-    calc = billing.compute_invoice(
-        _construire_lignes(description, quantite, prix_unitaire, taux_tva)
-    )
-    return render_pdf(
-        "pdf_facturation.html", "facture",
-        nom=numero, type_document="Facture",
-        entreprise=entreprise, adresse=adresse, siret=siret, email=email,
-        client_nom=client_nom, client_adresse=client_adresse,
-        numero=numero, date=date,
-        date_limite=echeance, date_limite_label="Échéance",
-        calc=calc, logo_url=logo_url,
-    )
+    return _save_and_render(request, "facture", {
+        "entreprise": entreprise, "adresse": adresse, "siret": siret, "email": email,
+        "client_nom": client_nom, "client_adresse": client_adresse,
+        "numero": numero, "date": date, "echeance": echeance,
+        "description": description, "quantite": quantite,
+        "prix_unitaire": prix_unitaire, "taux_tva": taux_tva, "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/devis", response_class=FileResponse)
 async def generate_devis(
+    request: Request,
     entreprise: str = Form(...),
     adresse: str = Form(...),
     siret: str = Form(""),
@@ -449,18 +530,13 @@ async def generate_devis(
     taux_tva: List[str] = Form([]),
     logo_url: str = Form(None),
 ):
-    calc = billing.compute_invoice(
-        _construire_lignes(description, quantite, prix_unitaire, taux_tva)
-    )
-    return render_pdf(
-        "pdf_facturation.html", "devis",
-        nom=numero, type_document="Devis",
-        entreprise=entreprise, adresse=adresse, siret=siret, email=email,
-        client_nom=client_nom, client_adresse=client_adresse,
-        numero=numero, date=date,
-        date_limite=validite, date_limite_label="Validité",
-        calc=calc, logo_url=logo_url,
-    )
+    return _save_and_render(request, "devis", {
+        "entreprise": entreprise, "adresse": adresse, "siret": siret, "email": email,
+        "client_nom": client_nom, "client_adresse": client_adresse,
+        "numero": numero, "date": date, "validite": validite,
+        "description": description, "quantite": quantite,
+        "prix_unitaire": prix_unitaire, "taux_tva": taux_tva, "logo_url": logo_url,
+    })
 
 
 @app.post("/generate/planning", response_class=FileResponse)

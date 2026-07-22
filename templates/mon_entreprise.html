@@ -41,5 +41,22 @@
 
         <button type="submit">Enregistrer</button>
     </form>
+
+    <h1 style="margin-top:44px">Mot de passe</h1>
+    <p class="hint">Choisissez un nouveau mot de passe pour votre compte.</p>
+
+    {% if mdp_ok %}<div class="form-ok">✓ Mot de passe modifié.</div>{% endif %}
+    {% if mdp_erreur %}<div class="form-error">{{ mdp_erreur }}</div>{% endif %}
+
+    <form method="post" action="/mon-mot-de-passe">
+        <label>Mot de passe actuel</label>
+        <input type="password" name="actuel" autocomplete="current-password" required>
+        <label>Nouveau mot de passe</label>
+        <input type="password" name="nouveau" autocomplete="new-password" minlength="6" required>
+        <label>Confirmer le nouveau mot de passe</label>
+        <input type="password" name="confirmation" autocomplete="new-password" minlength="6" required>
+        <p class="hint">6 caractères minimum.</p>
+        <button type="submit">Changer le mot de passe</button>
+    </form>
 </body>
 </html>

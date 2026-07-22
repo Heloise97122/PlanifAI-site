@@ -248,6 +248,39 @@ async def sauver_entreprise(
     return RedirectResponse("/mon-entreprise?ok=1", status_code=303)
 
 
+@app.post("/mon-mot-de-passe")
+async def changer_mot_de_passe(
+    request: Request,
+    actuel: str = Form(...),
+    nouveau: str = Form(...),
+    confirmation: str = Form(...),
+):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        user = session.get(models.User, uid)
+
+        def _reponse(mdp_erreur=None, mdp_ok=False, code=200):
+            return templates.TemplateResponse(request, "mon_entreprise.html", {
+                "entreprise": user.entreprise or "", "adresse": user.adresse or "",
+                "logo": user.logo, "mentions_legales": user.mentions_legales or "",
+                "mdp_erreur": mdp_erreur, "mdp_ok": mdp_ok,
+            }, status_code=code)
+
+        if not auth.verify_password(actuel, user.password_hash):
+            return _reponse(mdp_erreur="Mot de passe actuel incorrect.", code=400)
+        if len(nouveau) < 6:
+            return _reponse(mdp_erreur="Le nouveau mot de passe doit faire au moins 6 caractères.", code=400)
+        if nouveau != confirmation:
+            return _reponse(mdp_erreur="La confirmation ne correspond pas au nouveau mot de passe.", code=400)
+
+        user.password_hash = auth.hash_password(nouveau)
+        session.commit()
+        return _reponse(mdp_ok=True)
+    finally:
+        session.close()
+
+
 def format_eur(value) -> str:
     """Formate un montant à la française : « 1 200,50 € »."""
     montant = Decimal(str(value)).quantize(Decimal("0.01"))

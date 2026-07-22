@@ -19,6 +19,8 @@ class User(Base):
     adresse = Column(String(255), default="")
     # Logo de l'entreprise, stocké en data URI (base64) pour persister avec la base.
     logo = Column(Text, nullable=True)
+    # Mentions légales libres, imprimées en bas des factures / devis.
+    mentions_legales = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

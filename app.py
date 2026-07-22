@@ -197,6 +197,7 @@ async def page_entreprise(request: Request):
         "entreprise": user.entreprise if user else "",
         "adresse": user.adresse if user else "",
         "logo": user.logo if user else None,
+        "mentions_legales": (user.mentions_legales if user else "") or "",
         "enregistre": request.query_params.get("ok") == "1",
     })
 
@@ -206,6 +207,7 @@ async def sauver_entreprise(
     request: Request,
     entreprise: str = Form(""),
     adresse: str = Form(""),
+    mentions_legales: str = Form(""),
     logo: UploadFile = File(None),
     supprimer_logo: str = Form(""),
 ):
@@ -233,10 +235,11 @@ async def sauver_entreprise(
         if erreur:
             return templates.TemplateResponse(request, "mon_entreprise.html", {
                 "entreprise": entreprise, "adresse": adresse,
-                "logo": user.logo, "erreur": erreur,
+                "mentions_legales": mentions_legales, "logo": user.logo, "erreur": erreur,
             }, status_code=400)
         user.entreprise = entreprise.strip()
         user.adresse = adresse.strip()
+        user.mentions_legales = mentions_legales.strip()
         if changer_logo:
             user.logo = nouveau_logo
         session.commit()
@@ -456,10 +459,11 @@ def _persist_document(request: Request, type_: str, fields: dict):
 
 
 def _render_with_logo(request: Request, type_: str, fields: dict):
-    """Injecte le logo du compte (data URI) puis renvoie le PDF."""
+    """Injecte le logo et les mentions légales du compte, puis renvoie le PDF."""
     f = dict(fields)
     user = utilisateur_courant(request)
     f["logo_url"] = user.logo if (user and user.logo) else None
+    f["mentions_legales"] = (user.mentions_legales if user else "") or ""
     template, prefix, context = documents.build_context(type_, f)
     return render_pdf(template, prefix, **context)
 

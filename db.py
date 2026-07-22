@@ -42,3 +42,4 @@ def init_db():
     import models  # noqa: F401  (nécessaire pour enregistrer les modèles)
     Base.metadata.create_all(bind=engine)
     _ajouter_colonne_si_absente("users", "logo", "TEXT")
+    _ajouter_colonne_si_absente("users", "mentions_legales", "TEXT")

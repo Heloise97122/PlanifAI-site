@@ -4,10 +4,10 @@
 {% block intro %}Saisissez les créneaux de la semaine : la grille par intervenant et par jour est générée automatiquement en PDF.{% endblock %}
 {% block action %}/generate/planning{% endblock %}
 {% block fields %}
-    <label>Titre du planning (optionnel)</label>
-    <input name="titre" placeholder="Ex : Équipe chantier">
-    <label>Entreprise (optionnel)</label>
-    <input name="entreprise">
+    <div class="row">
+        <div><label>Titre du planning (optionnel)</label><input name="titre" placeholder="Ex : Équipe chantier"></div>
+        <div><label>Entreprise (optionnel)</label><input name="entreprise"></div>
+    </div>
     <label>Semaine (choisissez une date de la semaine)</label>
     <input name="semaine_debut" type="date" required>
 

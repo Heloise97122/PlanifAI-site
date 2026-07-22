@@ -120,6 +120,10 @@ textarea{resize:vertical}
 
 .hint{color:var(--muted);font-size:0.9rem;margin:-2px 0 14px}
 
+.row{display:flex;gap:14px}
+.row>div{flex:1;min-width:0}
+@media(max-width:560px){.row{flex-direction:column;gap:0}}
+
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
 /* bouton principal de génération (submit du formulaire) */

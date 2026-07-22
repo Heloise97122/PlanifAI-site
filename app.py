@@ -87,6 +87,33 @@ def utilisateur_courant(request: Request):
         session.close()
 
 
+def prochain_numero(request: Request, type_: str) -> str:
+    """Calcule le prochain numéro de facture/devis pour le compte connecté.
+
+    Format : FACT-2026-0001 (factures) / DEVIS-2026-0001 (devis), séquence par
+    an et par compte. Le numéro reste modifiable côté formulaire.
+    """
+    prefixe = "FACT" if type_ == "facture" else "DEVIS"
+    annee = date.today().year
+    uid = request.session.get("user_id")
+    maxn = 0
+    if uid:
+        motif = re.compile(rf"^{prefixe}-{annee}-(\d+)$")
+        session = db.SessionLocal()
+        try:
+            numeros = session.query(models.Document.numero).filter(
+                models.Document.user_id == uid,
+                models.Document.type == type_,
+            ).all()
+        finally:
+            session.close()
+        for (num,) in numeros:
+            m = motif.match(num or "")
+            if m:
+                maxn = max(maxn, int(m.group(1)))
+    return f"{prefixe}-{annee}-{maxn + 1:04d}"
+
+
 # === AUTHENTIFICATION ===
 
 @app.get("/connexion", response_class=HTMLResponse)
@@ -384,11 +411,15 @@ async def facturation_home(request: Request):
 
 @app.get("/facture", response_class=HTMLResponse)
 async def form_facture(request: Request):
-    return templates.TemplateResponse(request, "form_facture.html")
+    return templates.TemplateResponse(
+        request, "form_facture.html", {"numero_suggere": prochain_numero(request, "facture")}
+    )
 
 @app.get("/devis", response_class=HTMLResponse)
 async def form_devis(request: Request):
-    return templates.TemplateResponse(request, "form_devis.html")
+    return templates.TemplateResponse(
+        request, "form_devis.html", {"numero_suggere": prochain_numero(request, "devis")}
+    )
 
 @app.get("/planning", response_class=HTMLResponse)
 async def form_planning(request: Request):

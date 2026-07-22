@@ -22,7 +22,7 @@
 
     <h2>Devis</h2>
     <div class="row">
-        <div><label>Numéro</label><input name="numero" placeholder="Ex : DEV-2026-001" required></div>
+        <div><label>Numéro (auto, modifiable)</label><input name="numero" value="{{ numero_suggere }}" required></div>
         <div><label>Date</label><input name="date" type="date" required></div>
         <div><label>Valable jusqu'au (optionnel)</label><input name="validite" type="date"></div>
     </div>

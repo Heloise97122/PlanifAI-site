@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 from decimal import Decimal
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import List
 import tempfile
 import logging
@@ -14,6 +14,8 @@ import os
 import re
 import base64
 import json
+import secrets
+import hashlib
 
 import billing
 import planning
@@ -21,6 +23,7 @@ import documents
 import db
 import models
 import auth
+import mailer
 
 logger = logging.getLogger("planifai")
 
@@ -51,13 +54,17 @@ templates = Jinja2Templates(directory="templates")
 env = Environment(loader=FileSystemLoader("templates"))
 
 # --- Sécurité : le site est privé, tout passe derrière la connexion ---
-PUBLIC_PATHS = {"/connexion", "/inscription", "/health", "/favicon.ico"}
+PUBLIC_PATHS = {
+    "/connexion", "/inscription", "/health", "/favicon.ico",
+    "/mot-de-passe-oublie",
+}
+PUBLIC_PREFIXES = ("/static", "/reinitialiser")
 
 
 @app.middleware("http")
 async def garde_connexion(request: Request, call_next):
     path = request.url.path
-    if path.startswith("/static") or path in PUBLIC_PATHS:
+    if path.startswith(PUBLIC_PREFIXES) or path in PUBLIC_PATHS:
         return await call_next(request)
     if not request.session.get("user_id"):
         return RedirectResponse("/connexion", status_code=303)
@@ -183,6 +190,103 @@ async def faire_inscription(
 async def deconnexion(request: Request):
     request.session.clear()
     return RedirectResponse("/connexion", status_code=303)
+
+
+# === MOT DE PASSE OUBLIÉ ===
+
+RESET_TTL_HEURES = 1
+
+
+def _base_url(request: Request) -> str:
+    """URL de base du site pour construire les liens des e-mails.
+
+    Priorité à APP_URL (défini sur Render) pour éviter les soucis http/https
+    derrière le proxy ; sinon on déduit depuis la requête.
+    """
+    base = os.environ.get("APP_URL", "").strip().rstrip("/")
+    return base or str(request.base_url).rstrip("/")
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+@app.get("/mot-de-passe-oublie", response_class=HTMLResponse)
+async def page_mot_de_passe_oublie(request: Request):
+    return templates.TemplateResponse(request, "mot_de_passe_oublie.html")
+
+
+@app.post("/mot-de-passe-oublie")
+async def demander_reinitialisation(request: Request, email: str = Form(...)):
+    email = email.strip().lower()
+    session = db.SessionLocal()
+    try:
+        user = session.query(models.User).filter(models.User.email == email).first()
+        if user:
+            token = secrets.token_urlsafe(32)
+            user.reset_token_hash = _hash_token(token)
+            user.reset_token_expires = datetime.utcnow() + timedelta(hours=RESET_TTL_HEURES)
+            session.commit()
+            lien = f"{_base_url(request)}/reinitialiser/{token}"
+            html = (
+                "<p>Bonjour,</p>"
+                "<p>Vous avez demandé à réinitialiser votre mot de passe PlanifAI. "
+                "Cliquez sur le lien ci-dessous (valable 1 heure) :</p>"
+                f'<p><a href="{lien}">Choisir un nouveau mot de passe</a></p>'
+                "<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : "
+                "votre mot de passe reste inchangé.</p>"
+                "<p>— PlanifAI</p>"
+            )
+            mailer.envoyer_email(email, "Réinitialisation de votre mot de passe PlanifAI", html)
+    finally:
+        session.close()
+    # Message identique que le compte existe ou non (on ne révèle pas les e-mails inscrits).
+    return templates.TemplateResponse(request, "mot_de_passe_oublie.html", {"envoye": True})
+
+
+@app.get("/reinitialiser/{token}", response_class=HTMLResponse)
+async def page_reinitialiser(request: Request, token: str):
+    session = db.SessionLocal()
+    try:
+        user = session.query(models.User).filter(
+            models.User.reset_token_hash == _hash_token(token),
+            models.User.reset_token_expires > datetime.utcnow(),
+        ).first()
+    finally:
+        session.close()
+    if not user:
+        return templates.TemplateResponse(request, "reinitialiser.html", {"invalide": True})
+    return templates.TemplateResponse(request, "reinitialiser.html", {"token": token})
+
+
+@app.post("/reinitialiser/{token}")
+async def faire_reinitialiser(
+    request: Request, token: str,
+    nouveau: str = Form(...), confirmation: str = Form(...),
+):
+    session = db.SessionLocal()
+    try:
+        user = session.query(models.User).filter(
+            models.User.reset_token_hash == _hash_token(token),
+            models.User.reset_token_expires > datetime.utcnow(),
+        ).first()
+        if not user:
+            return templates.TemplateResponse(request, "reinitialiser.html", {"invalide": True})
+        if len(nouveau) < 6:
+            return templates.TemplateResponse(request, "reinitialiser.html", {
+                "token": token, "erreur": "Le mot de passe doit faire au moins 6 caractères.",
+            }, status_code=400)
+        if nouveau != confirmation:
+            return templates.TemplateResponse(request, "reinitialiser.html", {
+                "token": token, "erreur": "La confirmation ne correspond pas.",
+            }, status_code=400)
+        user.password_hash = auth.hash_password(nouveau)
+        user.reset_token_hash = None
+        user.reset_token_expires = None
+        session.commit()
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "reinitialiser.html", {"succes": True})
 
 
 # === MON ENTREPRISE (profil + logo) ===

@@ -15,6 +15,8 @@
     <a class="back" href="/">‹ Tableau de bord</a>
     <h1>Mes documents</h1>
 
+    {% if converti %}<div class="form-ok">✓ Facture {{ converti }} créée à partir du devis. Vous la trouverez ci-dessous.</div>{% endif %}
+
     {% if a_des_factures %}
     <div class="resume">
         <div class="resume-card">
@@ -57,6 +59,14 @@
                     </button>
                 </form>
                 {% if not d.paye %}<a class="btn-mini-link" href="/document/{{ d.id }}/relance">Relancer</a>{% endif %}
+            {% endif %}
+            {% if d.is_devis %}
+                {% if d.converti %}<span class="relance-info">→ Facturé ({{ d.converti }})</span>
+                {% else %}
+                <form method="post" action="/document/{{ d.id }}/convertir" class="form-inline">
+                    <button type="submit" class="btn-mini ok">Convertir en facture</button>
+                </form>
+                {% endif %}
             {% endif %}
             <a class="doc-dl" href="/document/{{ d.id }}">↓&nbsp;PDF</a>
         </div>

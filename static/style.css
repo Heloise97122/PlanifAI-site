@@ -1,18 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
 :root{
-    --ink:#16233D;
-    --ink-soft:#2C3E5C;
-    --paper:#F1F3F5;
+    --ink:#1B3A5C;          /* bleu marine profond : sérieux, confiance */
+    --ink-soft:#33506E;
+    --paper:#F7F5F2;        /* blanc cassé chaud, pas clinique */
     --card:#FFFFFF;
-    --accent:#3B6FD4;
-    --accent-deep:#2B54A8;
+    --ocre:#C8956C;         /* ocre / doré : chaleur artisanale */
+    --ocre-deep:#A9754C;    /* version plus foncée, lisible sur blanc */
+    --accent:#C8956C;       /* l'accent chaud remplace l'ancien bleu vif */
+    --accent-deep:#1B3A5C;  /* boutons & liens : marine (sérieux) */
     --steel:#4A6B8A;
-    --line:#D5CFC1;
-    --line-soft:#E4DFD4;
+    --line:#E6DFD4;
+    --line-soft:#EFE9DE;
     --danger:#BE4A34;
-    --ok:#4E7A51;
-    --muted:#6E6A5F;
+    --ok:#4A7C59;           /* vert terre, pas vert néon */
+    --muted:#7A7264;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -28,8 +30,10 @@ body{
     padding:0 18px 70px;
 }
 
-h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;line-height:1.1}
-h1{font-size:clamp(26px,5vw,40px);font-weight:700;margin:22px 0 6px}
+h2,h3{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;line-height:1.15}
+/* Grands titres en serif chaleureux (façon carnet de commandes) */
+h1{font-family:Georgia,'Iowan Old Style','Times New Roman',serif;font-weight:700;
+   font-size:clamp(26px,5vw,40px);line-height:1.15;letter-spacing:-.01em;margin:22px 0 6px;color:var(--ink)}
 h2{font-size:18px;font-weight:700;color:var(--ink);margin:26px 0 12px}
 
 a{color:var(--accent-deep);text-decoration:none}
@@ -81,17 +85,18 @@ p{margin:8px 0}
 }
 .door:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(22,35,61,.5);border-color:var(--ink);text-decoration:none}
 .door:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.door .ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;margin-bottom:16px;background:var(--ink);color:#fff}
-.door.fa .ic{background:var(--steel)}
-.door.pl .ic{background:var(--accent-deep)}
+.door .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin-bottom:16px;background:var(--ink);color:#fff}
+.door.fa .ic{background:var(--ocre)}
+.door.pl .ic{background:var(--steel)}
+.door.rdv .ic{background:var(--ink)}
 .door .ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.9}
 .door h3{font-size:19px;font-weight:700;margin-bottom:4px}
 .door p{font-size:13px;color:var(--muted);min-height:34px;margin:0}
 .door .go{position:absolute;bottom:18px;right:18px;color:var(--accent-deep);opacity:0;transition:opacity .16s,transform .16s;transform:translateX(-4px)}
 .door:hover .go{opacity:1;transform:translateX(0)}
 
-.footnote{margin-top:30px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6}
-.footnote b{color:var(--ink-soft);font-weight:600}
+.footnote{margin-top:34px;font-size:14.5px;color:var(--ink-soft);text-align:center;line-height:1.7}
+.footnote b{color:var(--ink);font-weight:700}
 
 /* ---------- Formulaires ---------- */
 .back{font-size:13.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;margin:18px 0 2px}
@@ -115,7 +120,7 @@ input,select,textarea{
     font-size:15px;
     transition:border-color .14s,box-shadow .14s;
 }
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,111,212,.18)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ocre);box-shadow:0 0 0 3px rgba(200,149,108,.28)}
 textarea{resize:vertical}
 
 .hint{color:var(--muted);font-size:0.9rem;margin:-2px 0 14px}
@@ -130,10 +135,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 form button[type="submit"]{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     width:100%;margin-top:22px;
-    background:var(--accent-deep);color:#fff;font-weight:600;font-size:15px;
-    padding:13px;border-radius:11px;transition:background .15s,transform .1s;
+    background:var(--ink);color:#fff;font-weight:600;font-size:15px;
+    padding:14px;border-radius:10px;box-shadow:0 6px 16px -8px rgba(27,58,92,.5);
+    transition:background .15s,transform .1s,box-shadow .15s;
 }
-form button[type="submit"]:hover{background:var(--accent)}
+form button[type="submit"]:hover{background:var(--ocre-deep);box-shadow:0 8px 20px -8px rgba(169,117,76,.55)}
 form button[type="submit"]:active{transform:scale(.99)}
 form button[type="submit"]:disabled{background:#cbb488;cursor:progress}
 
@@ -221,7 +227,7 @@ input[type=file]{padding:9px;background:#fff}
 }
 
 /* ---------- Rendez-vous en ligne ---------- */
-.door.rdv .ic{background:var(--accent)}
+.door.rdv .ic{background:var(--ink)}
 .check{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--ink-soft)}
 .check input{width:auto;margin:0}
 .jours-grille{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}

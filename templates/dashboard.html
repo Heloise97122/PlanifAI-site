@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanifAI — Atelier</title>
-    <link rel="stylesheet" href="/static/style.css?v=3">
+    <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
     <div class="top">
@@ -24,7 +24,7 @@
 
     <section class="echeances">
         <div class="head">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2B54A8" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8956C" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
             <b>À ne pas oublier</b>
             {% if rappels %}<span class="count">{{ rappels|length }} élément{{ 's' if rappels|length > 1 else '' }}</span>{% endif %}
         </div>
@@ -81,7 +81,7 @@
         </a>
     </section>
 
-    <p class="footnote">Contrats, factures, devis et plannings — <b>générés en PDF</b>, prêts à imprimer.</p>
+    <p class="footnote">Vos papiers d'entreprise — contrats, factures, devis, plannings —<br><b>générés en PDF, prêts à imprimer.</b> Sans prise de tête.</p>
 
     <script>
         var h = new Date().getHours();

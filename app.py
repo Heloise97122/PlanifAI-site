@@ -449,7 +449,10 @@ def render_pdf(template_name: str, filename_prefix: str, **context):
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         HTML(string=html_content).write_pdf(tmp.name)
         filename = f"{filename_prefix}_{_slug(context.get('nom'))}.pdf"
-        return FileResponse(tmp.name, filename=filename, media_type="application/pdf")
+        # inline : le PDF s'affiche dans le nouvel onglet (viewer natif),
+        # au lieu d'un téléchargement fragile qui casse sur Safari iOS.
+        return FileResponse(tmp.name, filename=filename, media_type="application/pdf",
+                            content_disposition_type="inline")
     except Exception:
         logger.exception("Échec de génération du PDF (%s)", template_name)
         return _error_page()

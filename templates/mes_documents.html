@@ -60,7 +60,7 @@
     <div class="doc-list">
         {% for d in documents %}
         <div class="doc-item">
-            <a class="doc-open" href="/document/{{ d.id }}">
+            <a class="doc-open" href="/document/{{ d.id }}" target="_blank">
                 <div class="doc-main">
                     <b>{{ d.titre }}</b>
                     <span>{% if d.tiers %}{{ d.tiers }} · {% endif %}{{ d.date }}</span>
@@ -88,7 +88,7 @@
                 </form>
                 {% endif %}
             {% endif %}
-            <a class="doc-dl" href="/document/{{ d.id }}">↓&nbsp;PDF</a>
+            <a class="doc-dl" href="/document/{{ d.id }}" target="_blank">↓&nbsp;PDF</a>
         </div>
         {% endfor %}
     </div>

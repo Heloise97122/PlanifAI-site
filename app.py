@@ -904,6 +904,7 @@ async def mes_documents(request: Request):
                 "id": d.id, "type": d.type, "titre": d.titre, "tiers": d.tiers,
                 "montant": d.montant, "numero": d.numero, "is_facture": is_facture,
                 "paye": paye, "en_retard": en_retard,
+                "relance": d.date_relance.strftime("%d/%m/%Y") if d.date_relance else None,
                 "date": d.date_creation.strftime("%d/%m/%Y") if d.date_creation else "",
             })
         resume = {"encaisse_annee": encaisse_annee, "encaisse_mois": encaisse_mois,
@@ -933,6 +934,90 @@ async def marquer_paiement(request: Request, doc_id: int, paye: str = Form("")):
     finally:
         session.close()
     return RedirectResponse("/mes-documents", status_code=303)
+
+
+def _message_relance_defaut(user, doc, fields):
+    """Texte de relance pré-rempli (modifiable par l'artisan avant envoi)."""
+    client = fields.get("client_nom", "") or "Madame, Monsieur"
+    entreprise = (user.entreprise if user else "") or "Votre prestataire"
+    montant = format_eur(doc.montant) if doc.montant is not None else ""
+    ech = ""
+    if doc.date_echeance:
+        ech = f" (échéance du {doc.date_echeance.strftime('%d/%m/%Y')})"
+    return (
+        f"Bonjour {client},\n\n"
+        f"Sauf erreur de notre part, la facture n° {doc.numero or ''} "
+        f"d'un montant de {montant}{ech} demeure impayée à ce jour.\n\n"
+        f"Nous vous remercions de bien vouloir procéder à son règlement dès que possible. "
+        f"Si le paiement a déjà été effectué, merci de ne pas tenir compte de ce message.\n\n"
+        f"Cordialement,\n{entreprise}"
+    )
+
+
+@app.get("/document/{doc_id}/relance", response_class=HTMLResponse)
+async def page_relance(request: Request, doc_id: int):
+    uid = request.session.get("user_id")
+    user = utilisateur_courant(request)
+    session = db.SessionLocal()
+    try:
+        doc = session.get(models.Document, doc_id)
+        if not doc or doc.user_id != uid or doc.type != "facture":
+            return RedirectResponse("/mes-documents", status_code=303)
+        fields = json.loads(doc.donnees or "{}")
+        ctx = {
+            "doc_id": doc.id, "numero": doc.numero or "",
+            "montant": format_eur(doc.montant) if doc.montant is not None else "",
+            "client_email": fields.get("client_email", ""),
+            "sujet": f"Relance — facture {doc.numero or ''}".strip(" —"),
+            "message": _message_relance_defaut(user, doc, fields),
+            "sans_email": not mailer.email_configure(),
+        }
+    finally:
+        session.close()
+    return templates.TemplateResponse(request, "relance.html", ctx)
+
+
+@app.post("/document/{doc_id}/relance", response_class=HTMLResponse)
+async def envoyer_relance(request: Request, doc_id: int,
+                          destinataire: str = Form(...), sujet: str = Form(...),
+                          message: str = Form(...)):
+    uid = request.session.get("user_id")
+    user = utilisateur_courant(request)
+    session = db.SessionLocal()
+    try:
+        doc = session.get(models.Document, doc_id)
+        if not doc or doc.user_id != uid or doc.type != "facture":
+            return RedirectResponse("/mes-documents", status_code=303)
+        numero = doc.numero or ""
+    finally:
+        session.close()
+
+    corps_html = "<p>" + message.strip().replace("\n", "<br>\n") + "</p>"
+    nom_expediteur = (user.entreprise if user else "") or None
+    envoye = mailer.envoyer_email(
+        destinataire.strip(), sujet.strip(), corps_html,
+        nom_expediteur=nom_expediteur,
+        repondre_a=(user.email if user else None),
+    )
+
+    if envoye:
+        # Mémoriser la date de relance + l'e-mail client saisi (pour la prochaine fois).
+        session = db.SessionLocal()
+        try:
+            doc = session.get(models.Document, doc_id)
+            if doc:
+                doc.date_relance = date.today()
+                fields = json.loads(doc.donnees or "{}")
+                fields["client_email"] = destinataire.strip()
+                doc.donnees = json.dumps(fields, ensure_ascii=False)
+                session.commit()
+        finally:
+            session.close()
+
+    return templates.TemplateResponse(request, "relance.html", {
+        "envoye": envoye, "echec": not envoye, "numero": numero,
+        "destinataire": destinataire.strip(),
+    })
 
 
 @app.get("/document/{doc_id}", response_class=FileResponse)
@@ -1187,6 +1272,7 @@ async def generate_facture(
     email: str = Form(""),
     client_nom: str = Form(...),
     client_adresse: str = Form(...),
+    client_email: str = Form(""),
     numero: str = Form(...),
     date: str = Form(...),
     echeance: str = Form(""),
@@ -1198,7 +1284,7 @@ async def generate_facture(
 ):
     return _save_and_render(request, "facture", {
         "entreprise": entreprise, "adresse": adresse, "siret": siret, "email": email,
-        "client_nom": client_nom, "client_adresse": client_adresse,
+        "client_nom": client_nom, "client_adresse": client_adresse, "client_email": client_email,
         "numero": numero, "date": date, "echeance": echeance,
         "description": description, "quantite": quantite,
         "prix_unitaire": prix_unitaire, "taux_tva": taux_tva, "logo_url": logo_url,

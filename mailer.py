@@ -27,25 +27,35 @@ def email_configure() -> bool:
     return bool(os.environ.get("BREVO_API_KEY"))
 
 
-def envoyer_email(destinataire: str, sujet: str, html: str) -> bool:
-    """Envoie un e-mail HTML. Retourne True si Brevo a accepté l'envoi."""
+def envoyer_email(destinataire: str, sujet: str, html: str,
+                  nom_expediteur: str = None, repondre_a: str = None) -> bool:
+    """Envoie un e-mail HTML. Retourne True si Brevo a accepté l'envoi.
+
+    `nom_expediteur` : nom affiché de l'expéditeur (par défaut MAIL_FROM_NAME).
+        Permet d'envoyer « au nom de » un artisan sans changer l'adresse validée.
+    `repondre_a` : adresse de réponse (Reply-To), pour que les réponses aillent
+        à l'artisan et non à l'adresse technique de la plateforme.
+    """
     api_key = os.environ.get("BREVO_API_KEY")
     if not api_key:
         logger.warning("BREVO_API_KEY absent — e-mail non envoyé à %s (sujet: %s)", destinataire, sujet)
         return False
 
     expediteur = os.environ.get("MAIL_FROM", "")
-    nom = os.environ.get("MAIL_FROM_NAME", "PlanifAI")
+    nom = nom_expediteur or os.environ.get("MAIL_FROM_NAME", "PlanifAI")
     if not expediteur:
         logger.error("MAIL_FROM absent — impossible d'envoyer l'e-mail.")
         return False
 
-    corps = json.dumps({
+    payload = {
         "sender": {"name": nom, "email": expediteur},
         "to": [{"email": destinataire}],
         "subject": sujet,
         "htmlContent": html,
-    }).encode("utf-8")
+    }
+    if repondre_a:
+        payload["replyTo"] = {"email": repondre_a}
+    corps = json.dumps(payload).encode("utf-8")
 
     requete = urllib.request.Request(
         BREVO_URL,

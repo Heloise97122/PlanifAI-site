@@ -75,4 +75,5 @@ class Document(Base):
     date_echeance = Column(Date, nullable=True)    # date qui déclenche un rappel
     echeance_label = Column(String(60), nullable=True)
     date_paiement = Column(Date, nullable=True)    # date d'encaissement (factures payées)
+    date_relance = Column(Date, nullable=True)     # dernière relance de paiement envoyée
     donnees = Column(Text, default="{}")           # champs bruts (JSON)

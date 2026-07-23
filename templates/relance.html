@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI | Relancer une facture</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+    <div class="top">
+        <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
+        <a class="logout" href="/deconnexion">Se déconnecter</a>
+    </div>
+
+    <a class="back" href="/mes-documents">‹ Mes documents</a>
+
+    {% if envoye %}
+        <h1>Relance envoyée</h1>
+        <div class="form-ok">✓ La relance pour la facture {{ numero }} a été envoyée à {{ destinataire }}.</div>
+        <p class="hint">Vous pouvez suivre l'état de la facture depuis « Mes documents ».</p>
+    {% elif echec %}
+        <h1>Envoi impossible</h1>
+        <div class="form-error">La relance n'a pas pu être envoyée. Vérifiez l'adresse e-mail et réessayez.</div>
+        <p><a class="back" href="/mes-documents">‹ Retour à mes documents</a></p>
+    {% else %}
+        <h1>Relancer la facture {{ numero }}</h1>
+        <p class="hint">Montant : <strong>{{ montant }}</strong>. Le message part au nom de votre entreprise ; les réponses vous seront adressées directement.</p>
+
+        {% if sans_email %}
+        <div class="form-error">L'envoi d'e-mails n'est pas configuré. La relance ne pourra pas partir.</div>
+        {% endif %}
+
+        <form method="post" action="/document/{{ doc_id }}/relance">
+            <label>E-mail du client</label>
+            <input name="destinataire" type="email" value="{{ client_email }}" placeholder="client@exemple.fr" required>
+            <label>Objet</label>
+            <input name="sujet" value="{{ sujet }}" required>
+            <label>Message</label>
+            <textarea name="message" rows="10" required>{{ message }}</textarea>
+            <p class="hint">Vous pouvez modifier ce message avant de l'envoyer.</p>
+            <button type="submit">Envoyer la relance</button>
+        </form>
+    {% endif %}
+</body>
+</html>

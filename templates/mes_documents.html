@@ -49,12 +49,14 @@
                 {% if d.paye %}<span class="badge ok">Payée</span>
                 {% elif d.en_retard %}<span class="badge late">En retard</span>
                 {% else %}<span class="badge wait">En attente</span>{% endif %}
+                {% if d.relance and not d.paye %}<span class="relance-info">Relancée le {{ d.relance }}</span>{% endif %}
                 <form method="post" action="/document/{{ d.id }}/paiement" class="form-inline">
                     <input type="hidden" name="paye" value="{% if d.paye %}0{% else %}1{% endif %}">
                     <button type="submit" class="btn-mini {% if d.paye %}undo{% else %}ok{% endif %}">
                         {% if d.paye %}Annuler{% else %}Marquer payée{% endif %}
                     </button>
                 </form>
+                {% if not d.paye %}<a class="btn-mini-link" href="/document/{{ d.id }}/relance">Relancer</a>{% endif %}
             {% endif %}
             <a class="doc-dl" href="/document/{{ d.id }}">↓&nbsp;PDF</a>
         </div>

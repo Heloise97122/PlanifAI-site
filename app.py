@@ -57,7 +57,7 @@ env = Environment(loader=FileSystemLoader("templates"))
 
 # --- Sécurité : le site est privé, tout passe derrière la connexion ---
 PUBLIC_PATHS = {
-    "/connexion", "/inscription", "/health", "/favicon.ico",
+    "/", "/connexion", "/inscription", "/health", "/favicon.ico",
     "/mot-de-passe-oublie",
 }
 PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
@@ -846,6 +846,9 @@ async def health():
 async def dashboard(request: Request):
     rappels = []
     uid = request.session.get("user_id")
+    # Visiteur non connecté : on montre la page vitrine (landing).
+    if not uid:
+        return templates.TemplateResponse(request, "accueil.html")
     if uid:
         session = db.SessionLocal()
         try:

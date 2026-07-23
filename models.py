@@ -21,6 +21,8 @@ class User(Base):
     logo = Column(Text, nullable=True)
     # Mentions légales libres, imprimées en bas des factures / devis.
     mentions_legales = Column(Text, nullable=True)
+    # Type d'activité, pour les seuils micro-entreprise (services / vente).
+    activite = Column(String(20), default="services")
     # Réinitialisation de mot de passe : on stocke un HASH du jeton (jamais le jeton
     # brut) + sa date d'expiration. Le lien envoyé par e-mail contient le jeton brut.
     reset_token_hash = Column(String(64), nullable=True)

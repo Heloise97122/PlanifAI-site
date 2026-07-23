@@ -25,6 +25,7 @@ import models
 import auth
 import mailer
 import rdv
+import seuils
 
 logger = logging.getLogger("planifai")
 
@@ -303,6 +304,7 @@ async def page_entreprise(request: Request):
         "adresse": user.adresse if user else "",
         "logo": user.logo if user else None,
         "mentions_legales": (user.mentions_legales if user else "") or "",
+        "activite": (user.activite if user else "") or "services",
         "enregistre": request.query_params.get("ok") == "1",
     })
 
@@ -313,6 +315,7 @@ async def sauver_entreprise(
     entreprise: str = Form(""),
     adresse: str = Form(""),
     mentions_legales: str = Form(""),
+    activite: str = Form("services"),
     logo: UploadFile = File(None),
     supprimer_logo: str = Form(""),
 ):
@@ -340,11 +343,13 @@ async def sauver_entreprise(
         if erreur:
             return templates.TemplateResponse(request, "mon_entreprise.html", {
                 "entreprise": entreprise, "adresse": adresse,
-                "mentions_legales": mentions_legales, "logo": user.logo, "erreur": erreur,
+                "mentions_legales": mentions_legales, "activite": activite,
+                "logo": user.logo, "erreur": erreur,
             }, status_code=400)
         user.entreprise = entreprise.strip()
         user.adresse = adresse.strip()
         user.mentions_legales = mentions_legales.strip()
+        user.activite = activite if activite in seuils.ACTIVITES else "services"
         if changer_logo:
             user.logo = nouveau_logo
         session.commit()
@@ -393,8 +398,16 @@ def format_eur(value) -> str:
     return f"{texte} €"
 
 
+def format_eur0(value) -> str:
+    """Montant sans décimales : « 37 500 € » (pour les seuils)."""
+    n = int(round(float(value)))
+    return f"{n:,}".replace(",", " ") + " €"
+
+
 env.filters["eur"] = format_eur
 templates.env.filters["eur"] = format_eur
+env.filters["eur0"] = format_eur0
+templates.env.filters["eur0"] = format_eur0
 
 
 def _slug(value: str) -> str:
@@ -918,11 +931,14 @@ async def mes_documents(request: Request):
         resume = {"encaisse_annee": encaisse_annee, "encaisse_mois": encaisse_mois,
                   "attente": attente, "annee": annee}
         a_des_factures = any(i["is_facture"] for i in items)
+        user = session.get(models.User, uid)
+        activite = (user.activite if user else "") or "services"
     finally:
         session.close()
+    seuils_eval = seuils.evaluer(activite, encaisse_annee) if a_des_factures else None
     return templates.TemplateResponse(request, "mes_documents.html", {
         "documents": items, "resume": resume, "a_des_factures": a_des_factures,
-        "converti": request.query_params.get("converti"),
+        "converti": request.query_params.get("converti"), "seuils": seuils_eval,
     })
 
 

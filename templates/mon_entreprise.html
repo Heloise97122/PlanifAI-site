@@ -25,6 +25,13 @@
         <label>Adresse</label>
         <input name="adresse" value="{{ adresse }}" placeholder="12 rue des Artisans, 97110 Pointe-à-Pitre">
 
+        <label>Type d'activité</label>
+        <select name="activite">
+            <option value="services" {% if activite == 'services' %}selected{% endif %}>Prestations de services / artisanat</option>
+            <option value="vente" {% if activite == 'vente' %}selected{% endif %}>Vente de marchandises</option>
+        </select>
+        <p class="hint">Sert à calculer vos seuils micro-entreprise (franchise de TVA, plafond du régime) dans « Mes documents ».</p>
+
         <label>Mentions légales (bas des factures et devis)</label>
         <textarea name="mentions_legales" rows="4" placeholder="Ex : SIRET 812 345 678 00021&#10;TVA non applicable, art. 293 B du CGI (franchise en base)">{{ mentions_legales }}</textarea>
         <p class="hint">S'affiche automatiquement en bas de vos factures et devis. Micro-entrepreneur non assujetti à la TVA ? Indiquez « TVA non applicable, art. 293 B du CGI ».</p>

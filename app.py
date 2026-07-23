@@ -888,6 +888,13 @@ async def mes_documents(request: Request):
         items, encaisse_annee, encaisse_mois, attente = [], 0.0, 0.0, 0.0
         for d in docs:
             is_facture = d.type == "facture"
+            is_devis = d.type == "devis"
+            converti = None
+            if is_devis:
+                try:
+                    converti = json.loads(d.donnees or "{}").get("converti_en")
+                except (ValueError, TypeError):
+                    converti = None
             paye = d.statut == "paye"
             en_retard = (is_facture and not paye and d.date_echeance is not None
                          and d.date_echeance < aujourdhui)
@@ -903,6 +910,7 @@ async def mes_documents(request: Request):
             items.append({
                 "id": d.id, "type": d.type, "titre": d.titre, "tiers": d.tiers,
                 "montant": d.montant, "numero": d.numero, "is_facture": is_facture,
+                "is_devis": is_devis, "converti": converti,
                 "paye": paye, "en_retard": en_retard,
                 "relance": d.date_relance.strftime("%d/%m/%Y") if d.date_relance else None,
                 "date": d.date_creation.strftime("%d/%m/%Y") if d.date_creation else "",
@@ -914,6 +922,7 @@ async def mes_documents(request: Request):
         session.close()
     return templates.TemplateResponse(request, "mes_documents.html", {
         "documents": items, "resume": resume, "a_des_factures": a_des_factures,
+        "converti": request.query_params.get("converti"),
     })
 
 
@@ -934,6 +943,43 @@ async def marquer_paiement(request: Request, doc_id: int, paye: str = Form("")):
     finally:
         session.close()
     return RedirectResponse("/mes-documents", status_code=303)
+
+
+@app.post("/document/{doc_id}/convertir")
+async def convertir_devis(request: Request, doc_id: int):
+    """Transforme un devis accepté en facture (nouveau numéro, échéance à 30 jours)."""
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        devis = session.get(models.Document, doc_id)
+        if not devis or devis.user_id != uid or devis.type != "devis":
+            return RedirectResponse("/mes-documents", status_code=303)
+        fields = json.loads(devis.donnees or "{}")
+    finally:
+        session.close()
+
+    numero = prochain_numero(request, "facture")
+    facture = dict(fields)
+    facture.pop("validite", None)
+    facture["numero"] = numero
+    facture["date"] = date.today().isoformat()
+    facture["echeance"] = (date.today() + timedelta(days=30)).isoformat()
+
+    _persist_document(request, "facture", facture)
+
+    # Marquer le devis comme converti (évite les doublons et informe l'utilisateur).
+    session = db.SessionLocal()
+    try:
+        d = session.get(models.Document, doc_id)
+        if d:
+            fs = json.loads(d.donnees or "{}")
+            fs["converti_en"] = numero
+            d.donnees = json.dumps(fs, ensure_ascii=False)
+            session.commit()
+    finally:
+        session.close()
+
+    return RedirectResponse(f"/mes-documents?converti={numero}", status_code=303)
 
 
 def _message_relance_defaut(user, doc, fields):

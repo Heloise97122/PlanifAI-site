@@ -74,4 +74,5 @@ class Document(Base):
     date_creation = Column(DateTime, default=datetime.utcnow)
     date_echeance = Column(Date, nullable=True)    # date qui déclenche un rappel
     echeance_label = Column(String(60), nullable=True)
+    date_paiement = Column(Date, nullable=True)    # date d'encaissement (factures payées)
     donnees = Column(Text, default="{}")           # champs bruts (JSON)

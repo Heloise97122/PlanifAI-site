@@ -242,5 +242,30 @@ input[type=file]{padding:9px;background:#fff}
 .btn-lien:hover{background:var(--accent);color:#fff;text-decoration:none}
 form button[type="submit"].btn-annuler{width:100%;margin-top:10px;background:#fff;color:var(--danger);border:1px solid var(--danger)}
 form button[type="submit"].btn-annuler:hover{background:var(--danger);color:#fff}
+
+/* ---------- Suivi des paiements (Mes documents) ---------- */
+.resume{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 20px}
+.resume-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.resume-card.accent{border-color:var(--accent);border-left:3px solid var(--accent)}
+.rc-label{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+.rc-val{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;color:var(--ink);margin-top:4px}
+@media(max-width:560px){.resume{grid-template-columns:1fr}}
+.doc-item{flex-wrap:wrap}
+.doc-item:hover{transform:none;box-shadow:none}
+.doc-open{flex:1;min-width:150px;color:inherit;display:block}
+.doc-open:hover{text-decoration:none}
+.doc-open:hover b{color:var(--accent-deep)}
+.badge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:100px;white-space:nowrap}
+.badge.ok{background:#E6F4EA;color:#1E7E34}
+.badge.wait{background:#FDF3E3;color:#9A6A00}
+.badge.late{background:#FBE9E9;color:var(--danger)}
+/* Formulaire « nu » (juste un bouton d'action, pas une carte) */
+.form-inline{background:none;border:none;padding:0;border-radius:0;max-width:none;margin:0}
+.form-inline button[type="submit"]{width:auto;margin:0;padding:7px 12px;font-size:12.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink-soft)}
+.form-inline button.btn-mini.ok{border-color:#1E7E34;color:#1E7E34;background:#fff}
+.form-inline button.btn-mini.ok:hover{background:#1E7E34;color:#fff}
+.form-inline button.btn-mini.undo:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.form-inline button.btn-annuler-mini{color:var(--danger)}
+.form-inline button.btn-annuler-mini:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
 .btn-annuler-mini{padding:8px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--danger);border:1px solid var(--line);border-radius:8px;cursor:pointer;white-space:nowrap}
 .btn-annuler-mini:hover{background:var(--danger);color:#fff;border-color:var(--danger)}

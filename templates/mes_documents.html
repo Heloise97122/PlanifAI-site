@@ -14,19 +14,50 @@
 
     <a class="back" href="/">‹ Tableau de bord</a>
     <h1>Mes documents</h1>
-    <p class="hint">Retrouvez tout ce que vous avez généré. Cliquez pour retélécharger le PDF.</p>
+
+    {% if a_des_factures %}
+    <div class="resume">
+        <div class="resume-card">
+            <span class="rc-label">Encaissé en {{ resume.annee }}</span>
+            <span class="rc-val">{{ resume.encaisse_annee|eur }}</span>
+        </div>
+        <div class="resume-card">
+            <span class="rc-label">Encaissé ce mois-ci</span>
+            <span class="rc-val">{{ resume.encaisse_mois|eur }}</span>
+        </div>
+        <div class="resume-card {% if resume.attente > 0 %}accent{% endif %}">
+            <span class="rc-label">En attente de paiement</span>
+            <span class="rc-val">{{ resume.attente|eur }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <p class="hint">Cliquez sur un document pour retélécharger le PDF. Marquez vos factures comme payées pour suivre votre chiffre d'affaires.</p>
 
     {% if documents %}
     <div class="doc-list">
         {% for d in documents %}
-        <a class="doc-item" href="/document/{{ d.id }}">
-            <div class="doc-main">
-                <b>{{ d.titre }}</b>
-                <span>{% if d.tiers %}{{ d.tiers }} · {% endif %}{{ d.date }}</span>
-            </div>
+        <div class="doc-item">
+            <a class="doc-open" href="/document/{{ d.id }}">
+                <div class="doc-main">
+                    <b>{{ d.titre }}</b>
+                    <span>{% if d.tiers %}{{ d.tiers }} · {% endif %}{{ d.date }}</span>
+                </div>
+            </a>
             {% if d.montant is not none %}<span class="doc-montant">{{ d.montant|eur }}</span>{% endif %}
-            <span class="doc-dl">Télécharger&nbsp;↓</span>
-        </a>
+            {% if d.is_facture %}
+                {% if d.paye %}<span class="badge ok">Payée</span>
+                {% elif d.en_retard %}<span class="badge late">En retard</span>
+                {% else %}<span class="badge wait">En attente</span>{% endif %}
+                <form method="post" action="/document/{{ d.id }}/paiement" class="form-inline">
+                    <input type="hidden" name="paye" value="{% if d.paye %}0{% else %}1{% endif %}">
+                    <button type="submit" class="btn-mini {% if d.paye %}undo{% else %}ok{% endif %}">
+                        {% if d.paye %}Annuler{% else %}Marquer payée{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+            <a class="doc-dl" href="/document/{{ d.id }}">↓&nbsp;PDF</a>
+        </div>
         {% endfor %}
     </div>
     {% else %}

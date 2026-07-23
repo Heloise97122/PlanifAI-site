@@ -838,6 +838,7 @@ async def dashboard(request: Request):
             docs = session.query(models.Document).filter(
                 models.Document.user_id == uid,
                 models.Document.date_echeance.isnot(None),
+                models.Document.statut != "paye",  # une facture payée ne se rappelle plus
                 models.Document.date_echeance <= limite,
                 models.Document.date_echeance >= aujourdhui - timedelta(days=60),
             ).order_by(models.Document.date_echeance).all()
@@ -877,19 +878,61 @@ async def dashboard(request: Request):
 @app.get("/mes-documents", response_class=HTMLResponse)
 async def mes_documents(request: Request):
     uid = request.session.get("user_id")
+    aujourdhui = date.today()
+    annee = aujourdhui.year
     session = db.SessionLocal()
     try:
         docs = session.query(models.Document).filter(
             models.Document.user_id == uid
         ).order_by(models.Document.date_creation.desc()).all()
-        items = [{
-            "id": d.id, "type": d.type, "titre": d.titre, "tiers": d.tiers,
-            "montant": d.montant, "numero": d.numero,
-            "date": d.date_creation.strftime("%d/%m/%Y") if d.date_creation else "",
-        } for d in docs]
+        items, encaisse_annee, encaisse_mois, attente = [], 0.0, 0.0, 0.0
+        for d in docs:
+            is_facture = d.type == "facture"
+            paye = d.statut == "paye"
+            en_retard = (is_facture and not paye and d.date_echeance is not None
+                         and d.date_echeance < aujourdhui)
+            if is_facture and (d.montant is not None):
+                if paye:
+                    dp = d.date_paiement or (d.date_creation.date() if d.date_creation else aujourdhui)
+                    if dp.year == annee:
+                        encaisse_annee += d.montant
+                        if dp.month == aujourdhui.month:
+                            encaisse_mois += d.montant
+                else:
+                    attente += d.montant
+            items.append({
+                "id": d.id, "type": d.type, "titre": d.titre, "tiers": d.tiers,
+                "montant": d.montant, "numero": d.numero, "is_facture": is_facture,
+                "paye": paye, "en_retard": en_retard,
+                "date": d.date_creation.strftime("%d/%m/%Y") if d.date_creation else "",
+            })
+        resume = {"encaisse_annee": encaisse_annee, "encaisse_mois": encaisse_mois,
+                  "attente": attente, "annee": annee}
+        a_des_factures = any(i["is_facture"] for i in items)
     finally:
         session.close()
-    return templates.TemplateResponse(request, "mes_documents.html", {"documents": items})
+    return templates.TemplateResponse(request, "mes_documents.html", {
+        "documents": items, "resume": resume, "a_des_factures": a_des_factures,
+    })
+
+
+@app.post("/document/{doc_id}/paiement")
+async def marquer_paiement(request: Request, doc_id: int, paye: str = Form("")):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        doc = session.get(models.Document, doc_id)
+        if doc and doc.user_id == uid and doc.type == "facture":
+            if paye == "1":
+                doc.statut = "paye"
+                doc.date_paiement = date.today()
+            else:
+                doc.statut = "attente"
+                doc.date_paiement = None
+            session.commit()
+    finally:
+        session.close()
+    return RedirectResponse("/mes-documents", status_code=303)
 
 
 @app.get("/document/{doc_id}", response_class=FileResponse)

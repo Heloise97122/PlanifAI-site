@@ -191,7 +191,8 @@ async def faire_inscription(
 @app.get("/deconnexion")
 async def deconnexion(request: Request):
     request.session.clear()
-    return RedirectResponse("/connexion", status_code=303)
+    # Après déconnexion, on revient sur la vitrine (page d'accueil publique).
+    return RedirectResponse("/", status_code=303)
 
 
 # === MOT DE PASSE OUBLIÉ ===

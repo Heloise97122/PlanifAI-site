@@ -270,5 +270,24 @@ form button[type="submit"].btn-annuler:hover{background:var(--danger);color:#fff
 .btn-mini-link{padding:7px 12px;font-size:12.5px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--accent-deep);white-space:nowrap}
 .btn-mini-link:hover{background:var(--accent-deep);color:#fff;border-color:var(--accent-deep);text-decoration:none}
 .relance-info{font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+/* ---------- Seuils micro-entreprise ---------- */
+.seuils{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin:8px 0 20px}
+.seuils-proche{border-color:#E5B769;border-left:3px solid #E5B769}
+.seuils-depasse{border-color:var(--danger);border-left:3px solid var(--danger)}
+.seuils-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:12px}
+.seuils-head b{font-family:'Bricolage Grotesque';font-weight:700;font-size:15px}
+.seuils-sous{font-size:12.5px;color:var(--muted)}
+.jauge{margin:12px 0}
+.jauge-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:500;color:var(--ink-soft)}
+.jauge-val{white-space:nowrap;color:var(--muted);font-weight:600}
+.jauge-barre{height:8px;border-radius:100px;background:var(--line-soft);overflow:hidden;margin:5px 0}
+.jauge-barre span{display:block;height:100%;background:#2E9E5B;border-radius:100px}
+.jauge-proche .jauge-barre span{background:#E5A93A}
+.jauge-depasse .jauge-barre span{background:var(--danger)}
+.jauge-msg{font-size:12.5px;color:var(--muted)}
+.jauge-proche .jauge-msg{color:#9A6A00}
+.jauge-depasse .jauge-msg{color:var(--danger)}
+.seuils-note{font-size:11.5px;color:var(--muted);margin:12px 0 0;line-height:1.5}
 .btn-annuler-mini{padding:8px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--danger);border:1px solid var(--line);border-radius:8px;cursor:pointer;white-space:nowrap}
 .btn-annuler-mini:hover{background:var(--danger);color:#fff;border-color:var(--danger)}

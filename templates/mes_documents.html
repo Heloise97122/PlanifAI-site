@@ -34,6 +34,26 @@
     </div>
     {% endif %}
 
+    {% if seuils %}
+    <div class="seuils seuils-{{ seuils.niveau_global }}">
+        <div class="seuils-head">
+            <b>Seuils micro-entreprise</b>
+            <span class="seuils-sous">{{ seuils.activite_label }} · encaissé {{ resume.annee }} : {{ seuils.ca|eur0 }}</span>
+        </div>
+        {% for j in seuils.jauges %}
+        <div class="jauge jauge-{{ j.niveau }}">
+            <div class="jauge-top">
+                <span>{{ j.label }}</span>
+                <span class="jauge-val">{{ seuils.ca|eur0 }} / {{ j.seuil|eur0 }}</span>
+            </div>
+            <div class="jauge-barre"><span style="width:{{ j.pct_barre }}%"></span></div>
+            <div class="jauge-msg">{{ j.message }}</div>
+        </div>
+        {% endfor %}
+        <p class="seuils-note">Seuils de référence {{ seuils.annee_reference }}, donnés à titre indicatif — ils évoluent chaque année, vérifiez sur service-public.fr. Basé sur les factures marquées « payées ».</p>
+    </div>
+    {% endif %}
+
     <p class="hint">Cliquez sur un document pour retélécharger le PDF. Marquez vos factures comme payées pour suivre votre chiffre d'affaires.</p>
 
     {% if documents %}

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanifAI | Mes documents</title>
-    <link rel="stylesheet" href="/static/style.css?v=4">
+    <link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
     <div class="top">
@@ -50,7 +50,7 @@
             <div class="jauge-msg">{{ j.message }}</div>
         </div>
         {% endfor %}
-        <p class="seuils-note">Seuils de référence {{ seuils.annee_reference }}, donnés à titre indicatif — ils évoluent chaque année, vérifiez sur service-public.fr. Basé sur les factures marquées « payées ».</p>
+        <p class="seuils-note">Seuils de référence {{ seuils.annee_reference }}, donnés à titre indicatif. Ils évoluent chaque année, vérifiez sur service-public.fr. Basé sur les factures marquées « payées ».</p>
     </div>
     {% endif %}
 

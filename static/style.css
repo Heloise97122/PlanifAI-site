@@ -30,10 +30,8 @@ body{
     padding:0 18px 70px;
 }
 
-h2,h3{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;line-height:1.15}
-/* Grands titres en serif chaleureux (façon carnet de commandes) */
-h1{font-family:Georgia,'Iowan Old Style','Times New Roman',serif;font-weight:700;
-   font-size:clamp(26px,5vw,40px);line-height:1.15;letter-spacing:-.01em;margin:22px 0 6px;color:var(--ink)}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;line-height:1.1}
+h1{font-size:clamp(26px,5vw,40px);font-weight:700;margin:22px 0 6px;color:var(--ink)}
 h2{font-size:18px;font-weight:700;color:var(--ink);margin:26px 0 12px}
 
 a{color:var(--accent-deep);text-decoration:none}
@@ -193,9 +191,16 @@ input[type=checkbox]{width:auto;margin:0}
 input[type=file]{padding:9px;background:#fff}
 .logout{font-size:13px;color:var(--muted)}
 .logout:hover{color:var(--danger);text-decoration:none}
-.topnav{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:13px}
-.topnav a{color:var(--muted)}
-.topnav a:hover{color:var(--ink);text-decoration:none}
+/* Menu du haut : pastilles bien visibles */
+.topnav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-size:13.5px}
+.topnav a{
+    color:var(--ink);font-weight:600;background:var(--card);
+    border:1px solid var(--line);padding:7px 13px;border-radius:100px;
+    transition:background .14s,border-color .14s,color .14s;
+}
+.topnav a:hover{background:var(--ink);border-color:var(--ink);color:#fff;text-decoration:none}
+.topnav a.logout{color:var(--muted)}
+.topnav a.logout:hover{background:var(--danger);border-color:var(--danger);color:#fff}
 
 /* ---------- Historique des documents ---------- */
 .doc-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}

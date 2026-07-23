@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gérer mon rendez-vous</title>
-    <link rel="stylesheet" href="/static/style.css?v=4">
+    <link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
     <div class="top">
@@ -40,7 +40,7 @@
         {% if creneaux %}
         <form method="post" action="/rdv/gerer/{{ token }}/reporter">
             <input type="hidden" name="jour" value="{{ jour_sel }}">
-            <label>2. Nouveau créneau — {{ jour_sel_label|capitalize }}</label>
+            <label>2. Nouveau créneau le {{ jour_sel_label }}</label>
             <div class="rdv-creneaux">
                 {% for c in creneaux %}
                 <label class="rdv-creneau"><input type="radio" name="heure" value="{{ c }}" required><span>{{ c }}</span></label>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanifAI | Mes rendez-vous</title>
-    <link rel="stylesheet" href="/static/style.css?v=4">
+    <link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
     <div class="top">
@@ -33,7 +33,7 @@
         {% for r in rdvs %}
         <div class="doc-item" style="cursor:default">
             <div class="doc-main">
-                <b>{{ r.jour_label|capitalize }} — {{ r.heure }}</b>
+                <b>{{ r.jour_label|capitalize }} à {{ r.heure }}</b>
                 <span>{{ r.client_nom }}{% if r.client_tel %} · {{ r.client_tel }}{% endif %}{% if r.motif %} · {{ r.motif }}{% endif %}</span>
             </div>
             <form method="post" action="/mes-rendez-vous/{{ r.id }}/annuler" onsubmit="return confirm('Annuler ce rendez-vous ? Le client sera prévenu par e-mail.');" class="form-inline">

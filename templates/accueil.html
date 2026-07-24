@@ -22,8 +22,13 @@
         .nav-right{display:flex;align-items:center;gap:10px}
         .nav-link{font-weight:600;font-size:.92rem;color:#1B3A5C;padding:9px 6px}
         .btn{display:inline-block;background:#1B3A5C;color:#fff;font-weight:600;font-size:.95rem;
-             padding:11px 20px;border-radius:10px;transition:background .18s,transform .1s}
+             padding:11px 20px;border-radius:10px;transition:background .18s,transform .1s,border-color .18s}
         .btn:hover{background:#12233b;transform:translateY(-1px)}
+        /* variantes pour ne pas avoir 3 boutons identiques */
+        .btn.outline{background:transparent;color:#1B3A5C;border:1.5px solid #d7dbe0}
+        .btn.outline:hover{background:#1B3A5C;color:#fff;border-color:#1B3A5C}
+        .btn.warm{background:#A9754C}
+        .btn.warm:hover{background:#8f6340}
 
         /* Hero */
         .hero{text-align:center;padding:64px 0 40px}
@@ -42,8 +47,8 @@
         .shot-bar i{width:11px;height:11px;border-radius:50%;background:#dfe3e8;display:block}
         .shot-frame img{display:block;width:100%}
 
-        /* Bandeau fonctionnalités (texte sobre) */
-        .feats{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 40px;
+        /* Bandeau fonctionnalités : grille 4 colonnes (symétrique) */
+        .feats{display:grid;grid-template-columns:repeat(4,auto);justify-content:center;gap:16px 44px;
                padding:52px 0;margin-top:20px;border-top:1px solid #eef0f3;color:#3a4453;font-weight:600;font-size:1rem}
         .feats span{display:inline-flex;align-items:center;gap:9px}
         .feats span::before{content:"";width:7px;height:7px;border-radius:50%;background:#C8956C}
@@ -72,7 +77,9 @@
             .shot{margin-top:32px}
             .shot-bar{padding:9px 12px}
             .shot-bar i{width:9px;height:9px}
-            .feats{padding:34px 0;gap:12px 22px;font-size:.95rem}
+            /* fonctionnalités : grille 2x2 alignée à gauche */
+            .feats{grid-template-columns:1fr 1fr;justify-content:stretch;justify-items:start;
+                   gap:16px 18px;padding:32px 4px;font-size:.92rem}
             .end{padding:14px 0 40px}
         }
     </style>
@@ -83,7 +90,7 @@
             <span class="brand">Planif<span class="dot">·</span>AI <small>Atelier</small></span>
             <span class="nav-right">
                 <a class="nav-link" href="/connexion">Se connecter</a>
-                <a class="btn" href="/inscription">Créer un compte</a>
+                <a class="btn outline" href="/inscription">Créer un compte</a>
             </span>
         </nav>
 
@@ -113,7 +120,7 @@
         <section class="end">
             <h2>Prêt à gagner du temps ?</h2>
             <p>Créez votre compte gratuitement, générez votre première facture aujourd'hui.</p>
-            <a class="btn lg" href="/inscription">Commencer gratuitement</a>
+            <a class="btn lg warm" href="/inscription">Commencer gratuitement</a>
         </section>
     </div>
 

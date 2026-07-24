@@ -36,6 +36,7 @@
                 <b>{{ r.jour_label|capitalize }} à {{ r.heure }}</b>
                 <span>{{ r.client_nom }}{% if r.client_tel %} · {{ r.client_tel }}{% endif %}{% if r.motif %} · {{ r.motif }}{% endif %}</span>
             </div>
+            <a class="btn-mini-link" href="/mes-rendez-vous/{{ r.id }}/calendrier.ics">📅 Calendrier</a>
             <form method="post" action="/mes-rendez-vous/{{ r.id }}/annuler" onsubmit="return confirm('Annuler ce rendez-vous ? Le client sera prévenu par e-mail.');" class="form-inline">
                 <button type="submit" class="btn-annuler-mini">Annuler</button>
             </form>

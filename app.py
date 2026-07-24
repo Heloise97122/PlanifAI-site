@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, Request, File, UploadFile
-from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -652,6 +652,7 @@ async def reserver_rdv(
             f"<p>Votre rendez-vous avec <strong>{pro_nom}</strong> est confirmé :</p>"
             f"<p><strong>{jour_label} à {heure}</strong></p>"
             + (f"<p>Motif : {motif.strip()}</p>" if motif.strip() else "")
+            + f'<p><a href="{lien_gestion}/calendrier.ics">📅 Ajouter à mon calendrier</a></p>'
             + f'<p>Besoin d\'annuler ou de déplacer ce rendez-vous ? '
               f'<a href="{lien_gestion}">Gérer mon rendez-vous</a></p>'
             + "<p>À bientôt !</p><p>— PlanifAI</p>",
@@ -671,7 +672,7 @@ async def reserver_rdv(
 
     return templates.TemplateResponse(request, "rdv_public.html", {
         "entreprise": pro_nom, "confirme": True,
-        "jour_sel_label": jour_label, "heure": heure,
+        "jour_sel_label": jour_label, "heure": heure, "token": token,
     })
 
 
@@ -681,6 +682,71 @@ def _rdv_par_token(session, token: str):
     return session.query(models.RendezVous).filter(
         models.RendezVous.gestion_token_hash == _hash_token(token)
     ).first()
+
+
+def _ics_pour_rdv(rdv, titre: str, duree_min: int) -> str:
+    """Construit un fichier iCalendar (.ics) pour un rendez-vous.
+
+    Heure « flottante » (locale) : les apps calendrier l'interprètent dans le
+    fuseau de l'appareil — simple et fiable pour un rendez-vous local.
+    """
+    h, m = (int(x) for x in (rdv.heure or "0:0").split(":"))
+    debut = datetime(rdv.jour.year, rdv.jour.month, rdv.jour.day, h, m)
+    fin = debut + timedelta(minutes=duree_min or 60)
+    fmt = "%Y%m%dT%H%M%S"
+
+    def esc(s):
+        return (s or "").replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+
+    lignes = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//PlanifAI//RDV//FR", "CALSCALE:GREGORIAN",
+        "BEGIN:VEVENT",
+        f"UID:rdv-{rdv.id}@planifai",
+        f"DTSTAMP:{datetime.utcnow().strftime(fmt)}Z",
+        f"DTSTART:{debut.strftime(fmt)}",
+        f"DTEND:{fin.strftime(fmt)}",
+        f"SUMMARY:{esc(titre)}",
+    ]
+    if rdv.motif:
+        lignes.append(f"DESCRIPTION:{esc(rdv.motif)}")
+    lignes += ["END:VEVENT", "END:VCALENDAR"]
+    return "\r\n".join(lignes) + "\r\n"
+
+
+def _reponse_ics(contenu: str) -> Response:
+    return Response(contenu, media_type="text/calendar; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="rendez-vous.ics"'})
+
+
+@app.get("/rdv/gerer/{token}/calendrier.ics")
+async def rdv_ics_client(request: Request, token: str):
+    session = db.SessionLocal()
+    try:
+        r = _rdv_par_token(session, token)
+        if not r:
+            return RedirectResponse("/", status_code=303)
+        pro = session.get(models.User, r.user_id)
+        titre = f"Rendez-vous — {(pro.entreprise if pro else '') or 'votre prestataire'}"
+        ics = _ics_pour_rdv(r, titre, (pro.rdv_duree if pro else 60) or 60)
+    finally:
+        session.close()
+    return _reponse_ics(ics)
+
+
+@app.get("/mes-rendez-vous/{rdv_id}/calendrier.ics")
+async def rdv_ics_pro(request: Request, rdv_id: int):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        r = session.get(models.RendezVous, rdv_id)
+        if not r or r.user_id != uid:
+            return RedirectResponse("/mes-rendez-vous", status_code=303)
+        pro = session.get(models.User, uid)
+        titre = f"Rendez-vous — {r.client_nom or 'client'}"
+        ics = _ics_pour_rdv(r, titre, (pro.rdv_duree if pro else 60) or 60)
+    finally:
+        session.close()
+    return _reponse_ics(ics)
 
 
 def _notifier(destinataire: str, sujet: str, html: str):

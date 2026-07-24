@@ -72,6 +72,7 @@
         {% elif passe %}
         <p class="hint">Ce rendez-vous est passé.</p>
         {% else %}
+        <a class="btn-lien" href="/rdv/gerer/{{ token }}/calendrier.ics">📅 Ajouter à mon calendrier</a>
         <a class="btn-lien" href="/rdv/gerer/{{ token }}/reporter">Choisir un autre créneau</a>
         <form method="post" action="/rdv/gerer/{{ token }}/annuler" onsubmit="return confirm('Annuler définitivement ce rendez-vous ?');">
             <button type="submit" class="btn-annuler">Annuler ce rendez-vous</button>

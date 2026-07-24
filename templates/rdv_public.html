@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prise de rendez-vous{% if entreprise %} — {{ entreprise }}{% endif %}</title>
-    <link rel="stylesheet" href="/static/style.css?v=6">
+    <link rel="stylesheet" href="/static/style.css?v=7">
 </head>
 <body>
     <div class="top">
@@ -24,6 +24,7 @@
         <p class="hint" style="text-align:center">Votre rendez-vous avec <strong>{{ entreprise }}</strong><br>
         le <strong>{{ jour_sel_label }} à {{ heure }}</strong> est bien enregistré.</p>
         <p class="hint" style="text-align:center">Un e-mail de confirmation vous a été envoyé si vous avez renseigné votre adresse.</p>
+        {% if token %}<a class="btn-lien" href="/rdv/gerer/{{ token }}/calendrier.ics">📅 Ajouter à mon calendrier</a>{% endif %}
     </div>
 
     {% else %}

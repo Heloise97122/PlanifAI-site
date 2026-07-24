@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanifAI — Atelier</title>
-    <link rel="stylesheet" href="/static/style.css?v=6">
+    <link rel="stylesheet" href="/static/style.css?v=7">
 </head>
 <body>
     <div class="top">
@@ -31,7 +31,7 @@
         <div class="tick">
             {% if rappels %}
                 {% for r in rappels %}
-                <div class="chip {% if r.retard %}late{% elif r.urgent %}warn{% endif %}">
+                <a class="chip {% if r.retard %}late{% elif r.urgent %}warn{% endif %}" href="{{ r.lien }}">
                     <div class="t">
                         <span>{{ r.label }}</span>
                         <span class="days {% if r.retard %}red{% endif %}">
@@ -43,7 +43,7 @@
                     </div>
                     <div class="n">{{ r.tiers }}</div>
                     <div class="sub">{{ r.date }}</div>
-                </div>
+                </a>
                 {% endfor %}
             {% else %}
                 <div class="empty">Rien d'urgent pour le moment. 👍</div>

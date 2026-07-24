@@ -871,6 +871,7 @@ async def dashboard(request: Request):
                     "jours": jours,
                     "urgent": 0 <= jours <= 7,
                     "retard": jours < 0,
+                    "lien": "/mes-documents",
                 })
             # Rendez-vous à venir (7 prochains jours) dans les rappels.
             prochains = session.query(models.RendezVous).filter(
@@ -888,6 +889,7 @@ async def dashboard(request: Request):
                     "jours": jours,
                     "urgent": 0 <= jours <= 2,
                     "retard": False,
+                    "lien": "/mes-rendez-vous",
                 })
             rappels.sort(key=lambda x: x["jours"])
         finally:

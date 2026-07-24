@@ -50,8 +50,8 @@
         /* Bandeau fonctionnalités : grille 4 colonnes (symétrique) */
         .feats{display:grid;grid-template-columns:repeat(4,auto);justify-content:center;gap:16px 44px;
                padding:52px 0;margin-top:20px;border-top:1px solid #eef0f3;color:#3a4453;font-weight:600;font-size:1rem}
-        .feats span{display:inline-flex;align-items:center;gap:9px}
-        .feats span::before{content:"";width:7px;height:7px;border-radius:50%;background:#C8956C}
+        .feats span{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
+        .feats span::before{content:"";width:7px;height:7px;border-radius:50%;background:#C8956C;flex:0 0 auto}
 
         /* Bas de page CTA */
         .end{text-align:center;padding:20px 0 60px}
@@ -77,10 +77,13 @@
             .shot{margin-top:32px}
             .shot-bar{padding:9px 12px}
             .shot-bar i{width:9px;height:9px}
-            /* fonctionnalités : grille 2x2 alignée à gauche */
-            .feats{grid-template-columns:1fr 1fr;justify-content:stretch;justify-items:start;
-                   gap:16px 18px;padding:32px 4px;font-size:.92rem}
             .end{padding:14px 0 40px}
+        }
+        /* Fonctionnalités : liste sur une seule colonne, alignée et centrée
+           (dès qu'il n'y a plus la place pour 4 colonnes propres) */
+        @media(max-width:900px){
+            .feats{grid-template-columns:1fr;justify-content:center;justify-items:start;
+                   width:fit-content;margin:20px auto 0;gap:14px;padding:34px 0;font-size:1rem}
         }
     </style>
 </head>

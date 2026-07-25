@@ -63,14 +63,28 @@ PUBLIC_PATHS = {
 }
 PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
 
+# Compte administrateur (accès au back-office /admin). Personnalisable via la
+# variable d'environnement ADMIN_EMAIL ; sinon valeur par défaut ci-dessous.
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "bruyere.heloise@outlook.com").strip().lower()
+
 
 @app.middleware("http")
 async def garde_connexion(request: Request, call_next):
     path = request.url.path
     if path.startswith(PUBLIC_PREFIXES) or path in PUBLIC_PATHS:
         return await call_next(request)
-    if not request.session.get("user_id"):
+    uid = request.session.get("user_id")
+    if not uid:
         return RedirectResponse("/connexion", status_code=303)
+    # Un compte suspendu est déconnecté immédiatement (la session ne suffit plus).
+    session = db.SessionLocal()
+    try:
+        u = session.get(models.User, uid)
+        if u is None or u.suspendu:
+            request.session.clear()
+            return RedirectResponse("/connexion", status_code=303)
+    finally:
+        session.close()
     return await call_next(request)
 
 
@@ -144,6 +158,12 @@ async def faire_connexion(request: Request, email: str = Form(...), mot_de_passe
             return templates.TemplateResponse(
                 request, "connexion.html",
                 {"erreur": "Email ou mot de passe incorrect."}, status_code=400,
+            )
+        if user.suspendu:
+            return templates.TemplateResponse(
+                request, "connexion.html",
+                {"erreur": "Ce compte est suspendu. Contactez contact.planifai@gmail.com."},
+                status_code=403,
             )
         request.session["user_id"] = user.id
         return RedirectResponse("/", status_code=303)
@@ -931,11 +951,94 @@ async def confidentialite(request: Request):
     return templates.TemplateResponse(request, "confidentialite.html")
 
 
+# === BACK-OFFICE ADMINISTRATEUR (réservé à ADMIN_EMAIL) ===
+
+def _exiger_admin(request: Request, session):
+    """Retourne l'utilisateur admin connecté, ou None si l'accès est refusé."""
+    uid = request.session.get("user_id")
+    if not uid:
+        return None
+    u = session.get(models.User, uid)
+    if not u or (u.email or "").strip().lower() != ADMIN_EMAIL:
+        return None
+    return u
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_accueil(request: Request):
+    session = db.SessionLocal()
+    try:
+        moi = _exiger_admin(request, session)
+        if moi is None:
+            return HTMLResponse("Accès refusé.", status_code=403)
+
+        users = session.query(models.User).order_by(models.User.created_at.desc()).all()
+
+        # Comptages par utilisateur (une requête groupée par table, pas N+1).
+        from sqlalchemy import func
+        docs_par_user = dict(
+            session.query(models.Document.user_id, func.count(models.Document.id))
+            .group_by(models.Document.user_id).all()
+        )
+        rdv_par_user = dict(
+            session.query(models.RendezVous.user_id, func.count(models.RendezVous.id))
+            .group_by(models.RendezVous.user_id).all()
+        )
+
+        aujourdhui = date.today()
+        depuis_7j = datetime.utcnow() - timedelta(days=7)
+        lignes = []
+        for u in users:
+            lignes.append({
+                "id": u.id,
+                "email": u.email,
+                "entreprise": u.entreprise or "",
+                "inscrit": u.created_at.strftime("%d/%m/%Y") if u.created_at else "—",
+                "docs": docs_par_user.get(u.id, 0),
+                "rdv": rdv_par_user.get(u.id, 0),
+                "suspendu": bool(u.suspendu),
+                "is_admin": (u.email or "").strip().lower() == ADMIN_EMAIL,
+            })
+
+        stats = {
+            "total_comptes": len(users),
+            "total_docs": sum(docs_par_user.values()),
+            "total_rdv": sum(rdv_par_user.values()),
+            "nouveaux_7j": sum(
+                1 for u in users if u.created_at and u.created_at >= depuis_7j
+            ),
+            "suspendus": sum(1 for u in users if u.suspendu),
+        }
+        return templates.TemplateResponse(
+            request, "admin.html", {"lignes": lignes, "stats": stats, "moi": moi.email},
+        )
+    finally:
+        session.close()
+
+
+@app.post("/admin/utilisateur/{cible_id}/suspendre")
+async def admin_suspendre(request: Request, cible_id: int):
+    session = db.SessionLocal()
+    try:
+        moi = _exiger_admin(request, session)
+        if moi is None:
+            return HTMLResponse("Accès refusé.", status_code=403)
+        cible = session.get(models.User, cible_id)
+        # On ne peut pas se suspendre soi-même (sécurité anti-verrouillage).
+        if cible and cible.id != moi.id:
+            cible.suspendu = 0 if cible.suspendu else 1
+            session.commit()
+        return RedirectResponse("/admin", status_code=303)
+    finally:
+        session.close()
+
+
 # === PAGES HTML (formulaires) ===
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     rappels = []
+    est_admin = False
     uid = request.session.get("user_id")
     # Visiteur non connecté : on montre la page vitrine (landing).
     if not uid:
@@ -982,9 +1085,13 @@ async def dashboard(request: Request):
                     "lien": "/mes-rendez-vous",
                 })
             rappels.sort(key=lambda x: x["jours"])
+            user = session.get(models.User, uid)
+            est_admin = bool(user and (user.email or "").strip().lower() == ADMIN_EMAIL)
         finally:
             session.close()
-    return templates.TemplateResponse(request, "dashboard.html", {"rappels": rappels})
+    return templates.TemplateResponse(
+        request, "dashboard.html", {"rappels": rappels, "est_admin": est_admin},
+    )
 
 
 @app.get("/mes-documents", response_class=HTMLResponse)

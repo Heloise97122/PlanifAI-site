@@ -52,6 +52,7 @@ def init_db():
     _ajouter_colonne_si_absente("users", "rdv_heure_debut", "VARCHAR(5)")
     _ajouter_colonne_si_absente("users", "rdv_heure_fin", "VARCHAR(5)")
     _ajouter_colonne_si_absente("users", "rdv_duree", "INTEGER DEFAULT 60")
+    _ajouter_colonne_si_absente("users", "suspendu", "INTEGER DEFAULT 0")
     _ajouter_colonne_si_absente("rendez_vous", "gestion_token_hash", "VARCHAR(64)")
     _ajouter_colonne_si_absente("documents", "date_paiement", "DATE")
     _ajouter_colonne_si_absente("documents", "date_relance", "DATE")

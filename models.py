@@ -34,6 +34,8 @@ class User(Base):
     rdv_heure_debut = Column(String(5), default="08:00")
     rdv_heure_fin = Column(String(5), default="17:00")
     rdv_duree = Column(Integer, default=60)                # durée d'un créneau en minutes
+    # Administration : un compte suspendu ne peut plus se connecter (données conservées).
+    suspendu = Column(Integer, default=0)                   # 0/1
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

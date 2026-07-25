@@ -36,6 +36,9 @@ class User(Base):
     rdv_duree = Column(Integer, default=60)                # durée d'un créneau en minutes
     # Administration : un compte suspendu ne peut plus se connecter (données conservées).
     suspendu = Column(Integer, default=0)                   # 0/1
+    # Parrainage : code unique partageable + id du parrain (celui qui a invité).
+    code_parrainage = Column(String(12), unique=True, index=True, nullable=True)
+    parraine_par = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

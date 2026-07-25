@@ -49,6 +49,7 @@
             <div class="card"><div class="num">{{ stats.nouveaux_7j }}</div><div class="lbl">Inscrits (7 j)</div></div>
             <div class="card"><div class="num">{{ stats.total_docs }}</div><div class="lbl">Documents</div></div>
             <div class="card"><div class="num">{{ stats.total_rdv }}</div><div class="lbl">Rendez-vous</div></div>
+            <div class="card"><div class="num">{{ stats.parraines }}</div><div class="lbl">Via parrainage</div></div>
             <div class="card"><div class="num">{{ stats.suspendus }}</div><div class="lbl">Suspendus</div></div>
         </div>
 
@@ -61,6 +62,7 @@
                     <th class="hide-sm">Inscrit le</th>
                     <th class="num">Docs</th>
                     <th class="num">RDV</th>
+                    <th class="num hide-sm">Filleuls</th>
                     <th></th>
                 </tr>
             </thead>
@@ -71,11 +73,13 @@
                         {{ l.email }}
                         {% if l.is_admin %}<span class="tag admin">admin</span>{% endif %}
                         {% if l.suspendu %}<span class="tag susp">suspendu</span>{% endif %}
+                        {% if l.parrain %}<div class="em">parrainé par {{ l.parrain }}</div>{% endif %}
                     </td>
                     <td class="hide-sm">{{ l.entreprise or '—' }}</td>
                     <td class="hide-sm em">{{ l.inscrit }}</td>
                     <td class="num">{{ l.docs }}</td>
                     <td class="num">{{ l.rdv }}</td>
+                    <td class="num hide-sm">{{ l.filleuls }}</td>
                     <td>
                         {% if not l.is_admin %}
                         <form method="post" action="/admin/utilisateur/{{ l.id }}/suspendre" style="margin:0">

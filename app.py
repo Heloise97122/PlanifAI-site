@@ -60,6 +60,7 @@ env = Environment(loader=FileSystemLoader("templates"))
 PUBLIC_PATHS = {
     "/", "/connexion", "/inscription", "/health", "/favicon.ico",
     "/mot-de-passe-oublie", "/mentions-legales", "/confidentialite",
+    "/robots.txt", "/sitemap.xml",
 }
 PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
 
@@ -111,6 +112,31 @@ def utilisateur_courant(request: Request):
         return session.get(models.User, uid)
     finally:
         session.close()
+
+
+# Alphabet sans caractères ambigus (pas de 0/O, 1/l/I) pour un code lisible.
+_ALPHABET_CODE = "abcdefghjkmnpqrstuvwxyz23456789"
+
+
+def _nouveau_code_parrainage(session) -> str:
+    """Génère un code de parrainage aléatoire unique (7 caractères)."""
+    for _ in range(20):
+        code = "".join(secrets.choice(_ALPHABET_CODE) for _ in range(7))
+        existe = session.query(models.User.id).filter(
+            models.User.code_parrainage == code
+        ).first()
+        if not existe:
+            return code
+    # Repli extrêmement improbable : rallonge le code.
+    return "".join(secrets.choice(_ALPHABET_CODE) for _ in range(11))
+
+
+def _assurer_code_parrainage(user, session) -> str:
+    """Retourne le code de parrainage de l'utilisateur, en le créant si besoin."""
+    if not user.code_parrainage:
+        user.code_parrainage = _nouveau_code_parrainage(session)
+        session.commit()
+    return user.code_parrainage
 
 
 def prochain_numero(request: Request, type_: str) -> str:
@@ -173,7 +199,26 @@ async def faire_connexion(request: Request, email: str = Form(...), mot_de_passe
 
 @app.get("/inscription", response_class=HTMLResponse)
 async def page_inscription(request: Request):
-    return templates.TemplateResponse(request, "inscription.html")
+    # Parrainage : si l'URL contient ?ref=code, on mémorise le code (validé à la
+    # création du compte) et on affiche un petit bandeau de bienvenue.
+    parrain_nom = None
+    ref = (request.query_params.get("ref") or "").strip().lower()
+    if ref:
+        request.session["ref"] = ref[:12]
+    ref = request.session.get("ref")
+    if ref:
+        session = db.SessionLocal()
+        try:
+            parrain = session.query(models.User).filter(
+                models.User.code_parrainage == ref
+            ).first()
+            if parrain:
+                parrain_nom = parrain.entreprise or "un collègue"
+        finally:
+            session.close()
+    return templates.TemplateResponse(
+        request, "inscription.html", {"parrain_nom": parrain_nom},
+    )
 
 
 @app.post("/inscription")
@@ -197,14 +242,27 @@ async def faire_inscription(
                 request, "inscription.html",
                 {"erreur": "Un compte existe déjà avec cet email."}, status_code=400,
             )
+        # Parrainage : rattache le nouveau compte au parrain si un code valide a
+        # été mémorisé (via ?ref=code). On ne se parraine jamais soi-même.
+        parraine_par = None
+        ref = (request.session.get("ref") or "").strip().lower()
+        if ref:
+            parrain = session.query(models.User).filter(
+                models.User.code_parrainage == ref
+            ).first()
+            if parrain:
+                parraine_par = parrain.id
         user = models.User(
             email=email,
             password_hash=auth.hash_password(mot_de_passe),
             entreprise=entreprise.strip(),
             adresse=adresse.strip(),
+            code_parrainage=_nouveau_code_parrainage(session),
+            parraine_par=parraine_par,
         )
         session.add(user)
         session.commit()
+        request.session.pop("ref", None)
         request.session["user_id"] = user.id
         return RedirectResponse("/", status_code=303)
     finally:
@@ -939,6 +997,48 @@ async def health():
     return {"status": "ok", "service": "PlanifAI"}
 
 
+# === SEO : robots.txt + sitemap.xml (référencement Google & moteurs IA) ===
+
+@app.get("/robots.txt")
+async def robots(request: Request):
+    corps = (
+        "User-agent: *\n"
+        "Allow: /$\n"
+        "Allow: /connexion\n"
+        "Allow: /inscription\n"
+        "Allow: /mentions-legales\n"
+        "Allow: /confidentialite\n"
+        # On n'expose pas les espaces privés au référencement.
+        "Disallow: /mon-entreprise\n"
+        "Disallow: /mes-documents\n"
+        "Disallow: /mes-rendez-vous\n"
+        "Disallow: /admin\n"
+        "Disallow: /document/\n"
+        "Disallow: /generate/\n"
+        f"\nSitemap: {_base_url(request)}/sitemap.xml\n"
+    )
+    return Response(corps, media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap(request: Request):
+    base = _base_url(request)
+    pages = ["/", "/inscription", "/connexion", "/mentions-legales", "/confidentialite"]
+    today = date.today().isoformat()
+    urls = "".join(
+        f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod>"
+        f"<changefreq>weekly</changefreq>"
+        f"<priority>{'1.0' if p == '/' else '0.6'}</priority></url>"
+        for p in pages
+    )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{urls}</urlset>"
+    )
+    return Response(xml, media_type="application/xml")
+
+
 # === PAGES LÉGALES (publiques) ===
 
 @app.get("/mentions-legales", response_class=HTMLResponse)
@@ -984,6 +1084,14 @@ async def admin_accueil(request: Request):
             session.query(models.RendezVous.user_id, func.count(models.RendezVous.id))
             .group_by(models.RendezVous.user_id).all()
         )
+        # Nombre de filleuls par parrain (comptes où parraine_par = id du parrain).
+        filleuls_par_user = dict(
+            session.query(models.User.parraine_par, func.count(models.User.id))
+            .filter(models.User.parraine_par.isnot(None))
+            .group_by(models.User.parraine_par).all()
+        )
+        # Nom de l'entreprise par id, pour afficher « parrainé par ».
+        nom_par_id = {u.id: (u.entreprise or u.email) for u in users}
 
         aujourdhui = date.today()
         depuis_7j = datetime.utcnow() - timedelta(days=7)
@@ -996,6 +1104,8 @@ async def admin_accueil(request: Request):
                 "inscrit": u.created_at.strftime("%d/%m/%Y") if u.created_at else "—",
                 "docs": docs_par_user.get(u.id, 0),
                 "rdv": rdv_par_user.get(u.id, 0),
+                "filleuls": filleuls_par_user.get(u.id, 0),
+                "parrain": nom_par_id.get(u.parraine_par) if u.parraine_par else None,
                 "suspendu": bool(u.suspendu),
                 "is_admin": (u.email or "").strip().lower() == ADMIN_EMAIL,
             })
@@ -1008,6 +1118,7 @@ async def admin_accueil(request: Request):
                 1 for u in users if u.created_at and u.created_at >= depuis_7j
             ),
             "suspendus": sum(1 for u in users if u.suspendu),
+            "parraines": sum(1 for u in users if u.parraine_par),
         }
         return templates.TemplateResponse(
             request, "admin.html", {"lignes": lignes, "stats": stats, "moi": moi.email},
@@ -1039,10 +1150,18 @@ async def admin_suspendre(request: Request, cible_id: int):
 async def dashboard(request: Request):
     rappels = []
     est_admin = False
+    lien_parrainage = None
+    nb_parraines = 0
     uid = request.session.get("user_id")
     # Visiteur non connecté : on montre la page vitrine (landing).
     if not uid:
-        return templates.TemplateResponse(request, "accueil.html")
+        # Parrainage : mémorise le code si la vitrine est ouverte via /?ref=code.
+        ref = (request.query_params.get("ref") or "").strip().lower()
+        if ref:
+            request.session["ref"] = ref[:12]
+        return templates.TemplateResponse(
+            request, "accueil.html", {"base_url": _base_url(request)},
+        )
     if uid:
         session = db.SessionLocal()
         try:
@@ -1087,10 +1206,23 @@ async def dashboard(request: Request):
             rappels.sort(key=lambda x: x["jours"])
             user = session.get(models.User, uid)
             est_admin = bool(user and (user.email or "").strip().lower() == ADMIN_EMAIL)
+            # Parrainage : lien personnel + nombre de filleuls inscrits.
+            if user:
+                code = _assurer_code_parrainage(user, session)
+                lien_parrainage = f"{_base_url(request)}/inscription?ref={code}"
+                nb_parraines = session.query(models.User).filter(
+                    models.User.parraine_par == user.id
+                ).count()
         finally:
             session.close()
     return templates.TemplateResponse(
-        request, "dashboard.html", {"rappels": rappels, "est_admin": est_admin},
+        request, "dashboard.html",
+        {
+            "rappels": rappels,
+            "est_admin": est_admin,
+            "lien_parrainage": lien_parrainage,
+            "nb_parraines": nb_parraines,
+        },
     )
 
 

@@ -3,8 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlanifAI — Factures et contrats en 2 minutes</title>
-    <meta name="description" content="L'outil des artisans qui n'aiment pas l'administratif. Factures, devis, contrats et rendez-vous en ligne. Essai gratuit, sans carte bancaire.">
+    <title>PlanifAI — Factures, devis et contrats en 2 minutes pour artisans</title>
+    <meta name="description" content="PlanifAI est l'outil des artisans du bâtiment (maçons, plombiers, électriciens) qui n'aiment pas l'administratif : factures, devis, contrats et prise de rendez-vous en ligne, avec calcul de TVA et suivi des paiements. Essai gratuit, sans carte bancaire.">
+    <meta name="keywords" content="logiciel facturation artisan, devis artisan, facture auto-entrepreneur, logiciel BTP, prise de rendez-vous artisan, contrat artisan, micro-entreprise">
+    <link rel="canonical" href="{{ base_url }}/">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="PlanifAI">
+
+    <!-- Open Graph (partage Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PlanifAI">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:title" content="PlanifAI — Factures, devis et contrats en 2 minutes pour artisans">
+    <meta property="og:description" content="L'outil des artisans qui n'aiment pas l'administratif. Factures, devis, contrats et rendez-vous en ligne. Essai gratuit, sans carte bancaire.">
+    <meta property="og:url" content="{{ base_url }}/">
+    <meta property="og:image" content="{{ base_url }}/static/planifai_demo.gif">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PlanifAI — Factures et devis en 2 minutes pour artisans">
+    <meta name="twitter:description" content="L'outil des artisans qui n'aiment pas l'administratif. Essai gratuit, sans carte bancaire.">
+    <meta name="twitter:image" content="{{ base_url }}/static/planifai_demo.gif">
+
+    <!-- Données structurées : aide Google et les moteurs IA à décrire/citer le site -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "PlanifAI",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Outil en ligne pour les artisans (maçons, plombiers, électriciens) permettant de créer des factures, devis et contrats, de calculer la TVA, de suivre les paiements et de proposer la prise de rendez-vous en ligne.",
+      "url": "{{ base_url }}/",
+      "inLanguage": "fr",
+      "audience": {"@type": "Audience", "audienceType": "Artisans, auto-entrepreneurs et micro-entreprises du bâtiment"},
+      "featureList": ["Factures et devis", "Relances de paiement", "Contrats conformes", "Prise de rendez-vous en ligne", "Calcul de TVA"],
+      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR", "description": "Essai gratuit, sans carte bancaire"}
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>

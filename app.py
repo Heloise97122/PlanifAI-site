@@ -59,7 +59,7 @@ env = Environment(loader=FileSystemLoader("templates"))
 # --- Sécurité : le site est privé, tout passe derrière la connexion ---
 PUBLIC_PATHS = {
     "/", "/connexion", "/inscription", "/health", "/favicon.ico",
-    "/mot-de-passe-oublie",
+    "/mot-de-passe-oublie", "/mentions-legales", "/confidentialite",
 }
 PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
 
@@ -917,6 +917,18 @@ async def annuler_rdv_pro(request: Request, rdv_id: int):
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "PlanifAI"}
+
+
+# === PAGES LÉGALES (publiques) ===
+
+@app.get("/mentions-legales", response_class=HTMLResponse)
+async def mentions_legales(request: Request):
+    return templates.TemplateResponse(request, "mentions_legales.html")
+
+
+@app.get("/confidentialite", response_class=HTMLResponse)
+async def confidentialite(request: Request):
+    return templates.TemplateResponse(request, "confidentialite.html")
 
 
 # === PAGES HTML (formulaires) ===

@@ -16,6 +16,7 @@ import base64
 import json
 import secrets
 import hashlib
+import html as _html
 
 import billing
 import planning
@@ -75,12 +76,14 @@ async def garde_connexion(request: Request, call_next):
 
 # SessionMiddleware ajouté APRÈS la garde -> il l'enveloppe, la session est
 # donc disponible quand la garde s'exécute.
+# Cookie de session sécurisé (HTTPS uniquement) en production — détecté via APP_URL.
+_EN_PROD = os.environ.get("APP_URL", "").startswith("https")
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.environ.get("SECRET_KEY", "dev-secret-a-changer-en-production"),
     max_age=60 * 60 * 24 * 14,
     same_site="lax",
-    https_only=False,
+    https_only=_EN_PROD,
 )
 
 
@@ -643,15 +646,22 @@ async def reserver_rdv(
 
     lien_gestion = f"{_base_url(request)}/rdv/gerer/{token}"
 
+    # On échappe les saisies du client (public) avant de les mettre dans du HTML d'e-mail.
+    e_nom = _html.escape(client_nom.strip())
+    e_tel = _html.escape(client_tel.strip())
+    e_mail = _html.escape(client_email.strip())
+    e_motif = _html.escape(motif.strip())
+    e_pro = _html.escape(pro_nom)
+
     # E-mails (best-effort : un échec d'envoi ne bloque pas la réservation).
     if client_email.strip():
         mailer.envoyer_email(
             client_email.strip(),
             f"Confirmation de votre rendez-vous — {pro_nom}",
-            f"<p>Bonjour {client_nom.strip()},</p>"
-            f"<p>Votre rendez-vous avec <strong>{pro_nom}</strong> est confirmé :</p>"
+            f"<p>Bonjour {e_nom},</p>"
+            f"<p>Votre rendez-vous avec <strong>{e_pro}</strong> est confirmé :</p>"
             f"<p><strong>{jour_label} à {heure}</strong></p>"
-            + (f"<p>Motif : {motif.strip()}</p>" if motif.strip() else "")
+            + (f"<p>Motif : {e_motif}</p>" if e_motif else "")
             + f'<p><a href="{lien_gestion}/calendrier.ics">📅 Ajouter à mon calendrier</a></p>'
             + f'<p>Besoin d\'annuler ou de déplacer ce rendez-vous ? '
               f'<a href="{lien_gestion}">Gérer mon rendez-vous</a></p>'
@@ -663,10 +673,10 @@ async def reserver_rdv(
             f"Nouveau rendez-vous : {client_nom.strip()} — {jour_label} à {heure}",
             f"<p>Nouveau rendez-vous réservé en ligne :</p>"
             f"<p><strong>{jour_label} à {heure}</strong></p>"
-            f"<p>Client : {client_nom.strip()}<br>"
-            f"Téléphone : {client_tel.strip() or '—'}<br>"
-            f"E-mail : {client_email.strip() or '—'}</p>"
-            + (f"<p>Motif : {motif.strip()}</p>" if motif.strip() else "")
+            f"<p>Client : {e_nom}<br>"
+            f"Téléphone : {e_tel or '—'}<br>"
+            f"E-mail : {e_mail or '—'}</p>"
+            + (f"<p>Motif : {e_motif}</p>" if e_motif else "")
             + "<p>— PlanifAI</p>",
         )
 
@@ -790,7 +800,7 @@ async def annuler_rdv_client(request: Request, token: str):
             jour_label = rdv.libelle_jour(r.jour)
             _notifier(pro.email if pro else "",
                       f"Rendez-vous annulé : {r.client_nom} — {jour_label} à {r.heure}",
-                      f"<p>Le client <strong>{r.client_nom}</strong> a annulé son rendez-vous "
+                      f"<p>Le client <strong>{_html.escape(r.client_nom or '')}</strong> a annulé son rendez-vous "
                       f"du <strong>{jour_label} à {r.heure}</strong>. Le créneau est de nouveau libre.</p>")
     finally:
         session.close()
@@ -865,14 +875,16 @@ async def reporter_rdv(request: Request, token: str,
     finally:
         session.close()
 
+    e_client = _html.escape(client_nom or "")
+    e_entreprise = _html.escape(entreprise or "")
     _notifier(client_email,
               f"Rendez-vous déplacé — {entreprise}",
-              f"<p>Bonjour {client_nom},</p><p>Votre rendez-vous avec <strong>{entreprise}</strong> "
+              f"<p>Bonjour {e_client},</p><p>Votre rendez-vous avec <strong>{e_entreprise}</strong> "
               f"est désormais fixé au <strong>{nouveau}</strong> (au lieu du {ancien}).</p>"
               f'<p><a href="{_base_url(request)}/rdv/gerer/{token}">Gérer mon rendez-vous</a></p>')
     _notifier(pro_email,
               f"Rendez-vous déplacé : {client_nom} — {nouveau}",
-              f"<p>Le client <strong>{client_nom}</strong> a déplacé son rendez-vous : "
+              f"<p>Le client <strong>{e_client}</strong> a déplacé son rendez-vous : "
               f"<strong>{nouveau}</strong> (au lieu du {ancien}).</p>")
 
     return templates.TemplateResponse(request, "rdv_gerer.html", {
@@ -892,7 +904,7 @@ async def annuler_rdv_pro(request: Request, rdv_id: int):
             jour_label = rdv.libelle_jour(r.jour)
             _notifier(r.client_email,
                       "Votre rendez-vous a été annulé",
-                      f"<p>Bonjour {r.client_nom},</p><p>Votre rendez-vous du "
+                      f"<p>Bonjour {_html.escape(r.client_nom or '')},</p><p>Votre rendez-vous du "
                       f"<strong>{jour_label} à {r.heure}</strong> a été annulé par le prestataire. "
                       f"N'hésitez pas à réserver un autre créneau.</p>")
     finally:
@@ -1129,7 +1141,7 @@ async def envoyer_relance(request: Request, doc_id: int,
     finally:
         session.close()
 
-    corps_html = "<p>" + message.strip().replace("\n", "<br>\n") + "</p>"
+    corps_html = "<p>" + _html.escape(message.strip()).replace("\n", "<br>\n") + "</p>"
     nom_expediteur = (user.entreprise if user else "") or None
     envoye = mailer.envoyer_email(
         destinataire.strip(), sujet.strip(), corps_html,

@@ -13,6 +13,7 @@ et le message est journalisé — pratique en local sans casser l'application.
 
 import os
 import json
+import base64
 import logging
 import urllib.request
 import urllib.error
@@ -28,13 +29,16 @@ def email_configure() -> bool:
 
 
 def envoyer_email(destinataire: str, sujet: str, html: str,
-                  nom_expediteur: str = None, repondre_a: str = None) -> bool:
+                  nom_expediteur: str = None, repondre_a: str = None,
+                  pieces_jointes: list = None) -> bool:
     """Envoie un e-mail HTML. Retourne True si Brevo a accepté l'envoi.
 
     `nom_expediteur` : nom affiché de l'expéditeur (par défaut MAIL_FROM_NAME).
         Permet d'envoyer « au nom de » un artisan sans changer l'adresse validée.
     `repondre_a` : adresse de réponse (Reply-To), pour que les réponses aillent
         à l'artisan et non à l'adresse technique de la plateforme.
+    `pieces_jointes` : liste de dicts {"nom": "facture.pdf", "contenu": b"..."} ;
+        le contenu (octets) est encodé en base64 pour l'API Brevo.
     """
     api_key = os.environ.get("BREVO_API_KEY")
     if not api_key:
@@ -55,6 +59,14 @@ def envoyer_email(destinataire: str, sujet: str, html: str,
     }
     if repondre_a:
         payload["replyTo"] = {"email": repondre_a}
+    if pieces_jointes:
+        payload["attachment"] = [
+            {
+                "name": pj["nom"],
+                "content": base64.b64encode(pj["contenu"]).decode("ascii"),
+            }
+            for pj in pieces_jointes if pj.get("contenu")
+        ]
     corps = json.dumps(payload).encode("utf-8")
 
     requete = urllib.request.Request(

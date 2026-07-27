@@ -12,6 +12,12 @@
         <h1>Créer un compte</h1>
         <p class="sub">Quelques secondes, et votre espace est prêt.</p>
 
+        {% if parrain_nom %}
+        <div style="background:#EEF4FB;border:1px solid #cfe0f2;color:#1B3A5C;border-radius:10px;padding:10px 14px;font-size:13.5px;margin-bottom:14px">
+            Vous avez été invité par <strong>{{ parrain_nom }}</strong>. Bienvenue&nbsp;!
+        </div>
+        {% endif %}
+
         {% if erreur %}<div class="form-error">{{ erreur }}</div>{% endif %}
 
         <form method="post" action="/inscription">
@@ -26,6 +32,7 @@
             <button type="submit">Créer mon compte</button>
         </form>
 
+        <p class="auth-alt" style="font-size:12.5px">En créant un compte, vous acceptez notre <a href="/confidentialite">politique de confidentialité</a>.</p>
         <p class="auth-alt">Déjà un compte ? <a href="/connexion">Se connecter</a></p>
     </div>
 </body>

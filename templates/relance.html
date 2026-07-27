@@ -36,8 +36,8 @@
             <label>Objet</label>
             <input name="sujet" value="{{ sujet }}" required>
             <label>Message</label>
-            <textarea name="message" rows="10" required>{{ message }}</textarea>
-            <p class="hint">Vous pouvez modifier ce message avant de l'envoyer.</p>
+            <textarea name="message" rows="12" required>{{ message }}</textarea>
+            <p class="hint">Vous pouvez modifier ce message avant de l'envoyer. La facture <strong>{{ numero }}</strong> sera automatiquement jointe au format PDF.</p>
             <button type="submit">Envoyer la relance</button>
         </form>
     {% endif %}

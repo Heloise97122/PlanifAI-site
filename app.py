@@ -59,9 +59,14 @@ env = Environment(loader=FileSystemLoader("templates"))
 # --- Sécurité : le site est privé, tout passe derrière la connexion ---
 PUBLIC_PATHS = {
     "/", "/connexion", "/inscription", "/health", "/favicon.ico",
-    "/mot-de-passe-oublie",
+    "/mot-de-passe-oublie", "/mentions-legales", "/confidentialite",
+    "/robots.txt", "/sitemap.xml",
 }
 PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
+
+# Compte administrateur (accès au back-office /admin). Personnalisable via la
+# variable d'environnement ADMIN_EMAIL ; sinon valeur par défaut ci-dessous.
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "bruyere.heloise@outlook.com").strip().lower()
 
 
 @app.middleware("http")
@@ -69,8 +74,18 @@ async def garde_connexion(request: Request, call_next):
     path = request.url.path
     if path.startswith(PUBLIC_PREFIXES) or path in PUBLIC_PATHS:
         return await call_next(request)
-    if not request.session.get("user_id"):
+    uid = request.session.get("user_id")
+    if not uid:
         return RedirectResponse("/connexion", status_code=303)
+    # Un compte suspendu est déconnecté immédiatement (la session ne suffit plus).
+    session = db.SessionLocal()
+    try:
+        u = session.get(models.User, uid)
+        if u is None or u.suspendu:
+            request.session.clear()
+            return RedirectResponse("/connexion", status_code=303)
+    finally:
+        session.close()
     return await call_next(request)
 
 
@@ -97,6 +112,31 @@ def utilisateur_courant(request: Request):
         return session.get(models.User, uid)
     finally:
         session.close()
+
+
+# Alphabet sans caractères ambigus (pas de 0/O, 1/l/I) pour un code lisible.
+_ALPHABET_CODE = "abcdefghjkmnpqrstuvwxyz23456789"
+
+
+def _nouveau_code_parrainage(session) -> str:
+    """Génère un code de parrainage aléatoire unique (7 caractères)."""
+    for _ in range(20):
+        code = "".join(secrets.choice(_ALPHABET_CODE) for _ in range(7))
+        existe = session.query(models.User.id).filter(
+            models.User.code_parrainage == code
+        ).first()
+        if not existe:
+            return code
+    # Repli extrêmement improbable : rallonge le code.
+    return "".join(secrets.choice(_ALPHABET_CODE) for _ in range(11))
+
+
+def _assurer_code_parrainage(user, session) -> str:
+    """Retourne le code de parrainage de l'utilisateur, en le créant si besoin."""
+    if not user.code_parrainage:
+        user.code_parrainage = _nouveau_code_parrainage(session)
+        session.commit()
+    return user.code_parrainage
 
 
 def prochain_numero(request: Request, type_: str) -> str:
@@ -145,6 +185,12 @@ async def faire_connexion(request: Request, email: str = Form(...), mot_de_passe
                 request, "connexion.html",
                 {"erreur": "Email ou mot de passe incorrect."}, status_code=400,
             )
+        if user.suspendu:
+            return templates.TemplateResponse(
+                request, "connexion.html",
+                {"erreur": "Ce compte est suspendu. Contactez contact.planifai@gmail.com."},
+                status_code=403,
+            )
         request.session["user_id"] = user.id
         return RedirectResponse("/", status_code=303)
     finally:
@@ -153,7 +199,26 @@ async def faire_connexion(request: Request, email: str = Form(...), mot_de_passe
 
 @app.get("/inscription", response_class=HTMLResponse)
 async def page_inscription(request: Request):
-    return templates.TemplateResponse(request, "inscription.html")
+    # Parrainage : si l'URL contient ?ref=code, on mémorise le code (validé à la
+    # création du compte) et on affiche un petit bandeau de bienvenue.
+    parrain_nom = None
+    ref = (request.query_params.get("ref") or "").strip().lower()
+    if ref:
+        request.session["ref"] = ref[:12]
+    ref = request.session.get("ref")
+    if ref:
+        session = db.SessionLocal()
+        try:
+            parrain = session.query(models.User).filter(
+                models.User.code_parrainage == ref
+            ).first()
+            if parrain:
+                parrain_nom = parrain.entreprise or "un collègue"
+        finally:
+            session.close()
+    return templates.TemplateResponse(
+        request, "inscription.html", {"parrain_nom": parrain_nom},
+    )
 
 
 @app.post("/inscription")
@@ -177,14 +242,27 @@ async def faire_inscription(
                 request, "inscription.html",
                 {"erreur": "Un compte existe déjà avec cet email."}, status_code=400,
             )
+        # Parrainage : rattache le nouveau compte au parrain si un code valide a
+        # été mémorisé (via ?ref=code). On ne se parraine jamais soi-même.
+        parraine_par = None
+        ref = (request.session.get("ref") or "").strip().lower()
+        if ref:
+            parrain = session.query(models.User).filter(
+                models.User.code_parrainage == ref
+            ).first()
+            if parrain:
+                parraine_par = parrain.id
         user = models.User(
             email=email,
             password_hash=auth.hash_password(mot_de_passe),
             entreprise=entreprise.strip(),
             adresse=adresse.strip(),
+            code_parrainage=_nouveau_code_parrainage(session),
+            parraine_par=parraine_par,
         )
         session.add(user)
         session.commit()
+        request.session.pop("ref", None)
         request.session["user_id"] = user.id
         return RedirectResponse("/", status_code=303)
     finally:
@@ -919,15 +997,171 @@ async def health():
     return {"status": "ok", "service": "PlanifAI"}
 
 
+# === SEO : robots.txt + sitemap.xml (référencement Google & moteurs IA) ===
+
+@app.get("/robots.txt")
+async def robots(request: Request):
+    corps = (
+        "User-agent: *\n"
+        "Allow: /$\n"
+        "Allow: /connexion\n"
+        "Allow: /inscription\n"
+        "Allow: /mentions-legales\n"
+        "Allow: /confidentialite\n"
+        # On n'expose pas les espaces privés au référencement.
+        "Disallow: /mon-entreprise\n"
+        "Disallow: /mes-documents\n"
+        "Disallow: /mes-rendez-vous\n"
+        "Disallow: /admin\n"
+        "Disallow: /document/\n"
+        "Disallow: /generate/\n"
+        f"\nSitemap: {_base_url(request)}/sitemap.xml\n"
+    )
+    return Response(corps, media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap(request: Request):
+    base = _base_url(request)
+    pages = ["/", "/inscription", "/connexion", "/mentions-legales", "/confidentialite"]
+    today = date.today().isoformat()
+    urls = "".join(
+        f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod>"
+        f"<changefreq>weekly</changefreq>"
+        f"<priority>{'1.0' if p == '/' else '0.6'}</priority></url>"
+        for p in pages
+    )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{urls}</urlset>"
+    )
+    return Response(xml, media_type="application/xml")
+
+
+# === PAGES LÉGALES (publiques) ===
+
+@app.get("/mentions-legales", response_class=HTMLResponse)
+async def mentions_legales(request: Request):
+    return templates.TemplateResponse(request, "mentions_legales.html")
+
+
+@app.get("/confidentialite", response_class=HTMLResponse)
+async def confidentialite(request: Request):
+    return templates.TemplateResponse(request, "confidentialite.html")
+
+
+# === BACK-OFFICE ADMINISTRATEUR (réservé à ADMIN_EMAIL) ===
+
+def _exiger_admin(request: Request, session):
+    """Retourne l'utilisateur admin connecté, ou None si l'accès est refusé."""
+    uid = request.session.get("user_id")
+    if not uid:
+        return None
+    u = session.get(models.User, uid)
+    if not u or (u.email or "").strip().lower() != ADMIN_EMAIL:
+        return None
+    return u
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_accueil(request: Request):
+    session = db.SessionLocal()
+    try:
+        moi = _exiger_admin(request, session)
+        if moi is None:
+            return HTMLResponse("Accès refusé.", status_code=403)
+
+        users = session.query(models.User).order_by(models.User.created_at.desc()).all()
+
+        # Comptages par utilisateur (une requête groupée par table, pas N+1).
+        from sqlalchemy import func
+        docs_par_user = dict(
+            session.query(models.Document.user_id, func.count(models.Document.id))
+            .group_by(models.Document.user_id).all()
+        )
+        rdv_par_user = dict(
+            session.query(models.RendezVous.user_id, func.count(models.RendezVous.id))
+            .group_by(models.RendezVous.user_id).all()
+        )
+        # Nombre de filleuls par parrain (comptes où parraine_par = id du parrain).
+        filleuls_par_user = dict(
+            session.query(models.User.parraine_par, func.count(models.User.id))
+            .filter(models.User.parraine_par.isnot(None))
+            .group_by(models.User.parraine_par).all()
+        )
+        # Nom de l'entreprise par id, pour afficher « parrainé par ».
+        nom_par_id = {u.id: (u.entreprise or u.email) for u in users}
+
+        aujourdhui = date.today()
+        depuis_7j = datetime.utcnow() - timedelta(days=7)
+        lignes = []
+        for u in users:
+            lignes.append({
+                "id": u.id,
+                "email": u.email,
+                "entreprise": u.entreprise or "",
+                "inscrit": u.created_at.strftime("%d/%m/%Y") if u.created_at else "—",
+                "docs": docs_par_user.get(u.id, 0),
+                "rdv": rdv_par_user.get(u.id, 0),
+                "filleuls": filleuls_par_user.get(u.id, 0),
+                "parrain": nom_par_id.get(u.parraine_par) if u.parraine_par else None,
+                "suspendu": bool(u.suspendu),
+                "is_admin": (u.email or "").strip().lower() == ADMIN_EMAIL,
+            })
+
+        stats = {
+            "total_comptes": len(users),
+            "total_docs": sum(docs_par_user.values()),
+            "total_rdv": sum(rdv_par_user.values()),
+            "nouveaux_7j": sum(
+                1 for u in users if u.created_at and u.created_at >= depuis_7j
+            ),
+            "suspendus": sum(1 for u in users if u.suspendu),
+            "parraines": sum(1 for u in users if u.parraine_par),
+        }
+        return templates.TemplateResponse(
+            request, "admin.html", {"lignes": lignes, "stats": stats, "moi": moi.email},
+        )
+    finally:
+        session.close()
+
+
+@app.post("/admin/utilisateur/{cible_id}/suspendre")
+async def admin_suspendre(request: Request, cible_id: int):
+    session = db.SessionLocal()
+    try:
+        moi = _exiger_admin(request, session)
+        if moi is None:
+            return HTMLResponse("Accès refusé.", status_code=403)
+        cible = session.get(models.User, cible_id)
+        # On ne peut pas se suspendre soi-même (sécurité anti-verrouillage).
+        if cible and cible.id != moi.id:
+            cible.suspendu = 0 if cible.suspendu else 1
+            session.commit()
+        return RedirectResponse("/admin", status_code=303)
+    finally:
+        session.close()
+
+
 # === PAGES HTML (formulaires) ===
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     rappels = []
+    est_admin = False
+    lien_parrainage = None
+    nb_parraines = 0
     uid = request.session.get("user_id")
     # Visiteur non connecté : on montre la page vitrine (landing).
     if not uid:
-        return templates.TemplateResponse(request, "accueil.html")
+        # Parrainage : mémorise le code si la vitrine est ouverte via /?ref=code.
+        ref = (request.query_params.get("ref") or "").strip().lower()
+        if ref:
+            request.session["ref"] = ref[:12]
+        return templates.TemplateResponse(
+            request, "accueil.html", {"base_url": _base_url(request)},
+        )
     if uid:
         session = db.SessionLocal()
         try:
@@ -970,9 +1204,26 @@ async def dashboard(request: Request):
                     "lien": "/mes-rendez-vous",
                 })
             rappels.sort(key=lambda x: x["jours"])
+            user = session.get(models.User, uid)
+            est_admin = bool(user and (user.email or "").strip().lower() == ADMIN_EMAIL)
+            # Parrainage : lien personnel + nombre de filleuls inscrits.
+            if user:
+                code = _assurer_code_parrainage(user, session)
+                lien_parrainage = f"{_base_url(request)}/inscription?ref={code}"
+                nb_parraines = session.query(models.User).filter(
+                    models.User.parraine_par == user.id
+                ).count()
         finally:
             session.close()
-    return templates.TemplateResponse(request, "dashboard.html", {"rappels": rappels})
+    return templates.TemplateResponse(
+        request, "dashboard.html",
+        {
+            "rappels": rappels,
+            "est_admin": est_admin,
+            "lien_parrainage": lien_parrainage,
+            "nb_parraines": nb_parraines,
+        },
+    )
 
 
 @app.get("/mes-documents", response_class=HTMLResponse)
@@ -1086,19 +1337,37 @@ async def convertir_devis(request: Request, doc_id: int):
 
 
 def _message_relance_defaut(user, doc, fields):
-    """Texte de relance pré-rempli (modifiable par l'artisan avant envoi)."""
+    """Texte de relance pré-rempli, précis (modifiable par l'artisan avant envoi)."""
     client = fields.get("client_nom", "") or "Madame, Monsieur"
     entreprise = (user.entreprise if user else "") or "Votre prestataire"
     montant = format_eur(doc.montant) if doc.montant is not None else ""
-    ech = ""
+
+    # Identification précise de la facture selon les informations disponibles.
+    details = f"la facture n° {doc.numero or ''}".rstrip()
+    if montant:
+        details += f" d'un montant de {montant}"
+    date_facture = ""
+    try:
+        date_facture = date.fromisoformat(fields.get("date", "")).strftime("%d/%m/%Y")
+    except (ValueError, TypeError):
+        date_facture = ""
+    if date_facture:
+        details += f", émise le {date_facture}"
+
+    retard_txt = ""
     if doc.date_echeance:
-        ech = f" (échéance du {doc.date_echeance.strftime('%d/%m/%Y')})"
+        details += f", dont l'échéance était fixée au {doc.date_echeance.strftime('%d/%m/%Y')},"
+        jours_retard = (date.today() - doc.date_echeance).days
+        if jours_retard > 0:
+            retard_txt = f" (soit {jours_retard} jour{'s' if jours_retard > 1 else ''} de retard)"
+
     return (
         f"Bonjour {client},\n\n"
-        f"Sauf erreur de notre part, la facture n° {doc.numero or ''} "
-        f"d'un montant de {montant}{ech} demeure impayée à ce jour.\n\n"
-        f"Nous vous remercions de bien vouloir procéder à son règlement dès que possible. "
-        f"Si le paiement a déjà été effectué, merci de ne pas tenir compte de ce message.\n\n"
+        f"Sauf erreur de notre part, {details} demeure impayée à ce jour{retard_txt}.\n\n"
+        f"Vous trouverez cette facture en pièce jointe pour référence.\n\n"
+        f"Nous vous remercions de bien vouloir procéder à son règlement dans les meilleurs délais. "
+        f"Si le règlement a déjà été effectué entre-temps, merci de ne pas tenir compte de ce message.\n\n"
+        f"Pour toute question, vous pouvez répondre directement à cet e-mail.\n\n"
         f"Cordialement,\n{entreprise}"
     )
 
@@ -1138,15 +1407,25 @@ async def envoyer_relance(request: Request, doc_id: int,
         if not doc or doc.user_id != uid or doc.type != "facture":
             return RedirectResponse("/mes-documents", status_code=303)
         numero = doc.numero or ""
+        fields = json.loads(doc.donnees or "{}")
     finally:
         session.close()
 
     corps_html = "<p>" + _html.escape(message.strip()).replace("\n", "<br>\n") + "</p>"
     nom_expediteur = (user.entreprise if user else "") or None
+
+    # Pièce jointe : la facture au format PDF (si sa génération réussit).
+    pieces = None
+    pdf = _document_pdf_bytes(request, "facture", fields)
+    if pdf:
+        nom_fichier = "facture_{}.pdf".format((numero or "document").replace("/", "-").replace(" ", "_"))
+        pieces = [{"nom": nom_fichier, "contenu": pdf}]
+
     envoye = mailer.envoyer_email(
         destinataire.strip(), sujet.strip(), corps_html,
         nom_expediteur=nom_expediteur,
         repondre_a=(user.email if user else None),
+        pieces_jointes=pieces,
     )
 
     if envoye:
@@ -1280,6 +1559,24 @@ def _save_and_render(request: Request, type_: str, fields: dict):
     """Sauvegarde les champs bruts (sans le logo) puis renvoie le PDF avec le logo du compte."""
     _persist_document(request, type_, fields)
     return _render_with_logo(request, type_, fields)
+
+
+def _document_pdf_bytes(request: Request, type_: str, fields: dict):
+    """Génère le PDF d'un document et renvoie ses octets (ou None en cas d'échec).
+
+    Sert notamment à joindre la facture à un e-mail de relance.
+    """
+    try:
+        f = dict(fields)
+        user = utilisateur_courant(request)
+        f["logo_url"] = user.logo if (user and user.logo) else None
+        f["mentions_legales"] = (user.mentions_legales if user else "") or ""
+        template, _prefix, context = documents.build_context(type_, f)
+        html_content = env.get_template(template).render(**context)
+        return HTML(string=html_content).write_pdf()
+    except Exception:
+        logger.exception("Échec de génération du PDF pour pièce jointe (%s)", type_)
+        return None
 
 
 @app.post("/generate/cdi", response_class=FileResponse)

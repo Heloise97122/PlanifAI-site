@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanifAI — Administration</title>
+    <link rel="stylesheet" href="/static/style.css?v=7">
+    <style>
+        .adm{max-width:960px;margin:0 auto;padding:0 20px}
+        .adm h1{font-size:22px;margin:18px 0 4px}
+        .adm .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+        .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:26px}
+        .card{background:#fff;border:1px solid #eceff2;border-radius:14px;padding:16px 18px}
+        .card .num{font-size:26px;font-weight:800;color:var(--ink,#1B3A5C);line-height:1}
+        .card .lbl{color:var(--muted);font-size:12.5px;margin-top:6px;text-transform:uppercase;letter-spacing:.04em}
+        .tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid #eceff2;border-radius:14px;overflow:hidden}
+        .tbl th,.tbl td{text-align:left;padding:11px 14px;font-size:14px;border-bottom:1px solid #f0f2f5}
+        .tbl th{background:#f7f8fa;color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+        .tbl tr:last-child td{border-bottom:none}
+        .tbl .num{text-align:center;font-variant-numeric:tabular-nums}
+        .em{font-size:12.5px;color:var(--muted)}
+        .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+        .tag.admin{background:#E8F0FB;color:#1B3A5C}
+        .tag.susp{background:#FBE9E9;color:#B23A3A}
+        .btn-mini{border:1px solid #d7dbe0;background:#fff;color:#1B3A5C;font-weight:600;font-size:12.5px;
+                  padding:6px 12px;border-radius:8px;cursor:pointer}
+        .btn-mini:hover{background:#1B3A5C;color:#fff;border-color:#1B3A5C}
+        .btn-mini.on{border-color:#B23A3A;color:#B23A3A}
+        .btn-mini.on:hover{background:#B23A3A;color:#fff;border-color:#B23A3A}
+        .wrap-x{overflow-x:auto}
+        @media(max-width:560px){.hide-sm{display:none}}
+    </style>
+</head>
+<body>
+    <div class="top">
+        <a class="brand" href="/">Planif<span class="dot">·</span>AI <small>Atelier</small></a>
+        <span class="topnav">
+            <a href="/">Tableau de bord</a>
+            <a class="logout" href="/deconnexion">Se déconnecter</a>
+        </span>
+    </div>
+
+    <div class="adm">
+        <h1>Administration</h1>
+        <p class="sub">Connectée en tant que <strong>{{ moi }}</strong>. Vue réservée à l'administrateur.</p>
+
+        <div class="cards">
+            <div class="card"><div class="num">{{ stats.total_comptes }}</div><div class="lbl">Comptes</div></div>
+            <div class="card"><div class="num">{{ stats.nouveaux_7j }}</div><div class="lbl">Inscrits (7 j)</div></div>
+            <div class="card"><div class="num">{{ stats.total_docs }}</div><div class="lbl">Documents</div></div>
+            <div class="card"><div class="num">{{ stats.total_rdv }}</div><div class="lbl">Rendez-vous</div></div>
+            <div class="card"><div class="num">{{ stats.parraines }}</div><div class="lbl">Via parrainage</div></div>
+            <div class="card"><div class="num">{{ stats.suspendus }}</div><div class="lbl">Suspendus</div></div>
+        </div>
+
+        <div class="wrap-x">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th class="hide-sm">Entreprise</th>
+                    <th class="hide-sm">Inscrit le</th>
+                    <th class="num">Docs</th>
+                    <th class="num">RDV</th>
+                    <th class="num hide-sm">Filleuls</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in lignes %}
+                <tr>
+                    <td>
+                        {{ l.email }}
+                        {% if l.is_admin %}<span class="tag admin">admin</span>{% endif %}
+                        {% if l.suspendu %}<span class="tag susp">suspendu</span>{% endif %}
+                        {% if l.parrain %}<div class="em">parrainé par {{ l.parrain }}</div>{% endif %}
+                    </td>
+                    <td class="hide-sm">{{ l.entreprise or '—' }}</td>
+                    <td class="hide-sm em">{{ l.inscrit }}</td>
+                    <td class="num">{{ l.docs }}</td>
+                    <td class="num">{{ l.rdv }}</td>
+                    <td class="num hide-sm">{{ l.filleuls }}</td>
+                    <td>
+                        {% if not l.is_admin %}
+                        <form method="post" action="/admin/utilisateur/{{ l.id }}/suspendre" style="margin:0">
+                            <button class="btn-mini {% if l.suspendu %}on{% endif %}" type="submit">
+                                {{ 'Réactiver' if l.suspendu else 'Suspendre' }}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <p class="em" style="margin-top:16px">
+            Un compte suspendu ne peut plus se connecter, mais ses données sont conservées.
+            Vous ne pouvez pas suspendre votre propre compte administrateur.
+        </p>
+    </div>
+</body>
+</html>

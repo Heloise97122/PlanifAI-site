@@ -1337,19 +1337,37 @@ async def convertir_devis(request: Request, doc_id: int):
 
 
 def _message_relance_defaut(user, doc, fields):
-    """Texte de relance pré-rempli (modifiable par l'artisan avant envoi)."""
+    """Texte de relance pré-rempli, précis (modifiable par l'artisan avant envoi)."""
     client = fields.get("client_nom", "") or "Madame, Monsieur"
     entreprise = (user.entreprise if user else "") or "Votre prestataire"
     montant = format_eur(doc.montant) if doc.montant is not None else ""
-    ech = ""
+
+    # Identification précise de la facture selon les informations disponibles.
+    details = f"la facture n° {doc.numero or ''}".rstrip()
+    if montant:
+        details += f" d'un montant de {montant}"
+    date_facture = ""
+    try:
+        date_facture = date.fromisoformat(fields.get("date", "")).strftime("%d/%m/%Y")
+    except (ValueError, TypeError):
+        date_facture = ""
+    if date_facture:
+        details += f", émise le {date_facture}"
+
+    retard_txt = ""
     if doc.date_echeance:
-        ech = f" (échéance du {doc.date_echeance.strftime('%d/%m/%Y')})"
+        details += f", dont l'échéance était fixée au {doc.date_echeance.strftime('%d/%m/%Y')},"
+        jours_retard = (date.today() - doc.date_echeance).days
+        if jours_retard > 0:
+            retard_txt = f" (soit {jours_retard} jour{'s' if jours_retard > 1 else ''} de retard)"
+
     return (
         f"Bonjour {client},\n\n"
-        f"Sauf erreur de notre part, la facture n° {doc.numero or ''} "
-        f"d'un montant de {montant}{ech} demeure impayée à ce jour.\n\n"
-        f"Nous vous remercions de bien vouloir procéder à son règlement dès que possible. "
-        f"Si le paiement a déjà été effectué, merci de ne pas tenir compte de ce message.\n\n"
+        f"Sauf erreur de notre part, {details} demeure impayée à ce jour{retard_txt}.\n\n"
+        f"Vous trouverez cette facture en pièce jointe pour référence.\n\n"
+        f"Nous vous remercions de bien vouloir procéder à son règlement dans les meilleurs délais. "
+        f"Si le règlement a déjà été effectué entre-temps, merci de ne pas tenir compte de ce message.\n\n"
+        f"Pour toute question, vous pouvez répondre directement à cet e-mail.\n\n"
         f"Cordialement,\n{entreprise}"
     )
 
@@ -1389,15 +1407,25 @@ async def envoyer_relance(request: Request, doc_id: int,
         if not doc or doc.user_id != uid or doc.type != "facture":
             return RedirectResponse("/mes-documents", status_code=303)
         numero = doc.numero or ""
+        fields = json.loads(doc.donnees or "{}")
     finally:
         session.close()
 
     corps_html = "<p>" + _html.escape(message.strip()).replace("\n", "<br>\n") + "</p>"
     nom_expediteur = (user.entreprise if user else "") or None
+
+    # Pièce jointe : la facture au format PDF (si sa génération réussit).
+    pieces = None
+    pdf = _document_pdf_bytes(request, "facture", fields)
+    if pdf:
+        nom_fichier = "facture_{}.pdf".format((numero or "document").replace("/", "-").replace(" ", "_"))
+        pieces = [{"nom": nom_fichier, "contenu": pdf}]
+
     envoye = mailer.envoyer_email(
         destinataire.strip(), sujet.strip(), corps_html,
         nom_expediteur=nom_expediteur,
         repondre_a=(user.email if user else None),
+        pieces_jointes=pieces,
     )
 
     if envoye:
@@ -1531,6 +1559,24 @@ def _save_and_render(request: Request, type_: str, fields: dict):
     """Sauvegarde les champs bruts (sans le logo) puis renvoie le PDF avec le logo du compte."""
     _persist_document(request, type_, fields)
     return _render_with_logo(request, type_, fields)
+
+
+def _document_pdf_bytes(request: Request, type_: str, fields: dict):
+    """Génère le PDF d'un document et renvoie ses octets (ou None en cas d'échec).
+
+    Sert notamment à joindre la facture à un e-mail de relance.
+    """
+    try:
+        f = dict(fields)
+        user = utilisateur_courant(request)
+        f["logo_url"] = user.logo if (user and user.logo) else None
+        f["mentions_legales"] = (user.mentions_legales if user else "") or ""
+        template, _prefix, context = documents.build_context(type_, f)
+        html_content = env.get_template(template).render(**context)
+        return HTML(string=html_content).write_pdf()
+    except Exception:
+        logger.exception("Échec de génération du PDF pour pièce jointe (%s)", type_)
+        return None
 
 
 @app.post("/generate/cdi", response_class=FileResponse)

@@ -453,6 +453,7 @@ async def page_entreprise(request: Request):
         "logo": user.logo if user else None,
         "mentions_legales": (user.mentions_legales if user else "") or "",
         "activite": (user.activite if user else "") or "services",
+        "franchise_tva": bool(user.franchise_tva) if user else False,
         "enregistre": request.query_params.get("ok") == "1",
     })
 
@@ -464,6 +465,7 @@ async def sauver_entreprise(
     adresse: str = Form(""),
     mentions_legales: str = Form(""),
     activite: str = Form("services"),
+    franchise_tva: str = Form(""),
     logo: UploadFile = File(None),
     supprimer_logo: str = Form(""),
 ):
@@ -492,12 +494,14 @@ async def sauver_entreprise(
             return templates.TemplateResponse(request, "mon_entreprise.html", {
                 "entreprise": entreprise, "adresse": adresse,
                 "mentions_legales": mentions_legales, "activite": activite,
+                "franchise_tva": bool(franchise_tva),
                 "logo": user.logo, "erreur": erreur,
             }, status_code=400)
         user.entreprise = entreprise.strip()
         user.adresse = adresse.strip()
         user.mentions_legales = mentions_legales.strip()
         user.activite = activite if activite in seuils.ACTIVITES else "services"
+        user.franchise_tva = 1 if franchise_tva else 0
         if changer_logo:
             user.logo = nouveau_logo
         session.commit()
@@ -1607,14 +1611,20 @@ async def facturation_home(request: Request):
 
 @app.get("/facture", response_class=HTMLResponse)
 async def form_facture(request: Request):
+    user = utilisateur_courant(request)
+    tva_defaut = "0" if (user and user.franchise_tva) else "20"
     return templates.TemplateResponse(
-        request, "form_facture.html", {"numero_suggere": prochain_numero(request, "facture")}
+        request, "form_facture.html",
+        {"numero_suggere": prochain_numero(request, "facture"), "tva_defaut": tva_defaut},
     )
 
 @app.get("/devis", response_class=HTMLResponse)
 async def form_devis(request: Request):
+    user = utilisateur_courant(request)
+    tva_defaut = "0" if (user and user.franchise_tva) else "20"
     return templates.TemplateResponse(
-        request, "form_devis.html", {"numero_suggere": prochain_numero(request, "devis")}
+        request, "form_devis.html",
+        {"numero_suggere": prochain_numero(request, "devis"), "tva_defaut": tva_defaut},
     )
 
 @app.get("/planning", response_class=HTMLResponse)
@@ -1657,6 +1667,7 @@ def _render_with_logo(request: Request, type_: str, fields: dict):
     user = utilisateur_courant(request)
     f["logo_url"] = user.logo if (user and user.logo) else None
     f["mentions_legales"] = (user.mentions_legales if user else "") or ""
+    f["franchise_tva"] = bool(user.franchise_tva) if user else False
     template, prefix, context = documents.build_context(type_, f)
     return render_pdf(template, prefix, **context)
 
@@ -1677,6 +1688,7 @@ def _document_pdf_bytes(request: Request, type_: str, fields: dict):
         user = utilisateur_courant(request)
         f["logo_url"] = user.logo if (user and user.logo) else None
         f["mentions_legales"] = (user.mentions_legales if user else "") or ""
+        f["franchise_tva"] = bool(user.franchise_tva) if user else False
         template, _prefix, context = documents.build_context(type_, f)
         html_content = env.get_template(template).render(**context)
         return HTML(string=html_content).write_pdf()

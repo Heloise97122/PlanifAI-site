@@ -16,13 +16,14 @@
             <td><input name="quantite" type="text" inputmode="decimal" value="1" class="qte"></td>
             <td><input name="prix_unitaire" type="text" inputmode="decimal" placeholder="0,00" class="pu"></td>
             <td>
+                {% set _tva = tva_defaut|default('20') %}
                 <select name="taux_tva">
-                    <option value="20">20 %</option>
-                    <option value="10">10 %</option>
-                    <option value="8.5">8,5 % (DOM)</option>
-                    <option value="5.5">5,5 %</option>
-                    <option value="2.1">2,1 %</option>
-                    <option value="0">0 %</option>
+                    <option value="20" {{ 'selected' if _tva == '20' }}>20 %</option>
+                    <option value="10" {{ 'selected' if _tva == '10' }}>10 %</option>
+                    <option value="8.5" {{ 'selected' if _tva == '8.5' }}>8,5 % (DOM)</option>
+                    <option value="5.5" {{ 'selected' if _tva == '5.5' }}>5,5 %</option>
+                    <option value="2.1" {{ 'selected' if _tva == '2.1' }}>2,1 %</option>
+                    <option value="0" {{ 'selected' if _tva == '0' }}>0 %</option>
                 </select>
             </td>
             <td><button type="button" class="btn-suppr" title="Supprimer la ligne">✕</button></td>
@@ -58,7 +59,7 @@
             i.value = (i.classList.contains('qte')) ? '1' : '';
         });
         var select = copie.querySelector('select');
-        if (select) select.selectedIndex = 0;
+        if (select) select.value = "{{ tva_defaut|default('20') }}";
         corps.appendChild(copie);
         brancherSuppression(copie.querySelector('.btn-suppr'));
     });

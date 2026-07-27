@@ -23,6 +23,9 @@ class User(Base):
     mentions_legales = Column(Text, nullable=True)
     # Type d'activité, pour les seuils micro-entreprise (services / vente).
     activite = Column(String(20), default="services")
+    # Franchise en base de TVA : si activée, mention légale obligatoire imprimée
+    # sur les factures (« TVA non applicable, art. 293 B du CGI ») et TVA à 0 %.
+    franchise_tva = Column(Integer, default=0)
     # Réinitialisation de mot de passe : on stocke un HASH du jeton (jamais le jeton
     # brut) + sa date d'expiration. Le lien envoyé par e-mail contient le jeton brut.
     reset_token_hash = Column(String(64), nullable=True)

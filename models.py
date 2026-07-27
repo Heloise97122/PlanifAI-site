@@ -39,6 +39,9 @@ class User(Base):
     # Parrainage : code unique partageable + id du parrain (celui qui a invité).
     code_parrainage = Column(String(12), unique=True, index=True, nullable=True)
     parraine_par = Column(Integer, nullable=True)
+    # Vérification d'e-mail (souple) : 0/1 + hash du jeton de confirmation.
+    email_verifie = Column(Integer, default=0)
+    verif_token_hash = Column(String(64), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

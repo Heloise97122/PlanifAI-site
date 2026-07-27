@@ -62,7 +62,7 @@ PUBLIC_PATHS = {
     "/mot-de-passe-oublie", "/mentions-legales", "/confidentialite",
     "/robots.txt", "/sitemap.xml",
 }
-PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv")
+PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv", "/verifier-email")
 
 # Compte administrateur (accès au back-office /admin). Personnalisable via la
 # variable d'environnement ADMIN_EMAIL ; sinon valeur par défaut ci-dessous.
@@ -262,6 +262,11 @@ async def faire_inscription(
         )
         session.add(user)
         session.commit()
+        # Envoi de l'e-mail de confirmation (sans bloquer l'accès en cas d'échec).
+        try:
+            _envoyer_verification_email(request, user, session)
+        except Exception:
+            logger.exception("Échec de l'envoi de l'e-mail de vérification à %s", email)
         request.session.pop("ref", None)
         request.session["user_id"] = user.id
         return RedirectResponse("/", status_code=303)
@@ -293,6 +298,29 @@ def _base_url(request: Request) -> str:
 
 def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _envoyer_verification_email(request: Request, user, session) -> bool:
+    """Génère un jeton de vérification et envoie l'e-mail de confirmation.
+
+    Vérification « souple » : le compte reste utilisable, l'e-mail sert
+    seulement à confirmer que l'adresse est valide et joignable.
+    """
+    token = secrets.token_urlsafe(32)
+    user.verif_token_hash = _hash_token(token)
+    session.commit()
+    lien = f"{_base_url(request)}/verifier-email/{token}"
+    html = (
+        "<p>Bonjour,</p>"
+        "<p>Bienvenue sur PlanifAI ! Pour confirmer votre adresse e-mail, "
+        "cliquez simplement sur le lien ci-dessous :</p>"
+        f'<p><a href="{lien}">Confirmer mon adresse e-mail</a></p>'
+        "<p>Cette confirmation nous permet de vous joindre en cas de besoin "
+        "(réinitialisation de mot de passe, notifications). Vous pouvez déjà "
+        "utiliser votre compte sans attendre.</p>"
+        "<p>— PlanifAI</p>"
+    )
+    return mailer.envoyer_email(user.email, "Confirmez votre adresse e-mail PlanifAI", html)
 
 
 @app.get("/mot-de-passe-oublie", response_class=HTMLResponse)
@@ -371,6 +399,44 @@ async def faire_reinitialiser(
     finally:
         session.close()
     return templates.TemplateResponse(request, "reinitialiser.html", {"succes": True})
+
+
+# === VÉRIFICATION D'E-MAIL (souple) ===
+
+@app.get("/verifier-email/{token}", response_class=HTMLResponse)
+async def verifier_email(request: Request, token: str):
+    session = db.SessionLocal()
+    ok = False
+    try:
+        user = session.query(models.User).filter(
+            models.User.verif_token_hash == _hash_token(token)
+        ).first()
+        if user:
+            user.email_verifie = 1
+            user.verif_token_hash = None
+            session.commit()
+            ok = True
+    finally:
+        session.close()
+    return templates.TemplateResponse(
+        request, "verification_email.html", {"ok": ok},
+    )
+
+
+@app.post("/renvoyer-verification")
+async def renvoyer_verification(request: Request):
+    uid = request.session.get("user_id")
+    session = db.SessionLocal()
+    try:
+        user = session.get(models.User, uid)
+        if user and not user.email_verifie:
+            try:
+                _envoyer_verification_email(request, user, session)
+            except Exception:
+                logger.exception("Échec du renvoi de vérification à %s", user.email)
+    finally:
+        session.close()
+    return RedirectResponse("/?verif=renvoye", status_code=303)
 
 
 # === MON ENTREPRISE (profil + logo) ===
@@ -1090,11 +1156,32 @@ async def admin_accueil(request: Request):
             .filter(models.User.parraine_par.isnot(None))
             .group_by(models.User.parraine_par).all()
         )
+        # Dernière activité : date du dernier document / rendez-vous créé.
+        dern_doc = dict(
+            session.query(models.Document.user_id, func.max(models.Document.date_creation))
+            .group_by(models.Document.user_id).all()
+        )
+        dern_rdv = dict(
+            session.query(models.RendezVous.user_id, func.max(models.RendezVous.date_creation))
+            .group_by(models.RendezVous.user_id).all()
+        )
         # Nom de l'entreprise par id, pour afficher « parrainé par ».
         nom_par_id = {u.id: (u.entreprise or u.email) for u in users}
 
         aujourdhui = date.today()
         depuis_7j = datetime.utcnow() - timedelta(days=7)
+
+        def _activite_label(uid_):
+            dates = [d for d in (dern_doc.get(uid_), dern_rdv.get(uid_)) if d]
+            if not dates:
+                return "—"
+            jours = (datetime.utcnow() - max(dates)).days
+            if jours <= 0:
+                return "aujourd'hui"
+            if jours == 1:
+                return "hier"
+            return f"il y a {jours} j"
+
         lignes = []
         for u in users:
             lignes.append({
@@ -1106,9 +1193,19 @@ async def admin_accueil(request: Request):
                 "rdv": rdv_par_user.get(u.id, 0),
                 "filleuls": filleuls_par_user.get(u.id, 0),
                 "parrain": nom_par_id.get(u.parraine_par) if u.parraine_par else None,
+                "activite": _activite_label(u.id),
+                "verifie": bool(u.email_verifie),
                 "suspendu": bool(u.suspendu),
                 "is_admin": (u.email or "").strip().lower() == ADMIN_EMAIL,
             })
+
+        # Mini-graphe : inscriptions par jour sur les 14 derniers jours.
+        jours_graphe = []
+        for i in range(13, -1, -1):
+            j = aujourdhui - timedelta(days=i)
+            n = sum(1 for u in users if u.created_at and u.created_at.date() == j)
+            jours_graphe.append({"label": j.strftime("%d/%m"), "n": n})
+        max_graphe = max((g["n"] for g in jours_graphe), default=0) or 1
 
         stats = {
             "total_comptes": len(users),
@@ -1119,9 +1216,14 @@ async def admin_accueil(request: Request):
             ),
             "suspendus": sum(1 for u in users if u.suspendu),
             "parraines": sum(1 for u in users if u.parraine_par),
+            "non_verifies": sum(1 for u in users if not u.email_verifie and not u.suspendu),
         }
         return templates.TemplateResponse(
-            request, "admin.html", {"lignes": lignes, "stats": stats, "moi": moi.email},
+            request, "admin.html",
+            {
+                "lignes": lignes, "stats": stats, "moi": moi.email,
+                "jours_graphe": jours_graphe, "max_graphe": max_graphe,
+            },
         )
     finally:
         session.close()
@@ -1152,6 +1254,7 @@ async def dashboard(request: Request):
     est_admin = False
     lien_parrainage = None
     nb_parraines = 0
+    email_verifie = True  # par défaut on n'affiche pas le bandeau
     uid = request.session.get("user_id")
     # Visiteur non connecté : on montre la page vitrine (landing).
     if not uid:
@@ -1213,6 +1316,7 @@ async def dashboard(request: Request):
                 nb_parraines = session.query(models.User).filter(
                     models.User.parraine_par == user.id
                 ).count()
+                email_verifie = bool(user.email_verifie)
         finally:
             session.close()
     return templates.TemplateResponse(
@@ -1222,6 +1326,8 @@ async def dashboard(request: Request):
             "est_admin": est_admin,
             "lien_parrainage": lien_parrainage,
             "nb_parraines": nb_parraines,
+            "email_verifie": email_verifie,
+            "verif_renvoye": request.query_params.get("verif") == "renvoye",
         },
     )
 

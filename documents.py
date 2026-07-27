@@ -59,6 +59,7 @@ def build_context(type_, f):
             "client_nom": f.get("client_nom", ""), "client_adresse": f.get("client_adresse", ""),
             "calc": calc, "logo_url": f.get("logo_url") or None,
             "mentions_legales": f.get("mentions_legales") or "",
+            "franchise_tva": bool(f.get("franchise_tva")),
         }
         return "pdf_facturation.html", PREFIX[type_], context
 

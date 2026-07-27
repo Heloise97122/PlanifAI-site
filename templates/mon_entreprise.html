@@ -32,9 +32,15 @@
         </select>
         <p class="hint">Sert à calculer vos seuils micro-entreprise (franchise de TVA, plafond du régime) dans « Mes documents ».</p>
 
+        <label class="check" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
+            <input type="checkbox" name="franchise_tva" value="1" {% if franchise_tva %}checked{% endif %} style="margin-top:3px">
+            <span>Je suis en <strong>franchise de TVA</strong> (je ne facture pas de TVA).</span>
+        </label>
+        <p class="hint">Cas de la plupart des auto-entrepreneurs. Si cochée : la mention obligatoire « TVA non applicable, art. 293 B du CGI » s'imprime automatiquement sur vos factures et devis, et la TVA est mise à 0 % par défaut.</p>
+
         <label>Mentions légales (bas des factures et devis)</label>
-        <textarea name="mentions_legales" rows="4" placeholder="Ex : SIRET 812 345 678 00021&#10;TVA non applicable, art. 293 B du CGI (franchise en base)">{{ mentions_legales }}</textarea>
-        <p class="hint">S'affiche automatiquement en bas de vos factures et devis. Micro-entrepreneur non assujetti à la TVA ? Indiquez « TVA non applicable, art. 293 B du CGI ».</p>
+        <textarea name="mentions_legales" rows="4" placeholder="Ex : SIRET 812 345 678 00021">{{ mentions_legales }}</textarea>
+        <p class="hint">Texte libre ajouté en bas de vos factures et devis (SIRET, IBAN, conditions…). La mention de franchise de TVA, elle, s'ajoute toute seule via la case ci-dessus.</p>
 
         <label>Logo</label>
         {% if logo %}

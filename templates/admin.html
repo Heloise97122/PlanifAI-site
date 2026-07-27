@@ -22,13 +22,26 @@
         .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
         .tag.admin{background:#E8F0FB;color:#1B3A5C}
         .tag.susp{background:#FBE9E9;color:#B23A3A}
+        .tag.verif{background:#EAF6EC;color:#2F6B3A}
+        .tag.nonverif{background:#FDF3E3;color:#8A5A00}
         .btn-mini{border:1px solid #d7dbe0;background:#fff;color:#1B3A5C;font-weight:600;font-size:12.5px;
-                  padding:6px 12px;border-radius:8px;cursor:pointer}
+                  padding:6px 12px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block}
         .btn-mini:hover{background:#1B3A5C;color:#fff;border-color:#1B3A5C}
         .btn-mini.on{border-color:#B23A3A;color:#B23A3A}
         .btn-mini.on:hover{background:#B23A3A;color:#fff;border-color:#B23A3A}
+        .actions{display:flex;gap:6px;flex-wrap:wrap}
         .wrap-x{overflow-x:auto}
-        @media(max-width:560px){.hide-sm{display:none}}
+        /* Mini-graphe des inscriptions */
+        .graphe{background:#fff;border:1px solid #eceff2;border-radius:14px;padding:16px 18px;margin-bottom:26px}
+        .graphe h2{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin:0 0 12px}
+        .bars{display:flex;align-items:flex-end;gap:6px;height:90px}
+        .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+        .bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+        .bar{width:70%;max-width:22px;min-height:2px;background:#1B3A5C;border-radius:3px 3px 0 0}
+        .bar.zero{background:#e6e9ee}
+        .bar-n{font-size:11px;font-weight:700;color:#1B3A5C;height:13px}
+        .bar-d{font-size:9.5px;color:var(--muted);white-space:nowrap}
+        @media(max-width:560px){.hide-sm{display:none}.bar-d{display:none}}
     </style>
 </head>
 <body>
@@ -50,7 +63,23 @@
             <div class="card"><div class="num">{{ stats.total_docs }}</div><div class="lbl">Documents</div></div>
             <div class="card"><div class="num">{{ stats.total_rdv }}</div><div class="lbl">Rendez-vous</div></div>
             <div class="card"><div class="num">{{ stats.parraines }}</div><div class="lbl">Via parrainage</div></div>
+            <div class="card"><div class="num">{{ stats.non_verifies }}</div><div class="lbl">E-mail non vérifié</div></div>
             <div class="card"><div class="num">{{ stats.suspendus }}</div><div class="lbl">Suspendus</div></div>
+        </div>
+
+        <div class="graphe">
+            <h2>Inscriptions sur 14 jours</h2>
+            <div class="bars">
+                {% for g in jours_graphe %}
+                <div class="bar-col" title="{{ g.label }} : {{ g.n }} inscription{{ 's' if g.n > 1 else '' }}">
+                    <div class="bar-n">{{ g.n if g.n else '' }}</div>
+                    <div class="bar-wrap">
+                        <div class="bar {% if not g.n %}zero{% endif %}" style="height:{{ (g.n / max_graphe * 100) if g.n else 0 }}%"></div>
+                    </div>
+                    <div class="bar-d">{{ g.label }}</div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="wrap-x">
@@ -63,6 +92,7 @@
                     <th class="num">Docs</th>
                     <th class="num">RDV</th>
                     <th class="num hide-sm">Filleuls</th>
+                    <th class="hide-sm">Activité</th>
                     <th></th>
                 </tr>
             </thead>
@@ -73,6 +103,7 @@
                         {{ l.email }}
                         {% if l.is_admin %}<span class="tag admin">admin</span>{% endif %}
                         {% if l.suspendu %}<span class="tag susp">suspendu</span>{% endif %}
+                        {% if l.verifie %}<span class="tag verif">e-mail vérifié</span>{% else %}<span class="tag nonverif">non vérifié</span>{% endif %}
                         {% if l.parrain %}<div class="em">parrainé par {{ l.parrain }}</div>{% endif %}
                     </td>
                     <td class="hide-sm">{{ l.entreprise or '—' }}</td>
@@ -80,14 +111,18 @@
                     <td class="num">{{ l.docs }}</td>
                     <td class="num">{{ l.rdv }}</td>
                     <td class="num hide-sm">{{ l.filleuls }}</td>
+                    <td class="hide-sm em">{{ l.activite }}</td>
                     <td>
-                        {% if not l.is_admin %}
-                        <form method="post" action="/admin/utilisateur/{{ l.id }}/suspendre" style="margin:0">
-                            <button class="btn-mini {% if l.suspendu %}on{% endif %}" type="submit">
-                                {{ 'Réactiver' if l.suspendu else 'Suspendre' }}
-                            </button>
-                        </form>
-                        {% endif %}
+                        <div class="actions">
+                            <a class="btn-mini" href="mailto:{{ l.email }}">Contacter</a>
+                            {% if not l.is_admin %}
+                            <form method="post" action="/admin/utilisateur/{{ l.id }}/suspendre" style="margin:0">
+                                <button class="btn-mini {% if l.suspendu %}on{% endif %}" type="submit">
+                                    {{ 'Réactiver' if l.suspendu else 'Suspendre' }}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

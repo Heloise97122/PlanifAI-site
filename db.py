@@ -55,6 +55,8 @@ def init_db():
     _ajouter_colonne_si_absente("users", "suspendu", "INTEGER DEFAULT 0")
     _ajouter_colonne_si_absente("users", "code_parrainage", "VARCHAR(12)")
     _ajouter_colonne_si_absente("users", "parraine_par", "INTEGER")
+    _ajouter_colonne_si_absente("users", "email_verifie", "INTEGER DEFAULT 0")
+    _ajouter_colonne_si_absente("users", "verif_token_hash", "VARCHAR(64)")
     _ajouter_colonne_si_absente("rendez_vous", "gestion_token_hash", "VARCHAR(64)")
     _ajouter_colonne_si_absente("documents", "date_paiement", "DATE")
     _ajouter_colonne_si_absente("documents", "date_relance", "DATE")

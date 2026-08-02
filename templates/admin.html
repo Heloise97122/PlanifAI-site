@@ -9,10 +9,30 @@
         .adm{max-width:960px;margin:0 auto;padding:0 20px}
         .adm h1{font-size:22px;margin:18px 0 4px}
         .adm .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
-        .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:26px}
-        .card{background:#fff;border:1px solid #eceff2;border-radius:14px;padding:16px 18px}
-        .card .num{font-size:26px;font-weight:800;color:var(--ink,#1B3A5C);line-height:1}
+        .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+        .card{background:#fff;border:1px solid #eceff2;border-radius:14px;padding:16px 18px;border-left-width:4px}
+        .card .num{font-size:26px;font-weight:800;color:#1B3A5C;line-height:1}
         .card .lbl{color:var(--muted);font-size:12.5px;margin-top:6px;text-transform:uppercase;letter-spacing:.04em}
+        .card .cnote{color:var(--muted);font-size:11.5px;margin-top:5px}
+        /* Règle 2 : la couleur = un sens. */
+        .card.bon{border-left-color:#2F8A46}
+        .card.attention{border-left-color:#C88A2C}
+        .card.attention .num{color:#B5731A}
+        .card.probleme{border-left-color:#C13B3B}
+        .card.probleme .num{color:#B23A3A}
+        .card.neutre{border-left-color:#c9d2dc}
+        /* Règle 1 : la comparaison. */
+        .delta{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;margin-top:6px}
+        .delta.up{color:#2F8A46}
+        .delta.down{color:#B23A3A}
+        .delta.flat{color:#98a2ad}
+        .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11.5px;color:var(--muted);margin:0 0 22px}
+        .legend span{display:inline-flex;align-items:center;gap:5px}
+        .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+        /* Règle 3 : l'honnêteté. */
+        .honnete{background:#F4F7FB;border:1px solid #dbe6f2;color:#385677;border-radius:12px;
+                 padding:12px 16px;font-size:13px;margin-bottom:20px;line-height:1.55}
+        .honnete b{color:#2b4763}
         .tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid #eceff2;border-radius:14px;overflow:hidden}
         .tbl th,.tbl td{text-align:left;padding:11px 14px;font-size:14px;border-bottom:1px solid #f0f2f5}
         .tbl th{background:#f7f8fa;color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
@@ -24,6 +44,7 @@
         .tag.susp{background:#FBE9E9;color:#B23A3A}
         .tag.verif{background:#EAF6EC;color:#2F6B3A}
         .tag.nonverif{background:#FDF3E3;color:#8A5A00}
+        .tag.test{background:#EFEAF6;color:#5B3A8A}
         .btn-mini{border:1px solid #d7dbe0;background:#fff;color:#1B3A5C;font-weight:600;font-size:12.5px;
                   padding:6px 12px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block}
         .btn-mini:hover{background:#1B3A5C;color:#fff;border-color:#1B3A5C}
@@ -57,14 +78,34 @@
         <h1>Administration</h1>
         <p class="sub">Connectée en tant que <strong>{{ moi }}</strong>. Vue réservée à l'administrateur.</p>
 
+        <!-- Règle 3 : honnêteté — le tableau admet ce qu'il ne sait pas. -->
+        <div class="honnete">
+            <b>Données en temps réel</b> · à jour au {{ maj }}. Les « 7 j » comparent les 7 derniers jours aux 7 précédents.
+            {% if echantillon_faible %}<br><b>⚠ Échantillon encore faible</b> ({{ comptes_reels }} compte{{ 's' if comptes_reels > 1 else '' }} réel{{ 's' if comptes_reels > 1 else '' }}) : les variations sont <b>indicatives</b>, pas encore des tendances fiables. Marquez vos comptes de test ci-dessous pour ne pas les confondre avec de vrais clients.{% endif %}
+        </div>
+
         <div class="cards">
-            <div class="card"><div class="num">{{ stats.total_comptes }}</div><div class="lbl">Comptes</div></div>
-            <div class="card"><div class="num">{{ stats.nouveaux_7j }}</div><div class="lbl">Inscrits (7 j)</div></div>
-            <div class="card"><div class="num">{{ stats.total_docs }}</div><div class="lbl">Documents</div></div>
-            <div class="card"><div class="num">{{ stats.total_rdv }}</div><div class="lbl">Rendez-vous</div></div>
-            <div class="card"><div class="num">{{ stats.parraines }}</div><div class="lbl">Via parrainage</div></div>
-            <div class="card"><div class="num">{{ stats.non_verifies }}</div><div class="lbl">E-mail non vérifié</div></div>
-            <div class="card"><div class="num">{{ stats.suspendus }}</div><div class="lbl">Suspendus</div></div>
+            {% for c in cartes %}
+            <div class="card {{ c.etat }}">
+                <div class="num">{{ c.val }}</div>
+                <div class="lbl">{{ c.lbl }}</div>
+                {% if c.delta %}
+                <div class="delta {{ c.delta.dir }}">
+                    {%- if c.delta.dir == 'up' %}▲ +{{ c.delta.diff }}
+                    {%- elif c.delta.dir == 'down' %}▼ {{ c.delta.diff }}
+                    {%- else %}= stable{% endif %} <span style="color:var(--muted);font-weight:500">vs 7 j préc.</span>
+                </div>
+                {% endif %}
+                {% if c.note %}<div class="cnote">{{ c.note }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="legend">
+            <span><i style="background:#2F8A46"></i> bon / en hausse</span>
+            <span><i style="background:#C88A2C"></i> à surveiller</span>
+            <span><i style="background:#C13B3B"></i> problème</span>
+            <span><i style="background:#c9d2dc"></i> neutre</span>
         </div>
 
         <div class="graphe">
@@ -104,6 +145,7 @@
                         {% if l.is_admin %}<span class="tag admin">admin</span>{% endif %}
                         {% if l.suspendu %}<span class="tag susp">suspendu</span>{% endif %}
                         {% if l.verifie %}<span class="tag verif">e-mail vérifié</span>{% else %}<span class="tag nonverif">non vérifié</span>{% endif %}
+                        {% if l.est_test %}<span class="tag test">test</span>{% endif %}
                         {% if l.parrain %}<div class="em">parrainé par {{ l.parrain }}</div>{% endif %}
                     </td>
                     <td class="hide-sm">{{ l.entreprise or '—' }}</td>
@@ -115,6 +157,11 @@
                     <td>
                         <div class="actions">
                             <a class="btn-mini" href="mailto:{{ l.email }}">Contacter</a>
+                            <form method="post" action="/admin/utilisateur/{{ l.id }}/test" style="margin:0">
+                                <button class="btn-mini" type="submit">
+                                    {{ 'Compte réel' if l.est_test else 'Marquer test' }}
+                                </button>
+                            </form>
                             {% if not l.is_admin %}
                             <form method="post" action="/admin/utilisateur/{{ l.id }}/suspendre" style="margin:0">
                                 <button class="btn-mini {% if l.suspendu %}on{% endif %}" type="submit">
@@ -133,6 +180,7 @@
         <p class="em" style="margin-top:16px">
             Un compte suspendu ne peut plus se connecter, mais ses données sont conservées.
             Vous ne pouvez pas suspendre votre propre compte administrateur.
+            « Marquer test » exclut un compte des chiffres réels (pratique pour vos essais).
         </p>
     </div>
 </body>

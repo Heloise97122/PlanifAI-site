@@ -1173,13 +1173,14 @@ async def admin_accueil(request: Request):
         nom_par_id = {u.id: (u.entreprise or u.email) for u in users}
 
         aujourdhui = date.today()
-        depuis_7j = datetime.utcnow() - timedelta(days=7)
+        now = datetime.utcnow()
+        d7, d14 = now - timedelta(days=7), now - timedelta(days=14)
 
         def _activite_label(uid_):
             dates = [d for d in (dern_doc.get(uid_), dern_rdv.get(uid_)) if d]
             if not dates:
                 return "—"
-            jours = (datetime.utcnow() - max(dates)).days
+            jours = (now - max(dates)).days
             if jours <= 0:
                 return "aujourd'hui"
             if jours == 1:
@@ -1200,6 +1201,7 @@ async def admin_accueil(request: Request):
                 "activite": _activite_label(u.id),
                 "verifie": bool(u.email_verifie),
                 "suspendu": bool(u.suspendu),
+                "est_test": bool(u.est_test),
                 "is_admin": (u.email or "").strip().lower() == ADMIN_EMAIL,
             })
 
@@ -1211,22 +1213,61 @@ async def admin_accueil(request: Request):
             jours_graphe.append({"label": j.strftime("%d/%m"), "n": n})
         max_graphe = max((g["n"] for g in jours_graphe), default=0) or 1
 
-        stats = {
-            "total_comptes": len(users),
-            "total_docs": sum(docs_par_user.values()),
-            "total_rdv": sum(rdv_par_user.values()),
-            "nouveaux_7j": sum(
-                1 for u in users if u.created_at and u.created_at >= depuis_7j
-            ),
-            "suspendus": sum(1 for u in users if u.suspendu),
-            "parraines": sum(1 for u in users if u.parraine_par),
-            "non_verifies": sum(1 for u in users if not u.email_verifie and not u.suspendu),
-        }
+        # --- Règle 1 : comparaison semaine / semaine précédente ---
+        def _cnt_dates(dates, debut, fin):
+            return sum(1 for d in dates if d and debut <= d < fin)
+
+        dates_users = [u.created_at for u in users]
+        dates_docs = [d for (_uid, d) in session.query(
+            models.Document.user_id, models.Document.date_creation).all()]
+        dates_rdv = [d for (_uid, d) in session.query(
+            models.RendezVous.user_id, models.RendezVous.date_creation).all()]
+
+        def _delta(dates):
+            cur = _cnt_dates(dates, d7, now)
+            prev = _cnt_dates(dates, d14, d7)
+            diff = cur - prev
+            return {"cur": cur, "prev": prev, "diff": diff,
+                    "dir": "up" if diff > 0 else ("down" if diff < 0 else "flat")}
+
+        # --- Règle 3 : comptes réels vs test + honnêteté ---
+        comptes_reels = sum(1 for u in users if not u.est_test)
+        comptes_test = sum(1 for u in users if u.est_test)
+        non_verifies = sum(1 for u in users if not u.email_verifie and not u.suspendu)
+        suspendus = sum(1 for u in users if u.suspendu)
+
+        # --- Règle 2 : couleur = sens (bon / attention / probleme / neutre) ---
+        cartes = [
+            {"val": comptes_reels, "lbl": "Comptes réels", "etat": "neutre",
+             "note": (f"+ {comptes_test} de test exclus" if comptes_test else "aucun compte de test")},
+            {"val": len(users), "lbl": "Comptes (total)", "etat": "neutre",
+             "note": "comptes de test inclus"},
+            {"val": _delta(dates_users)["cur"], "lbl": "Inscrits (7 j)",
+             "delta": _delta(dates_users), "etat": "bon",
+             "note": f"{sum(1 for u in users if u.created_at)} au total"},
+            {"val": _delta(dates_docs)["cur"], "lbl": "Documents (7 j)",
+             "delta": _delta(dates_docs), "etat": "bon",
+             "note": f"{sum(docs_par_user.values())} au total"},
+            {"val": _delta(dates_rdv)["cur"], "lbl": "Rendez-vous (7 j)",
+             "delta": _delta(dates_rdv), "etat": "bon",
+             "note": f"{sum(rdv_par_user.values())} au total"},
+            {"val": non_verifies, "lbl": "E-mail non vérifié",
+             "etat": "attention" if non_verifies else "bon", "note": None},
+            {"val": suspendus, "lbl": "Suspendus",
+             "etat": "probleme" if suspendus else "bon", "note": None},
+        ]
+
+        # Honnêteté : prévient quand l'échantillon est trop petit pour conclure.
+        echantillon_faible = comptes_reels < 10
+        maj = now.strftime("%d/%m/%Y à %H:%M UTC")
+
         return templates.TemplateResponse(
             request, "admin.html",
             {
-                "lignes": lignes, "stats": stats, "moi": moi.email,
+                "lignes": lignes, "moi": moi.email, "cartes": cartes,
                 "jours_graphe": jours_graphe, "max_graphe": max_graphe,
+                "echantillon_faible": echantillon_faible, "comptes_reels": comptes_reels,
+                "maj": maj,
             },
         )
     finally:
@@ -1244,6 +1285,23 @@ async def admin_suspendre(request: Request, cible_id: int):
         # On ne peut pas se suspendre soi-même (sécurité anti-verrouillage).
         if cible and cible.id != moi.id:
             cible.suspendu = 0 if cible.suspendu else 1
+            session.commit()
+        return RedirectResponse("/admin", status_code=303)
+    finally:
+        session.close()
+
+
+@app.post("/admin/utilisateur/{cible_id}/test")
+async def admin_marquer_test(request: Request, cible_id: int):
+    """Marque / démarque un compte comme « compte de test » (exclu des chiffres réels)."""
+    session = db.SessionLocal()
+    try:
+        moi = _exiger_admin(request, session)
+        if moi is None:
+            return HTMLResponse("Accès refusé.", status_code=403)
+        cible = session.get(models.User, cible_id)
+        if cible:
+            cible.est_test = 0 if cible.est_test else 1
             session.commit()
         return RedirectResponse("/admin", status_code=303)
     finally:

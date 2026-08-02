@@ -54,6 +54,7 @@ def init_db():
     _ajouter_colonne_si_absente("users", "rdv_heure_fin", "VARCHAR(5)")
     _ajouter_colonne_si_absente("users", "rdv_duree", "INTEGER DEFAULT 60")
     _ajouter_colonne_si_absente("users", "suspendu", "INTEGER DEFAULT 0")
+    _ajouter_colonne_si_absente("users", "est_test", "INTEGER DEFAULT 0")
     _ajouter_colonne_si_absente("users", "code_parrainage", "VARCHAR(12)")
     _ajouter_colonne_si_absente("users", "parraine_par", "INTEGER")
     _ajouter_colonne_si_absente("users", "email_verifie", "INTEGER DEFAULT 0")

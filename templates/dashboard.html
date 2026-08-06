@@ -25,6 +25,15 @@
         .verif-note button{border:none;background:#8A5A00;color:#fff;font-weight:600;font-size:12.5px;
                            padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
         .verif-note button:hover{background:#6f4900}
+        .onboard{max-width:820px;margin:0 auto 8px;display:flex;flex-wrap:wrap;gap:14px 22px;
+                 align-items:center;justify-content:space-between;background:#1B3A5C;color:#fff;
+                 border-radius:16px;padding:20px 24px}
+        .onboard-txt b{font-size:16px}
+        .onboard-txt p{margin:5px 0 0;color:#cdd8e6;font-size:13.5px;line-height:1.5;max-width:52ch}
+        .onboard-cta{background:#fff;color:#1B3A5C;font-weight:700;font-size:14px;padding:12px 20px;
+                     border-radius:10px;white-space:nowrap;transition:transform .1s}
+        .onboard-cta:hover{transform:translateY(-1px)}
+        @media(max-width:560px){.onboard{padding:18px}.onboard-cta{width:100%;text-align:center}}
     </style>
 </head>
 <body>
@@ -43,6 +52,16 @@
         <h1><span id="hello">Bonjour.</span> <span class="thin">Voici votre atelier.</span></h1>
         <p class="lede">Choisissez ce que vous voulez préparer aujourd'hui.</p>
     </section>
+
+    {% if onboarding %}
+    <section class="onboard">
+        <div class="onboard-txt">
+            <b>Bienvenue ! On commence par votre première facture ?</b>
+            <p>Quelques champs, et votre PDF professionnel est prêt à envoyer. La TVA se calcule toute seule.</p>
+        </div>
+        <a class="onboard-cta" href="/facture">Créer ma première facture</a>
+    </section>
+    {% endif %}
 
     {% if verif_renvoye %}
     <div class="verif-note ok">✓ Un nouvel e-mail de confirmation vient d'être envoyé. Pensez à vérifier vos courriers indésirables.</div>

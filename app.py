@@ -269,7 +269,9 @@ async def faire_inscription(
             logger.exception("Échec de l'envoi de l'e-mail de vérification à %s", email)
         request.session.pop("ref", None)
         request.session["user_id"] = user.id
-        return RedirectResponse("/", status_code=303)
+        # Activation : on emmène directement le nouvel inscrit vers sa première
+        # facture (il voit la valeur en 30 s) plutôt que sur le tableau de bord.
+        return RedirectResponse("/facture", status_code=303)
     finally:
         session.close()
 
@@ -1317,6 +1319,7 @@ async def dashboard(request: Request):
     lien_parrainage = None
     nb_parraines = 0
     email_verifie = True  # par défaut on n'affiche pas le bandeau
+    onboarding = False    # coup de pouce si le compte n'a encore aucun document
     uid = request.session.get("user_id")
     # Visiteur non connecté : on montre la page vitrine (landing).
     if not uid:
@@ -1379,6 +1382,10 @@ async def dashboard(request: Request):
                     models.User.parraine_par == user.id
                 ).count()
                 email_verifie = bool(user.email_verifie)
+            nb_docs = session.query(models.Document).filter(
+                models.Document.user_id == uid
+            ).count()
+            onboarding = (nb_docs == 0)
         finally:
             session.close()
     return templates.TemplateResponse(
@@ -1390,6 +1397,7 @@ async def dashboard(request: Request):
             "nb_parraines": nb_parraines,
             "email_verifie": email_verifie,
             "verif_renvoye": request.query_params.get("verif") == "renvoye",
+            "onboarding": onboarding,
         },
     )
 

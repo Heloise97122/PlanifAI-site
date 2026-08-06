@@ -46,10 +46,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
         body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
              background:#FFFFFF;color:#12233b;line-height:1.55;-webkit-font-smoothing:antialiased}
         .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
         a{text-decoration:none;color:inherit}
+        section{scroll-margin-top:24px}
 
         /* Nav */
         nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
@@ -61,14 +63,13 @@
         .btn{display:inline-block;background:#1B3A5C;color:#fff;font-weight:600;font-size:.95rem;
              padding:11px 20px;border-radius:10px;transition:background .18s,transform .1s,border-color .18s}
         .btn:hover{background:#12233b;transform:translateY(-1px)}
-        /* variantes pour ne pas avoir 3 boutons identiques */
         .btn.outline{background:transparent;color:#1B3A5C;border:1.5px solid #d7dbe0}
         .btn.outline:hover{background:#1B3A5C;color:#fff;border-color:#1B3A5C}
         .btn.warm{background:#A9754C}
         .btn.warm:hover{background:#8f6340}
 
         /* Hero */
-        .hero{text-align:center;padding:64px 0 40px}
+        .hero{text-align:center;padding:60px 0 34px}
         .hero h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
                  font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.08;letter-spacing:-.03em;color:#12233b;max-width:820px;margin:0 auto}
         .hero .sub{font-size:clamp(1.05rem,2.2vw,1.3rem);color:#5b6472;max-width:560px;margin:22px auto 0}
@@ -76,51 +77,90 @@
         .btn.lg{font-size:1.05rem;padding:15px 30px;border-radius:12px}
         .hero .note{font-size:.9rem;color:#9aa0a6;margin-top:16px}
 
-        /* Aperçu produit */
-        .shot{margin:52px auto 0;max-width:1000px}
+        /* Cadre navigateur (GIF + captures) */
+        .shot{margin:48px auto 0;max-width:1000px}
         .shot-frame{border:1px solid #eceff2;border-radius:16px;overflow:hidden;
                     box-shadow:0 30px 60px -30px rgba(18,35,59,.28),0 8px 20px -12px rgba(18,35,59,.12)}
         .shot-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;background:#f6f7f9;border-bottom:1px solid #eceff2}
         .shot-bar i{width:11px;height:11px;border-radius:50%;background:#dfe3e8;display:block}
         .shot-frame img{display:block;width:100%}
 
-        /* Bandeau fonctionnalités : grille 4 colonnes (symétrique) */
-        .feats{display:grid;grid-template-columns:repeat(4,auto);justify-content:center;gap:16px 44px;
-               padding:52px 0;margin-top:20px;border-top:1px solid #eef0f3;color:#3a4453;font-weight:600;font-size:1rem}
-        .feats span{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
-        .feats span::before{content:"";width:7px;height:7px;border-radius:50%;background:#C8956C;flex:0 0 auto}
+        /* Bandeau fonctionnalités cliquables */
+        .feats{display:grid;grid-template-columns:repeat(4,auto);justify-content:center;gap:16px 40px;
+               padding:48px 0;margin-top:16px;border-top:1px solid #eef0f3;font-weight:600;font-size:1rem}
+        .feats a{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;color:#3a4453;transition:color .15s}
+        .feats a:hover{color:#1B3A5C}
+        .feats a::before{content:"";width:7px;height:7px;border-radius:50%;background:#C8956C;flex:0 0 auto}
+
+        /* Titre de section */
+        .sec-head{text-align:center;max-width:640px;margin:0 auto 8px}
+        .eyebrow{font-weight:700;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:#A9754C}
+        .sec-head h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+                     font-size:clamp(1.6rem,3.6vw,2.3rem);letter-spacing:-.02em;color:#12233b;margin:.35em 0 .2em}
+        .sec-head p{color:#5b6472;font-size:1.05rem}
+
+        /* Comment ça marche */
+        .how{padding:20px 0 8px}
+        .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:34px}
+        .step{background:#fbfcfd;border:1px solid #eef0f3;border-radius:16px;padding:26px 22px;text-align:left}
+        .step .n{width:34px;height:34px;border-radius:10px;background:#1B3A5C;color:#fff;font-weight:800;
+                 display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:14px}
+        .step h3{font-size:1.12rem;color:#12233b;margin-bottom:6px}
+        .step p{color:#5b6472;font-size:.96rem}
+
+        /* Section fonctionnalité (image + texte) */
+        .feature{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;padding:56px 0}
+        .feature.alt .f-text{order:2}
+        .feature.alt .f-pic{order:1}
+        .f-text h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+                   font-size:clamp(1.5rem,3.4vw,2.1rem);letter-spacing:-.02em;color:#12233b;margin:.3em 0 .4em}
+        .f-text p{color:#5b6472;font-size:1.06rem;margin-bottom:16px}
+        .f-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+        .f-list li{display:flex;align-items:flex-start;gap:10px;color:#3a4453;font-size:1rem;font-weight:500}
+        .f-list li::before{content:"✓";color:#2F8A46;font-weight:800;flex:0 0 auto}
+        .f-pic{border:1px solid #eceff2;border-radius:16px;overflow:hidden;background:#F7F5F2;
+               box-shadow:0 24px 50px -28px rgba(18,35,59,.30),0 6px 16px -10px rgba(18,35,59,.12)}
+        .f-pic img{display:block;width:100%}
+
+        /* Points forts */
+        .points{padding:24px 0 8px}
+        .grid-points{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+        .pt{background:#fbfcfd;border:1px solid #eef0f3;border-radius:14px;padding:20px 20px}
+        .pt b{display:block;color:#12233b;font-size:1.02rem;margin-bottom:4px}
+        .pt span{color:#5b6472;font-size:.94rem}
 
         /* Bas de page CTA */
-        .end{text-align:center;padding:20px 0 60px}
+        .end{text-align:center;padding:56px 0 60px;margin-top:24px;border-top:1px solid #eef0f3}
         .end h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(1.5rem,3.5vw,2.1rem);color:#12233b;letter-spacing:-.02em}
         .end p{color:#5b6472;margin:10px 0 24px}
         footer{border-top:1px solid #eef0f3;padding:26px 0;text-align:center;color:#9aa0a6;font-size:.85rem}
         footer a{color:#1B3A5C;font-weight:600}
 
         /* ---------- Mobile ---------- */
+        @media(max-width:820px){
+            .feature{grid-template-columns:1fr;gap:26px;padding:40px 0}
+            .feature.alt .f-text{order:2}
+            .feature.alt .f-pic{order:1}
+            .feature .f-text{order:2}
+            .feature .f-pic{order:1}
+            .steps{grid-template-columns:1fr}
+            .grid-points{grid-template-columns:1fr 1fr}
+        }
         @media(max-width:600px){
             .wrap{padding:0 18px}
             nav{padding:16px 0}
             .brand{font-size:1.12rem}
-            .brand small{display:none}          /* on masque « ATELIER » pour aérer */
+            .brand small{display:none}
             .nav-right{gap:6px}
             .nav-link{padding:9px 4px;font-size:.86rem}
             .btn{padding:10px 14px;font-size:.88rem}
-            .hero{padding:34px 0 22px}
+            .hero{padding:32px 0 20px}
             .hero h1{font-size:1.75rem}
             .hero .sub{font-size:1.02rem;margin-top:16px}
-            .hero-cta{margin-top:24px}
             .btn.lg{width:100%;text-align:center;padding:15px}
-            .shot{margin-top:32px}
-            .shot-bar{padding:9px 12px}
-            .shot-bar i{width:9px;height:9px}
-            .end{padding:14px 0 40px}
-        }
-        /* Fonctionnalités : liste sur une seule colonne, alignée et centrée
-           (dès qu'il n'y a plus la place pour 4 colonnes propres) */
-        @media(max-width:900px){
-            .feats{grid-template-columns:1fr;justify-content:center;justify-items:start;
-                   width:fit-content;margin:20px auto 0;gap:14px;padding:34px 0;font-size:1rem}
+            .shot{margin-top:30px}
+            .feats{grid-template-columns:1fr;justify-items:start;width:fit-content;margin:16px auto 0;gap:14px;padding:32px 0}
+            .grid-points{grid-template-columns:1fr}
         }
     </style>
 </head>
@@ -150,11 +190,120 @@
             </div>
         </section>
 
-        <section class="feats">
-            <span>Factures &amp; devis</span>
-            <span>Relances de paiement</span>
-            <span>Contrats conformes</span>
-            <span>Rendez-vous en ligne</span>
+        <!-- Fonctionnalités cliquables -> défilent vers les sections -->
+        <section class="feats" aria-label="Fonctionnalités">
+            <a href="#factures">Factures &amp; devis</a>
+            <a href="#suivi">Relances de paiement</a>
+            <a href="#atelier">Contrats conformes</a>
+            <a href="#rdv">Rendez-vous en ligne</a>
+        </section>
+
+        <!-- Aperçu de l'atelier -->
+        <section id="atelier">
+            <div class="sec-head">
+                <div class="eyebrow">Votre atelier</div>
+                <h2>Tous vos papiers d'entreprise au même endroit</h2>
+                <p>Factures, devis, contrats (CDI, CDD, freelance…) et rendez-vous. Un tableau de bord clair qui vous rappelle ce qui compte : factures à encaisser, devis à relancer.</p>
+            </div>
+            <div class="shot" style="margin-top:34px">
+                <div class="shot-frame">
+                    <div class="shot-bar"><i></i><i></i><i></i></div>
+                    <img src="/static/screen_dashboard.jpg" alt="Tableau de bord PlanifAI : rappels et accès aux factures, contrats, planning et rendez-vous" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <!-- Comment ça marche -->
+        <section class="how">
+            <div class="sec-head">
+                <div class="eyebrow">Comment ça marche</div>
+                <h2>Trois étapes, pas une de plus</h2>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="n">1</div>
+                    <h3>Vous remplissez</h3>
+                    <p>Vos coordonnées, celles du client, vos prestations. Le numéro de facture se remplit tout seul.</p>
+                </div>
+                <div class="step">
+                    <div class="n">2</div>
+                    <h3>Le PDF est prêt</h3>
+                    <p>TVA calculée automatiquement, document propre et professionnel, prêt à envoyer ou à imprimer.</p>
+                </div>
+                <div class="step">
+                    <div class="n">3</div>
+                    <h3>Vous suivez</h3>
+                    <p>Qui vous a payé, qui est en retard. Une relance part en un clic, avec la facture jointe.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature : Factures & devis -->
+        <section id="factures" class="feature">
+            <div class="f-text">
+                <div class="eyebrow">Factures &amp; devis</div>
+                <h2>Une facture pro en 2 minutes</h2>
+                <p>Fini le tableur. Vous saisissez vos lignes, la TVA se calcule toute seule (métropole et DOM), et vous obtenez un PDF net, prêt à envoyer.</p>
+                <ul class="f-list">
+                    <li>Calcul HT / TVA / TTC automatique</li>
+                    <li>Numérotation automatique de vos factures et devis</li>
+                    <li>Un devis accepté se transforme en facture en un clic</li>
+                    <li>Franchise de TVA gérée (auto-entrepreneurs)</li>
+                </ul>
+            </div>
+            <div class="f-pic">
+                <img src="/static/screen_facture.jpg" alt="Exemple de facture PDF générée par PlanifAI avec calcul de la TVA" loading="lazy">
+            </div>
+        </section>
+
+        <!-- Feature : Suivi & relances -->
+        <section id="suivi" class="feature alt">
+            <div class="f-text">
+                <div class="eyebrow">Suivi &amp; relances</div>
+                <h2>Sachez qui vous a payé</h2>
+                <p>Marquez vos factures payées, voyez d'un coup d'œil votre chiffre d'affaires encaissé et ce qui reste dû. Une facture en retard ? On vous le signale.</p>
+                <ul class="f-list">
+                    <li>Chiffre d'affaires encaissé, mois et année</li>
+                    <li>Relance par e-mail en un clic, facture jointe en PDF</li>
+                    <li>Alertes sur les seuils micro-entreprise</li>
+                </ul>
+            </div>
+            <div class="f-pic">
+                <img src="/static/screen_suivi.jpg" alt="Suivi des paiements et relances dans PlanifAI" loading="lazy">
+            </div>
+        </section>
+
+        <!-- Feature : Rendez-vous en ligne -->
+        <section id="rdv" class="feature">
+            <div class="f-text">
+                <div class="eyebrow">Rendez-vous en ligne</div>
+                <h2>Vos clients réservent tout seuls</h2>
+                <p>Partagez un lien : vos clients choisissent un créneau parmi vos disponibilités, sans coup de fil. Vous recevez la réservation, eux une confirmation.</p>
+                <ul class="f-list">
+                    <li>Page de réservation à votre nom</li>
+                    <li>Vous fixez vos jours et horaires</li>
+                    <li>Confirmation et rappels par e-mail</li>
+                </ul>
+            </div>
+            <div class="f-pic">
+                <img src="/static/screen_rdv.jpg" alt="Page publique de prise de rendez-vous d'un artisan sur PlanifAI" loading="lazy">
+            </div>
+        </section>
+
+        <!-- Points forts -->
+        <section class="points">
+            <div class="sec-head">
+                <div class="eyebrow">Pourquoi PlanifAI</div>
+                <h2>Pensé pour les artisans, pas pour les comptables</h2>
+            </div>
+            <div class="grid-points">
+                <div class="pt"><b>Rien à installer</b><span>Tout se passe en ligne, sur votre téléphone comme sur votre ordinateur.</span></div>
+                <div class="pt"><b>Documents 100 % numériques</b><span>Factures, devis et contrats en PDF, prêts à envoyer ou à imprimer.</span></div>
+                <div class="pt"><b>Contrats conformes</b><span>CDI, CDD, alternance, stage, freelance, attestation employeur.</span></div>
+                <div class="pt"><b>Simple, vraiment</b><span>Pas de jargon comptable. Si vous savez remplir un formulaire, vous savez l'utiliser.</span></div>
+                <div class="pt"><b>Vos données en Europe</b><span>Base de données hébergée dans l'Union européenne.</span></div>
+                <div class="pt"><b>Essai gratuit</b><span>Testez sans carte bancaire. Vous ne payez rien pour commencer.</span></div>
+            </div>
         </section>
 
         <section class="end">

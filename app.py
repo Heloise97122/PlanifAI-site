@@ -27,6 +27,7 @@ import auth
 import mailer
 import rdv
 import seuils
+import guides as guides_mod
 
 logger = logging.getLogger("planifai")
 
@@ -62,7 +63,7 @@ PUBLIC_PATHS = {
     "/mot-de-passe-oublie", "/mentions-legales", "/confidentialite",
     "/robots.txt", "/sitemap.xml",
 }
-PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv", "/verifier-email")
+PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv", "/verifier-email", "/guides")
 
 # Compte administrateur (accès au back-office /admin). Personnalisable via la
 # variable d'environnement ADMIN_EMAIL ; sinon valeur par défaut ci-dessous.
@@ -1078,6 +1079,7 @@ async def robots(request: Request):
         "Allow: /$\n"
         "Allow: /connexion\n"
         "Allow: /inscription\n"
+        "Allow: /guides\n"
         "Allow: /mentions-legales\n"
         "Allow: /confidentialite\n"
         # On n'expose pas les espaces privés au référencement.
@@ -1095,7 +1097,9 @@ async def robots(request: Request):
 @app.get("/sitemap.xml")
 async def sitemap(request: Request):
     base = _base_url(request)
-    pages = ["/", "/inscription", "/connexion", "/mentions-legales", "/confidentialite"]
+    pages = ["/", "/inscription", "/connexion", "/guides",
+             "/mentions-legales", "/confidentialite"]
+    pages += [f"/guides/{g['slug']}" for g in guides_mod.GUIDES]
     today = date.today().isoformat()
     urls = "".join(
         f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod>"
@@ -1121,6 +1125,29 @@ async def mentions_legales(request: Request):
 @app.get("/confidentialite", response_class=HTMLResponse)
 async def confidentialite(request: Request):
     return templates.TemplateResponse(request, "confidentialite.html")
+
+
+# === GUIDES (contenu / inbound SEO, public) ===
+
+@app.get("/guides", response_class=HTMLResponse)
+async def guides_index(request: Request):
+    return templates.TemplateResponse(
+        request, "guides_index.html",
+        {"guides": guides_mod.GUIDES, "base_url": _base_url(request)},
+    )
+
+
+@app.get("/guides/{slug}", response_class=HTMLResponse)
+async def guide_article(request: Request, slug: str):
+    guide = guides_mod.GUIDES_PAR_SLUG.get(slug)
+    if not guide:
+        return RedirectResponse("/guides", status_code=303)
+    # Suggère les autres guides en bas d'article (maillage interne SEO).
+    autres = [g for g in guides_mod.GUIDES if g["slug"] != slug]
+    return templates.TemplateResponse(
+        request, "guide.html",
+        {"guide": guide, "autres": autres, "base_url": _base_url(request)},
+    )
 
 
 # === BACK-OFFICE ADMINISTRATEUR (réservé à ADMIN_EMAIL) ===

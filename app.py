@@ -27,6 +27,7 @@ import auth
 import mailer
 import rdv
 import seuils
+import guides as guides_mod
 
 logger = logging.getLogger("planifai")
 
@@ -62,7 +63,7 @@ PUBLIC_PATHS = {
     "/mot-de-passe-oublie", "/mentions-legales", "/confidentialite",
     "/robots.txt", "/sitemap.xml",
 }
-PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv", "/verifier-email")
+PUBLIC_PREFIXES = ("/static", "/reinitialiser", "/rdv", "/verifier-email", "/guides")
 
 # Compte administrateur (accès au back-office /admin). Personnalisable via la
 # variable d'environnement ADMIN_EMAIL ; sinon valeur par défaut ci-dessous.
@@ -269,7 +270,9 @@ async def faire_inscription(
             logger.exception("Échec de l'envoi de l'e-mail de vérification à %s", email)
         request.session.pop("ref", None)
         request.session["user_id"] = user.id
-        return RedirectResponse("/", status_code=303)
+        # Activation : on emmène directement le nouvel inscrit vers sa première
+        # facture (il voit la valeur en 30 s) plutôt que sur le tableau de bord.
+        return RedirectResponse("/facture", status_code=303)
     finally:
         session.close()
 
@@ -1076,6 +1079,7 @@ async def robots(request: Request):
         "Allow: /$\n"
         "Allow: /connexion\n"
         "Allow: /inscription\n"
+        "Allow: /guides\n"
         "Allow: /mentions-legales\n"
         "Allow: /confidentialite\n"
         # On n'expose pas les espaces privés au référencement.
@@ -1093,7 +1097,9 @@ async def robots(request: Request):
 @app.get("/sitemap.xml")
 async def sitemap(request: Request):
     base = _base_url(request)
-    pages = ["/", "/inscription", "/connexion", "/mentions-legales", "/confidentialite"]
+    pages = ["/", "/inscription", "/connexion", "/guides",
+             "/mentions-legales", "/confidentialite"]
+    pages += [f"/guides/{g['slug']}" for g in guides_mod.GUIDES]
     today = date.today().isoformat()
     urls = "".join(
         f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod>"
@@ -1119,6 +1125,29 @@ async def mentions_legales(request: Request):
 @app.get("/confidentialite", response_class=HTMLResponse)
 async def confidentialite(request: Request):
     return templates.TemplateResponse(request, "confidentialite.html")
+
+
+# === GUIDES (contenu / inbound SEO, public) ===
+
+@app.get("/guides", response_class=HTMLResponse)
+async def guides_index(request: Request):
+    return templates.TemplateResponse(
+        request, "guides_index.html",
+        {"guides": guides_mod.GUIDES, "base_url": _base_url(request)},
+    )
+
+
+@app.get("/guides/{slug}", response_class=HTMLResponse)
+async def guide_article(request: Request, slug: str):
+    guide = guides_mod.GUIDES_PAR_SLUG.get(slug)
+    if not guide:
+        return RedirectResponse("/guides", status_code=303)
+    # Suggère les autres guides en bas d'article (maillage interne SEO).
+    autres = [g for g in guides_mod.GUIDES if g["slug"] != slug]
+    return templates.TemplateResponse(
+        request, "guide.html",
+        {"guide": guide, "autres": autres, "base_url": _base_url(request)},
+    )
 
 
 # === BACK-OFFICE ADMINISTRATEUR (réservé à ADMIN_EMAIL) ===
@@ -1317,6 +1346,7 @@ async def dashboard(request: Request):
     lien_parrainage = None
     nb_parraines = 0
     email_verifie = True  # par défaut on n'affiche pas le bandeau
+    onboarding = False    # coup de pouce si le compte n'a encore aucun document
     uid = request.session.get("user_id")
     # Visiteur non connecté : on montre la page vitrine (landing).
     if not uid:
@@ -1379,6 +1409,10 @@ async def dashboard(request: Request):
                     models.User.parraine_par == user.id
                 ).count()
                 email_verifie = bool(user.email_verifie)
+            nb_docs = session.query(models.Document).filter(
+                models.Document.user_id == uid
+            ).count()
+            onboarding = (nb_docs == 0)
         finally:
             session.close()
     return templates.TemplateResponse(
@@ -1390,6 +1424,7 @@ async def dashboard(request: Request):
             "nb_parraines": nb_parraines,
             "email_verifie": email_verifie,
             "verif_renvoye": request.query_params.get("verif") == "renvoye",
+            "onboarding": onboarding,
         },
     )
 

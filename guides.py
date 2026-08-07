@@ -91,11 +91,98 @@ GUIDES = [
              "html": "<p>Si vous êtes en franchise, vos factures et devis doivent porter la mention "
                      "<em>« TVA non applicable, art. 293 B du CGI »</em>. Sans elle, le document "
                      "n'est pas en règle. C'est un oubli très courant.</p>"},
-            {"h2": "Les seuils à surveiller",
-             "html": "<p>La franchise s'applique tant que votre chiffre d'affaires ne dépasse pas "
-                     "les seuils en vigueur (ils évoluent régulièrement — vérifiez sur "
-                     "service-public.fr). Au-delà, vous devez facturer la TVA. Un bon outil vous "
-                     "prévient quand vous approchez du seuil, pour ne pas être pris au dépourvu.</p>"},
+            {"h2": "Les seuils à surveiller en 2026",
+             "html": "<p>En 2026, les seuils de franchise <strong>ne changent pas</strong> :</p>"
+                     "<ul>"
+                     "<li><strong>Prestations de services</strong> (la plupart des artisans) : "
+                     "<strong>37 500 €</strong> de chiffre d'affaires (seuil majoré 41 250 €).</li>"
+                     "<li><strong>Vente de marchandises</strong> : <strong>85 000 €</strong> "
+                     "(seuil majoré 93 500 €).</li>"
+                     "</ul>"
+                     "<p>Bon à savoir : le projet de <strong>seuil unique à 25 000 €</strong>, "
+                     "beaucoup commenté en 2025, a été <strong>abandonné</strong> — les seuils "
+                     "ci-dessus restent la règle. Au-delà, vous devez facturer la TVA (les "
+                     "modalités de bascule ont évolué récemment, vérifiez sur service-public.fr). "
+                     "Un bon outil vous prévient quand vous approchez du seuil, pour ne pas être "
+                     "pris au dépourvu.</p>"},
+        ],
+    },
+    {
+        "slug": "facturation-electronique-2026",
+        "titre": "Facturation électronique obligatoire : ce qui change pour les artisans (2026-2027)",
+        "meta": "La facturation électronique devient obligatoire en France : réception dès "
+                "septembre 2026, émission en septembre 2027 pour les artisans et micro-"
+                "entrepreneurs. Ce qu'il faut savoir et comment s'y préparer.",
+        "date": "2026-08-07",
+        "intro": "La France généralise la facturation électronique entre professionnels. Beaucoup "
+                 "d'artisans pensent ne pas être concernés parce qu'ils ne facturent pas de TVA : "
+                 "c'est faux. Voici le calendrier et ce qu'il faut anticiper, sans jargon.",
+        "sections": [
+            {"h2": "Êtes-vous concerné ? Oui, très probablement",
+             "html": "<p>La réforme s'applique aux factures entre entreprises établies en France. "
+                     "Elle concerne <strong>aussi les micro-entrepreneurs et les artisans en "
+                     "franchise de TVA</strong> : même sans facturer de TVA, vous êtes un "
+                     "assujetti, donc vous entrez dans le cadre. Personne n'y échappe.</p>"},
+            {"h2": "Le calendrier à retenir",
+             "html": "<ul>"
+                     "<li><strong>1<sup>er</sup> septembre 2026</strong> : toutes les entreprises "
+                     "doivent être capables de <strong>recevoir</strong> une facture électronique. "
+                     "Les grandes entreprises et ETI doivent en plus commencer à en <strong>émettre</strong>.</li>"
+                     "<li><strong>1<sup>er</sup> septembre 2027</strong> : c'est au tour des TPE, "
+                     "PME et <strong>micro-entreprises</strong> de devoir <strong>émettre</strong> "
+                     "leurs factures au format électronique.</li>"
+                     "</ul>"
+                     "<p>Autrement dit : dès septembre 2026, vous devez pouvoir <em>recevoir</em> "
+                     "les factures électroniques de vos fournisseurs ; l'obligation d'en "
+                     "<em>émettre</em> vous-même arrive un an plus tard.</p>"},
+            {"h2": "Concrètement, comment ça marchera",
+             "html": "<p>Une facture électronique n'est pas un simple PDF envoyé par e-mail. Elle "
+                     "transite par une <strong>plateforme agréée</strong>, dans un format "
+                     "structuré que l'administration peut lire. Le PDF classique par mail ne "
+                     "suffira plus entre professionnels.</p>"},
+            {"h2": "Comment vous y préparer dès maintenant",
+             "html": "<p>Le plus simple : prenez dès aujourd'hui l'habitude de faire vos factures "
+                     "dans un <strong>outil en ligne</strong> plutôt que sur Word ou Excel. Le "
+                     "jour où l'obligation arrive, la bascule se fera sans douleur — vos documents "
+                     "seront déjà numériques et bien structurés.</p>"
+                     "<p><em>Les dates de cette réforme ont déjà été reportées par le passé : "
+                     "vérifiez le calendrier en vigueur sur impots.gouv.fr.</em></p>"},
+        ],
+    },
+    {
+        "slug": "relancer-facture-impayee",
+        "titre": "Facture impayée : comment relancer un client (méthode et modèle)",
+        "meta": "Comment relancer efficacement une facture impayée : le bon timing, un modèle de "
+                "relance prêt à envoyer, les pénalités de retard et l'indemnité forfaitaire de "
+                "40 € prévue par la loi.",
+        "date": "2026-08-07",
+        "intro": "Faire le travail, c'est la moitié du chemin. Se faire payer, c'est l'autre "
+                 "moitié. Une facture impayée n'est pas une fatalité : avec la bonne méthode, la "
+                 "plupart se règlent d'une simple relance.",
+        "sections": [
+            {"h2": "Le bon timing",
+             "html": "<p>Ne laissez pas traîner. Dès que l'échéance est dépassée de quelques "
+                     "jours, envoyez une <strong>première relance courtoise</strong> : souvent, "
+                     "c'est un simple oubli. Restez poli et factuel — le client d'aujourd'hui est "
+                     "le chantier de demain.</p>"},
+            {"h2": "Un modèle de relance",
+             "html": "<p>« Bonjour, sauf erreur de notre part, la facture n° … d'un montant de … €, "
+                     "échue le …, n'a pas encore été réglée. Nous vous remercions de bien vouloir "
+                     "procéder au règlement. Si le paiement a déjà été effectué, merci de ne pas "
+                     "tenir compte de ce message. »</p>"
+                     "<p>Joignez toujours la facture en pièce jointe : le client a tout sous les "
+                     "yeux, il n'a plus d'excuse.</p>"},
+            {"h2": "Vos droits : pénalités et indemnité de 40 €",
+             "html": "<p>Entre professionnels, tout retard de paiement ouvre droit à des "
+                     "<strong>pénalités de retard</strong> et à une <strong>indemnité forfaitaire "
+                     "de 40 €</strong> pour frais de recouvrement (article L441-10 du Code de "
+                     "commerce). Mentionnez-les sur vos factures : c'est obligatoire, et c'est un "
+                     "argument de poids dans une relance.</p>"},
+            {"h2": "Quand ça bloque vraiment",
+             "html": "<p>Si les relances amiables restent sans réponse, l'étape suivante est la "
+                     "<strong>mise en demeure</strong> par lettre recommandée. Elle marque le "
+                     "sérieux de votre démarche et constitue une preuve si vous devez aller plus "
+                     "loin.</p>"},
         ],
     },
 ]
